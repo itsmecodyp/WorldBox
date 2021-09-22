@@ -374,7 +374,6 @@ namespace LuBuMod
             {
                 followActor(controlledActor, 10f); // camera follow
                 movementStuff(); // movement controls
-                // make actors you approach say stuff
                 WorldTile clickedTile = null;
                 if (Input.GetMouseButtonDown(0) && MapBox.instance.getMouseTilePos() != null)
                 {

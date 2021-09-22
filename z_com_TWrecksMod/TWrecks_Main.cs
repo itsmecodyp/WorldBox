@@ -45,8 +45,8 @@ namespace TWrecks_RPG
                 {
                     if (listOfSquadsWithLeaders.Contains(currentlySelectedFormation.squadID))
                     {
-                        leaderDict[currentlySelectedFormation.squadID].squad.movementPos = MapBox.instance.getMouseTilePos().posV3;
-                        leaderDict[currentlySelectedFormation.squadID].squad.offsetPos = leaderDict[currentlySelectedFormation.squadID].squad.movementPos - leaderDict[currentlySelectedFormation.squadID].squadLeaderActor.currentTile.posV3;
+                        currentlySelectedFormation.movementPos = MapBox.instance.getMouseTilePos().posV3;
+                        currentlySelectedFormation.offsetPos = currentlySelectedFormation.movementPos - leaderDict[currentlySelectedFormation.squadID].squadLeaderActor.currentTile.posV3;
                     }
                     else
                     {
@@ -56,37 +56,23 @@ namespace TWrecks_RPG
                     //Debug.Log("offset saved: " + currentlySelectedFormation.offsetPos.ToString());
                 }
             }
-            if (Input.GetKeyDown(KeyCode.Z))
+            if (Input.GetKeyDown(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.M))
             {
                 for (int i = 0; i < 5; i++)
                 {
                     SquadFormation newSquad = new SquadFormation();
                     newSquad.movementPos = MapBox.instance.getMouseTilePos().posV3;
-                    for (int j = 0; j < 26; j++)
+                    for (int j = 0; j < 10; j++)
                     {
                         Actor newActor = MapBox.instance.createNewUnit("unit_human", MapBox.instance.getMouseTilePos(), null, 10f, null);
                         AddActorToSquad(newSquad, newActor);
                     }
+                    Actor newActorLeader = MapBox.instance.createNewUnit("unit_human", MapBox.instance.getMouseTilePos(), null, 10f, null);
+                    SquadLeader leader = new SquadLeader(newActorLeader);
+                    leader.squad = newSquad;
+                    listOfSquadsWithLeaders.Add(newSquad.squadID);
                     squadsInUse.Add(newSquad.squadID, newSquad);
-                }
-            }
-            if (Input.GetKeyDown(KeyCode.N))
-            {
-                Actor newActor = MapBox.instance.createNewUnit("alien", MapBox.instance.getMouseTilePos(), null, 10f, null);
-
-            }
-            if (Input.GetKeyDown(KeyCode.M))
-            {
-                for (int i = 0; i < 5; i++)
-                {
-                    SquadFormation newSquad = new SquadFormation();
-                    newSquad.movementPos = MapBox.instance.getMouseTilePos().posV3;
-                    for (int j = 0; j < 26; j++)
-                    {
-                        Actor newActor = MapBox.instance.createNewUnit("alien", MapBox.instance.getMouseTilePos(), null, 10f, null);
-                        AddActorToSquad(newSquad, newActor);
-                    }
-                    squadsInUse.Add(newSquad.squadID, newSquad);
+                    leaderDict.Add(newSquad.squadID, leader);
                 }
             }
 
@@ -209,16 +195,24 @@ namespace TWrecks_RPG
             {
                 for (int i = 0; i < leaderDict.Count; i++)
                 {
+                    SquadFormation formation = leaderDict.Values.ToList()[i].squad;
                     Actor leaderActor = leaderDict.Values.ToList()[i].squadLeaderActor;
                     if (leaderActor != null)
                     {
                         ActorStatus data = Reflection.GetField(leaderActor.GetType(), leaderActor, "data") as ActorStatus;
                         if (data.alive)
                         {
+                            GUILayout.BeginHorizontal();
                             if (GUILayout.Button("Leader: " + data.firstName))
                             {
-                                currentlySelectedFormation = leaderDict[data.firstName].squad;
+                                lastInteractionActor = leaderActor;
                             }
+                            if (GUILayout.Button("Squad: " + formation.squadName))
+                            {
+                                currentlySelectedFormation = formation;
+
+                            }
+                            GUILayout.EndHorizontal();
                         }
                         else
                         {
@@ -605,7 +599,7 @@ namespace TWrecks_RPG
                                     if (stats.resourceType == ResourceType.Fruits)
                                     {
                                         foodCount++;
-                                        clickedTile.building.CallMethod("extractResources");
+                                        clickedTile.building.CallMethod("extractResources", new object[] { controlledActor, 1});
                                     }
                                     if (stats.id.Contains("tree") || stats.id.Contains("palm"))
                                     {
@@ -1374,11 +1368,13 @@ namespace TWrecks_RPG
             ActorStatus data = Reflection.GetField(__instance.GetType(), __instance, "data") as ActorStatus;
 
             __result = baseExpToLevelup + (data.level - 1) * expToLevelUpScale;
+            /*
             if (__instance == controlledActor)
             {
                 BaseStats curStats = Reflection.GetField(controlledActor.GetType(), controlledActor, "curStats") as BaseStats;
                 controlledActor.restoreHealth(curStats.health / 10); // 10%
             }
+            */
         }
 
         public static bool increaseKillCount_Prefix(Actor __instance)

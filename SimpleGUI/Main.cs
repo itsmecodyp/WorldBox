@@ -106,130 +106,6 @@ namespace SimpleGUI
             }
         }
 
-        public void DiscordStuff()
-        {
-            // use discord to ID users and do stuff
-            if (discordUser == null && attempts < 4)
-            {
-                attempts++;
-                Discord.Discord discord = DiscordTracker.discord;
-                // discord.GetActivityManager().
-                // discord.GetUserManager().GetCurrentUser().
-                UserManager userManager;
-                User user;
-                if (discord != null)
-                {
-                    userManager = discord.GetUserManager(); 
-                    user = userManager.GetCurrentUser();
-                    discordUser = user.Username + "_" + user.Discriminator;
-                }
-            }
-            
-            if (discordUser != null)
-            {
-                if (hasAskedToOptIn.Value == true)
-                {
-                    if (hasOptedInToStats.Value == true)
-                    {
-                        if (sentOneTimeStats == false)
-                        {
-                            myuser.VersionSimpleGUI = pluginVersion;
-                            if (Application.version != null)
-                                myuser.VersionWorldBox = Application.version;
-                            GameStatsData gameStatsData = Reflection.GetField(MapBox.instance.gameStats.GetType(), MapBox.instance.gameStats, "data") as GameStatsData;
-                            TimeSpan timePlayed = TimeSpan.FromSeconds(gameStatsData.gameTime);
-                            GuiMain.myuser.GameTimeTotal = timePlayed.Days + " days, " + timePlayed.Hours + " hours, " + timePlayed.Minutes + " minutes"; //gameStatsData.gameTime.ToString();
-                            GuiMain.myuser.GameLaunches = gameStatsData.gameLaunches.ToString();
-                            myuser.lastLaunchTime = DateTime.Now.ToUniversalTime().ToString();
-                            // mods, modcount
-                            string path = Directory.GetCurrentDirectory() + "\\BepInEx//plugins//";
-                            FileInfo[] fileArray = new DirectoryInfo(path).GetFiles();
-                            for (int i = 0; i < fileArray.Length; i++)
-                            {
-                                myuser.Mods.Add(fileArray[i].Name);
-                            }
-                            myuser.ModCount = fileArray.Length.ToString();
-                            // finally, submit
-                            var vURL = "https://simplegui-default-rtdb.firebaseio.com/users/" + discordUser + "/.json";
-                            RestClient.Put(vURL, myuser);
-                            //StartCoroutine(GetUserMessage(discordUser));
-                            sentOneTimeStats = true;
-                        }
-                        //mapstats, regularly updated
-                        MapStats currentMapStats = MapBox.instance.mapStats;
-                        if (currentMapStats.year > 15 && lastMapTime + 120f < Time.realtimeSinceStartup) // log only worlds people have spent some time in
-                        {
-                            var vURLMapData = "https://simplegui-default-rtdb.firebaseio.com//maps/" + discordUser + "/" + currentMapStats.name + "/.json";
-                            RestClient.Put(vURLMapData, currentMapStats);
-                            lastMapTime = Time.realtimeSinceStartup;
-                        }
-                        // check user message
-                        StartCoroutine(GetUserMessage(discordUser));
-                    }
-                    else
-                    {
-                        if (sentOneTimeStats == false)
-                        {
-                            ModUserOptedOut newUser = new ModUserOptedOut();
-                            var vURL = "https://simplegui-default-rtdb.firebaseio.com//users/" + discordUser + "/.json";
-                            RestClient.Put(vURL, newUser);
-                            sentOneTimeStats = true;
-                        }
-                    }
-                }
-             
-                
-            }
-        }
-
-        public IEnumerator GetUserMessage(string username)
-        {
-            string url = "https://simplegui-default-rtdb.firebaseio.com/messages/" + username + "/.json";
-            // "https://simplegui-default-rtdb.firebaseio.com/messages/user/.json";
-            UnityWebRequest dataRequest = UnityWebRequest.Get(url);
-            yield return dataRequest.SendWebRequest();
-            JSONNode data = JSON.Parse(dataRequest.downloadHandler.text);
-            if (data != null)
-            {
-                string messageText = data[0];
-                if (messageText.Contains("response#"))
-                {
-                    responseAskedFor = true;
-                    messageText = messageText.Replace("response#", "");
-                }
-                receivedMessage = messageText;
-                Debug.Log("Message for " + username + ": " + messageText);
-
-            }
-        }
-
-        public void showModMessageWindow(int windowID)
-        {
-            if (responseAskedFor)
-            {
-                response = GUILayout.TextField(response);
-                if (GUILayout.Button("Submit response"))
-                {
-                    ModResponse message = new ModResponse();
-                    message.message = receivedMessage;
-                    message.response = response;
-                    string url = "https://simplegui-default-rtdb.firebaseio.com/responses/" + discordUser + "/.json";
-                    RestClient.Put(url, message);
-                    url = "https://simplegui-default-rtdb.firebaseio.com/messages/" + discordUser + "/.json";
-                    RestClient.Delete(url);
-                    receivedMessage = null;
-                }
-            }
-            GUILayout.Label(receivedMessage);
-            if (GUILayout.Button("Dismiss"))
-            {
-                string url = "https://simplegui-default-rtdb.firebaseio.com/messages/" + discordUser + "/.json";
-                RestClient.Delete(url);
-                receivedMessage = null;
-            }
-            GUI.DragWindow();
-        }
-        
         public void ConstantWarCheck()
         {
             if (Diplomacy.EnableConstantWar)
@@ -730,6 +606,130 @@ namespace SimpleGUI
 
         }
 
+        public void DiscordStuff()
+        {
+            // use discord to ID users and do stuff
+            if (discordUser == null && attempts < 4)
+            {
+                attempts++;
+                Discord.Discord discord = DiscordTracker.discord;
+                // discord.GetActivityManager().
+                // discord.GetUserManager().GetCurrentUser().
+                UserManager userManager;
+                User user;
+                if (discord != null)
+                {
+                    userManager = discord.GetUserManager();
+                    user = userManager.GetCurrentUser();
+                    discordUser = user.Username + "_" + user.Discriminator;
+                }
+            }
+
+            if (discordUser != null)
+            {
+                if (hasAskedToOptIn.Value == true)
+                {
+                    if (hasOptedInToStats.Value == true)
+                    {
+                        if (sentOneTimeStats == false)
+                        {
+                            myuser.VersionSimpleGUI = pluginVersion;
+                            if (Application.version != null)
+                                myuser.VersionWorldBox = Application.version;
+                            GameStatsData gameStatsData = Reflection.GetField(MapBox.instance.gameStats.GetType(), MapBox.instance.gameStats, "data") as GameStatsData;
+                            TimeSpan timePlayed = TimeSpan.FromSeconds(gameStatsData.gameTime);
+                            GuiMain.myuser.GameTimeTotal = timePlayed.Days + " days, " + timePlayed.Hours + " hours, " + timePlayed.Minutes + " minutes"; //gameStatsData.gameTime.ToString();
+                            GuiMain.myuser.GameLaunches = gameStatsData.gameLaunches.ToString();
+                            myuser.lastLaunchTime = DateTime.Now.ToUniversalTime().ToString();
+                            // mods, modcount
+                            string path = Directory.GetCurrentDirectory() + "\\BepInEx//plugins//";
+                            FileInfo[] fileArray = new DirectoryInfo(path).GetFiles();
+                            for (int i = 0; i < fileArray.Length; i++)
+                            {
+                                myuser.Mods.Add(fileArray[i].Name);
+                            }
+                            myuser.ModCount = fileArray.Length.ToString();
+                            // finally, submit
+                            var vURL = "https://simplegui-default-rtdb.firebaseio.com/users/" + discordUser + "/.json";
+                            RestClient.Put(vURL, myuser);
+                            //StartCoroutine(GetUserMessage(discordUser));
+                            sentOneTimeStats = true;
+                        }
+                        //mapstats, regularly updated
+                        MapStats currentMapStats = MapBox.instance.mapStats;
+                        if (currentMapStats.year > 15 && lastMapTime + 120f < Time.realtimeSinceStartup) // log only worlds people have spent some time in
+                        {
+                            var vURLMapData = "https://simplegui-default-rtdb.firebaseio.com//maps/" + discordUser + "/" + currentMapStats.name + "/.json";
+                            RestClient.Put(vURLMapData, currentMapStats);
+                            lastMapTime = Time.realtimeSinceStartup;
+                        }
+                        // check user message
+                        StartCoroutine(GetUserMessage(discordUser));
+                    }
+                    else
+                    {
+                        if (sentOneTimeStats == false)
+                        {
+                            ModUserOptedOut newUser = new ModUserOptedOut();
+                            var vURL = "https://simplegui-default-rtdb.firebaseio.com//users/" + discordUser + "/.json";
+                            RestClient.Put(vURL, newUser);
+                            sentOneTimeStats = true;
+                        }
+                    }
+                }
+
+
+            }
+        }
+
+        public IEnumerator GetUserMessage(string username)
+        {
+            string url = "https://simplegui-default-rtdb.firebaseio.com/messages/" + username + "/.json";
+            // "https://simplegui-default-rtdb.firebaseio.com/messages/user/.json";
+            UnityWebRequest dataRequest = UnityWebRequest.Get(url);
+            yield return dataRequest.SendWebRequest();
+            JSONNode data = JSON.Parse(dataRequest.downloadHandler.text);
+            if (data != null)
+            {
+                string messageText = data[0];
+                if (messageText.Contains("response#"))
+                {
+                    responseAskedFor = true;
+                    messageText = messageText.Replace("response#", "");
+                }
+                receivedMessage = messageText;
+                Debug.Log("Message for " + username + ": " + messageText);
+
+            }
+        }
+
+        public void showModMessageWindow(int windowID)
+        {
+            if (responseAskedFor)
+            {
+                response = GUILayout.TextField(response);
+                if (GUILayout.Button("Submit response"))
+                {
+                    ModResponse message = new ModResponse();
+                    message.message = receivedMessage;
+                    message.response = response;
+                    string url = "https://simplegui-default-rtdb.firebaseio.com/responses/" + discordUser + "/.json";
+                    RestClient.Put(url, message);
+                    url = "https://simplegui-default-rtdb.firebaseio.com/messages/" + discordUser + "/.json";
+                    RestClient.Delete(url);
+                    receivedMessage = null;
+                }
+            }
+            GUILayout.Label(receivedMessage);
+            if (GUILayout.Button("Dismiss"))
+            {
+                string url = "https://simplegui-default-rtdb.firebaseio.com/messages/" + discordUser + "/.json";
+                RestClient.Delete(url);
+                receivedMessage = null;
+            }
+            GUI.DragWindow();
+        }
+
         public static void saveWorld_Postfix()
         {
             foreach (Actor actor in MapBox.instance.units)
@@ -746,7 +746,15 @@ namespace SimpleGUI
         {
             for (int i = 0; i < pSaveData.status.traits.Count; i++)
             {
-                if (pSaveData.status.traits[i].Contains("stats") || pSaveData.status.traits[i].Contains("customTrait"))
+                if (pSaveData.status.traits[i].Contains("stats") || 
+                    pSaveData.status.traits[i].Contains("customTrait") ||
+                    pSaveData.status.traits[i].Contains("lays_eggs") ||
+                    pSaveData.status.traits[i].Contains("ghost") ||
+                    pSaveData.status.traits[i].Contains("giant2") ||
+                    pSaveData.status.traits[i].Contains("flying") ||
+                    pSaveData.status.traits[i].Contains("kingslayer")
+
+                    )
                 {
                     pSaveData.status.traits.Remove(pSaveData.status.traits[i]);
                 }
@@ -1008,7 +1016,6 @@ namespace SimpleGUI
 
             public string ModCount = "null";
             public List<string> Mods = new List<string>();
-            public string Response = "";
         }
 
         [Serializable]
