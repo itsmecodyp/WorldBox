@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using BepInEx;
+using BepInEx.Configuration;
 using HarmonyLib;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -23,6 +24,7 @@ namespace TWrecks_RPG
         public void Awake()
         {
             HarmonyPatchSetup();
+            SettingSetup();
         }
 
         public void Update()
@@ -56,7 +58,7 @@ namespace TWrecks_RPG
                     //Debug.Log("offset saved: " + currentlySelectedFormation.offsetPos.ToString());
                 }
             }
-            if (Input.GetKeyDown(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.M))
+            if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.M))
             {
                 for (int i = 0; i < 5; i++)
                 {
@@ -111,59 +113,64 @@ namespace TWrecks_RPG
             int newKingExp;
             if (int.TryParse(kingExpInput, out newKingExp))
             {
-                kingAgeExp = newKingExp;
+                kingAgeExp.Value = newKingExp;
             }
             GUILayout.EndHorizontal();
-
             GUILayout.BeginHorizontal();
             GUILayout.Button("LeaderAgeExp");
             leaderExpInput = GUILayout.TextField(leaderExpInput);
             int newLeaderExp;
             if (int.TryParse(leaderExpInput, out newLeaderExp))
             {
-                kingAgeExp = newLeaderExp;
+                leaderAgeExp.Value = newLeaderExp;
             }
             GUILayout.EndHorizontal();
-
             GUILayout.BeginHorizontal();
             GUILayout.Button("OtherAgeExp");
             otherExpInput = GUILayout.TextField(otherExpInput);
             int newOtherExp;
             if (int.TryParse(otherExpInput, out newOtherExp))
             {
-                otherAgeExp = newOtherExp;
+                otherAgeExp.Value = newOtherExp;
             }
             GUILayout.EndHorizontal();
-
             GUILayout.BeginHorizontal();
             GUILayout.Button("BaseExpToLevel");
             expToLevel = GUILayout.TextField(expToLevel);
             int newExpToLevel;
             if (int.TryParse(expToLevel, out newExpToLevel))
             {
-                baseExpToLevelup = newExpToLevel;
+                baseExpToLevelup.Value = newExpToLevel;
             }
             GUILayout.EndHorizontal();
-
-            GUILayout.BeginHorizontal();
-            GUILayout.Button("LevelExpScale");
-            expScale = GUILayout.TextField(expScale);
-            int newExpScale;
-            if (int.TryParse(expScale, out newExpScale))
-            {
-                expToLevelUpScale = newExpScale;
-            }
-            GUILayout.EndHorizontal();
-
             GUILayout.BeginHorizontal();
             GUILayout.Button("ExpGainOnKill");
             expGainedOnKill = GUILayout.TextField(expGainedOnKill);
             int newExpGainOnKill;
             if (int.TryParse(expGainedOnKill, out newExpGainOnKill))
             {
-                expGainOnKill = newExpGainOnKill;
+                expGainOnKill.Value = newExpGainOnKill;
             }
             GUILayout.EndHorizontal();
+            GUILayout.BeginHorizontal();
+            GUILayout.Button("LevelExpScale");
+            expScale = GUILayout.TextField(expScale);
+            int newExpScale;
+            if (int.TryParse(expScale, out newExpScale))
+            {
+ 
+                expToLevelUpScale.Value = newExpScale;
+            }
+            GUILayout.EndHorizontal();
+            if (GUILayout.Button("Reset"))
+            {
+                expGainedOnKill = "10";
+                kingExpInput = "20";
+                leaderExpInput = "10";
+                otherExpInput = "2";
+                expToLevel = "100";
+                expScale = "20";
+            }
             GUI.DragWindow();
         }
 
@@ -1364,16 +1371,23 @@ namespace TWrecks_RPG
                                 newTrait = positiveTraitsForLevels.GetRandom();
                                 attempts++;
                             }
-                            //
                             controlledActor.addTrait(newTrait.id);
                         }
                     }
-                        bool statsDirty = (bool)Reflection.GetField(__instance.GetType(), __instance, "statsDirty");
-                        bool event_full_heal = (bool)Reflection.GetField(__instance.GetType(), __instance, "event_full_heal");
-                        statsDirty = true;
-                        event_full_heal = true;
-                    }
+                    string trait = AssetManager.traits.list.GetRandom().id;
+                    __instance.addTrait(trait);
+                    __instance.removeTrait(trait);
+                    BaseStats curStats = Reflection.GetField(__instance.GetType(), __instance, "curStats") as BaseStats;
+                    __instance.restoreHealth(curStats.health);
+                    // ^ same as below, just different method
+                    /*
+                    bool statsDirty = (bool)Reflection.GetField(__instance.GetType(), __instance, "statsDirty");
+                    bool event_full_heal = (bool)Reflection.GetField(__instance.GetType(), __instance, "event_full_heal");
+                    statsDirty = true;
+                    event_full_heal = true;
+                    */
                 }
+            }
                 return false;
         }
 
@@ -1412,7 +1426,7 @@ namespace TWrecks_RPG
         {
             ActorStatus data = Reflection.GetField(__instance.GetType(), __instance, "data") as ActorStatus;
 
-            __result = baseExpToLevelup + (data.level - 1) * expToLevelUpScale;
+            __result = baseExpToLevelup.Value + (data.level - 1) * expToLevelUpScale.Value;
             /*
             if (__instance == controlledActor)
             {
@@ -1446,15 +1460,34 @@ namespace TWrecks_RPG
             return false;
         }
 
+        public void SettingSetup()
+        {
+            expGainOnKill = Config.AddSetting("EXP", "expGainOnKill", 10, "Experience gained per kill");
+            kingAgeExp = Config.AddSetting("EXP", "kingAgeExp", 20, "Experience gained per year for Kings");
+            leaderAgeExp = Config.AddSetting("EXP", "leaderAgeExp", 10, "Experience gained per year for Leaders");
+            otherAgeExp = Config.AddSetting("EXP", "otherAgeExp", 2, "Experience gained per year for normal people");
+            baseExpToLevelup = Config.AddSetting("EXP", "baseExpToLevelup", 100, "Base experience needed to level up '100 + (level - 1) * 20'");
+            expToLevelUpScale = Config.AddSetting("EXP", "expToLevelUpScale", 20, "Scaling value '100 + (level - 1) * 20'");
+            expGainedOnKill = expGainOnKill.Value.ToString();
+            kingExpInput = kingAgeExp.Value.ToString();
+            leaderExpInput = leaderAgeExp.Value.ToString();
+            otherExpInput = otherAgeExp.Value.ToString();
+            expToLevel = baseExpToLevelup.Value.ToString();
+            expScale = expToLevelUpScale.Value.ToString();
+        }
 
-       
-        public static int expGainOnKill = 10;
-
-        public static int kingAgeExp = 20;
-        public static int leaderAgeExp = 10;
-        public static int otherAgeExp = 2;
-        public static int baseExpToLevelup = 100; // default: 100 + (this.data.level - 1) * 20;
-        public static int expToLevelUpScale = 20;
+        public static ConfigEntry<int> expGainOnKill { get; set; }
+        public static ConfigEntry<int> kingAgeExp { get; set; }
+        public static ConfigEntry<int> leaderAgeExp { get; set; }
+        public static ConfigEntry<int> otherAgeExp { get; set; }
+        public static ConfigEntry<int> baseExpToLevelup { get; set; }
+        public static ConfigEntry<int> expToLevelUpScale { get; set; }
+        //public static int expGainOnKill = 10;
+        //public static int kingAgeExp = 20;
+        //public static int leaderAgeExp = 10;
+        //public static int otherAgeExp = 2;
+        //public static int baseExpToLevelup = 100; // default: 100 + (this.data.level - 1) * 20;
+        //public static int expToLevelUpScale = 20;
 
         public static bool updateAge_Prefix(Actor __instance)
         {
