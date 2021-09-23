@@ -101,7 +101,7 @@ namespace TWrecks_RPG
         public static string expGainedOnKill = "10";
 
         public static List<string> listOfSquadsWithLeaders = new List<string>();
-        public Dictionary<string, SquadLeader> leaderDict = new Dictionary<string, SquadLeader>();
+        public static Dictionary<string, SquadLeader> leaderDict = new Dictionary<string, SquadLeader>();
 
         public void mainWindow(int windowID)
         {
@@ -294,8 +294,17 @@ namespace TWrecks_RPG
                 {
                     SquadLeader newLeader = new SquadLeader(lastInteractionActor);
                     newLeader.squad = currentlySelectedFormation;
-                    listOfSquadsWithLeaders.Add(currentlySelectedFormation.squadID);
-                    leaderDict.Add(currentlySelectedFormation.squadID, newLeader);
+                    if (listOfSquadsWithLeaders.Contains(currentlySelectedFormation.squadID))
+                    {
+                        leaderDict[currentlySelectedFormation.squadID] = newLeader;
+                    }
+                    else
+                    {
+                        listOfSquadsWithLeaders.Add(currentlySelectedFormation.squadID);
+                        leaderDict.Add(currentlySelectedFormation.squadID, newLeader);
+                    }
+
+                   
 
                 }
                 GUILayout.Button("Unit count: " + currentlySelectedFormation.actorList.Count.ToString());
@@ -399,10 +408,10 @@ namespace TWrecks_RPG
                 {
                     squadDictPos = 0;
                 }
-                if(squadsInUse[squadDictPos.ToString()] != null)
-                currentlySelectedFormation = squadsInUse[squadDictPos.ToString()];
+                if (squadsInUse.ContainsKey(squadDictPos.ToString()))
+                    currentlySelectedFormation = squadsInUse[squadDictPos.ToString()];
             }
-            if (GUILayout.Button("New squad"))
+            if (GUILayout.Button("New squad") && lastTile != null)
             {
                 SquadFormation newSquad = new SquadFormation();
                 newSquad.movementPos = lastTile.posV3;
@@ -411,12 +420,13 @@ namespace TWrecks_RPG
             }
             if (GUILayout.Button("->"))
             {
-                if (squadsInUse[(squadDictPos + 1).ToString()] != null)
+
+
+                if (squadsInUse.ContainsKey(squadDictPos + 1.ToString()))
                 {
                     squadDictPos++;
+                    currentlySelectedFormation = squadsInUse[squadDictPos.ToString()];
                 }
-                if(squadsInUse[squadDictPos.ToString()] != null)
-                currentlySelectedFormation = squadsInUse[squadDictPos.ToString()];
             }
             GUILayout.EndHorizontal();
 
@@ -454,9 +464,30 @@ namespace TWrecks_RPG
         public string nextSquadName = "";
         public bool assigningLeader;
 
-        public int squadDictPos = 0;
+        public static int squadDictPos = 0;
 
         RPGActorWindow rpgWindow = new RPGActorWindow();
+
+        public static void ClearDicts()
+        {
+            controlledActor = null;
+            lastTile = null;
+            leaderDict.Clear();
+            listOfSquadsWithLeaders.Clear();
+            squadsInUse.Clear();
+            totalSquadActorList.Clear();
+            squadDictPos = 0;
+        }
+
+        public static void loadData_Prefix(SavedMap pData)
+        {
+            ClearDicts();
+        }
+
+        public static void GenerateMap_Prefix(string pType = "islands")
+        {
+            ClearDicts();
+        }
 
         public void HarmonyPatchSetup()
         {
@@ -506,6 +537,20 @@ namespace TWrecks_RPG
             patch = AccessTools.Method(typeof(TWrecks_Main), "updateZoom_Prefix");
             harmony.Patch(original, new HarmonyMethod(patch));
             Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
+
+            harmony = new Harmony(pluginName);
+            original = AccessTools.Method(typeof(SaveManager), "loadData");
+            patch = AccessTools.Method(typeof(TWrecks_Main), "loadData_Prefix");
+            harmony.Patch(original, new HarmonyMethod(patch));
+            Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
+
+            harmony = new Harmony(pluginName);
+            original = AccessTools.Method(typeof(MapBox), "GenerateMap");
+            patch = AccessTools.Method(typeof(TWrecks_Main), "GenerateMap_Prefix");
+            harmony.Patch(original, new HarmonyMethod(patch));
+            Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
+
+
             // auto retaliate feature, disabled because of enum error i cant find
             /*
             harmony = new Harmony(pluginName);
