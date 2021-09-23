@@ -411,8 +411,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Stocks.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="RestClient\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

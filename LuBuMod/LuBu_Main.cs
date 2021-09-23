@@ -499,7 +499,6 @@ namespace LuBuMod
                             RedHare.city = spawnTile.zone.city;
                         }
                         RedHare.addTrait("lubu_rdhare");
-                        //AddTraitToActor(LuBu, "lubu_unmounted");
                         ActorStatus RedHareData = Reflection.GetField(RedHare.GetType(), RedHare, "data") as ActorStatus;
                         RedHareData.firstName = "Red Hare";
                         dedicatedMount = RedHare;
@@ -574,12 +573,12 @@ namespace LuBuMod
                         if (LuBu.haveTrait("lubu_redhare_armoured"))
                         {
                             UnmountLubu(LuBu);
-                            Debug.Log("Unmounted (AI)");
+                            //Debug.Log("Unmounted (AI)");
                         }
                         else if (LuBu.haveTrait("lubu_unmounted"))
                         {
                             MountLubuArmoured(LuBu);
-                            Debug.Log("Mounted (AI)");
+                            //Debug.Log("Mounted (AI)");
                         }
                         lastMountOrUnmount = Time.realtimeSinceStartup;
                         mountOrUnMountCooldown = UnityEngine.Random.Range(30f, 60f);
@@ -1532,7 +1531,6 @@ namespace LuBuMod
         }
     }
 
-
     public static class Reflection
     {
         // found on https://stackoverflow.com/questions/135443/how-do-i-use-reflection-to-invoke-a-private-method
@@ -1559,6 +1557,7 @@ namespace LuBuMod
             field.SetValue(originalObject, newValue);
         }
     }
+
     public static class GetObjectProperties
     {
 
