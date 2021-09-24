@@ -8,6 +8,7 @@ using HarmonyLib;
 using static UnityEngine.UI.Image;
 using UnityEngine;
 using System.Reflection;
+using static UnitClipboard.UnitClipboard_Main;
 
 namespace UnitClipboard
 {
@@ -25,43 +26,61 @@ namespace UnitClipboard
 
         public void Update()
         {
-            if (Input.GetKeyDown(KeyCode.F) && MapBox.instance.getMouseTilePos() != null)
+            if (Input.GetKey(KeyCode.LeftControl) && (Input.GetKeyDown(KeyCode.C)))
             {
-                lastInteractionActor = ClosestActorToTile(MapBox.instance.getMouseTilePos(), 3f);
+                CopyUnit(ClosestActorToTile(MapBox.instance.getMouseTilePos(), 3f));
             }
             if (Input.GetKey(KeyCode.LeftControl) && (Input.GetKeyDown(KeyCode.V)))
             {
-                if (MapBox.instance.getMouseTilePos() != null && selectedUnitToPaste != null)
-                {
-                    Actor pastedUnit = MapBox.instance.createNewUnit(selectedUnitToPaste.statsID, MapBox.instance.getMouseTilePos(), null, 0f, null);
-                    ActorStatus data = Reflection.GetField(pastedUnit.GetType(), pastedUnit, "data") as ActorStatus;
-                    data.firstName = selectedUnitToPaste.dataFirstName;
-                    ActorTrait statCatchup = new ActorTrait();
-                    statCatchup.id = "stats" + selectedUnitToPaste.dataFirstName; // might need to change to be unique
-                    statCatchup.baseStats = selectedUnitToPaste.statDifference;
-                    if (AssetManager.traits.list.Contains(statCatchup))
-                    {
-                        Debug.Log("e");
-                        pastedUnit.addTrait(statCatchup.id);
-                    }
-                    else
-                    {
-                        addTraitToLocalizedLibrary(statCatchup.id, "Unit was copy pasted");
-                        AssetManager.traits.add(statCatchup);
-                        pastedUnit.addTrait(statCatchup.id);
-                    }
-                    foreach (string trait in selectedUnitToPaste.traits)
-                    {
-                        pastedUnit.addTrait(trait);
-                    }
-                }
+                PasteUnit(MapBox.instance.getMouseTilePos(), selectedUnitToPaste);
             }
-            if (Input.GetKeyDown(KeyCode.T))
+            if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.T))
             {
                 showHideMainWindow = !showHideMainWindow;
             }
         }
 
+        private void PasteUnit(WorldTile targetTile, UnitData unitData)
+        {
+            if (targetTile != null && unitData != null)
+            {
+                Actor pastedUnit = MapBox.instance.createNewUnit(unitData.statsID, targetTile, null, 0f, null);
+                ActorStatus data = Reflection.GetField(pastedUnit.GetType(), pastedUnit, "data") as ActorStatus;
+                data.firstName = unitData.dataFirstName;
+                if (data.traits != null && data.traits.Count >= 1)
+                {
+                    pastedUnit.resetTraits();
+                }
+                if (unitData.equipment != null)
+                {
+                    pastedUnit.equipment = unitData.equipment;
+                }
+                
+                ActorTrait pasted = new ActorTrait();
+                pasted.id = "pasted" + selectedUnitToPaste.dataFirstName; // might need to change to be unique
+                //statCatchup.baseStats = selectedUnitToPaste.statDifference;
+                if (addedTraits.Contains(pasted.id))
+                {
+                    pastedUnit.addTrait(pasted.id);
+                    pastedUnit.removeTrait(pasted.id); // remove because unnecessary
+                }
+                else
+                {
+                    addTraitToLocalizedLibrary(pasted.id, "Unit was copied");
+                    AssetManager.traits.add(pasted);
+                    addedTraits.Add(pasted.id);
+                    pastedUnit.addTrait(pasted.id); // refresh stats
+                    pastedUnit.removeTrait(pasted.id); // remove because unnecessary
+                }
+                foreach (string trait in unitData.traits)
+                {
+                    pastedUnit.addTrait(trait);
+                }
+                pastedUnit.restoreHealth(10^5); //lazy
+                Debug.Log("Pasted " + unitData.dataFirstName);
+            }
+        }
+        public List<string> addedTraits = new List<string>(); // lazy
         public static bool showHideMainWindow;
         public static Rect mainWindowRect = new Rect(0f, 1f, 1f, 1f);
 
@@ -69,7 +88,7 @@ namespace UnitClipboard
         {
             if (showHideMainWindow)
             {
-                mainWindowRect = GUILayout.Window(500401, mainWindowRect, new GUI.WindowFunction(UnitClipboardWindow), "Clipboard", new GUILayoutOption[] { GUILayout.MaxWidth(300f), GUILayout.MinWidth(200f) });
+                mainWindowRect = GUILayout.Window(500401, mainWindowRect, new GUI.WindowFunction(UnitClipboardWindow), "Unit Clipboard", new GUILayoutOption[] { GUILayout.MaxWidth(300f), GUILayout.MinWidth(200f) });
             }
         }
 
@@ -89,7 +108,6 @@ namespace UnitClipboard
         }
 
 
-        public Actor lastInteractionActor;
         public Dictionary<string, UnitData> unitClipboardDict = new Dictionary<string, UnitData>(); // id, data
 
         public void UnitClipboardWindow(int windowID)
@@ -98,18 +116,25 @@ namespace UnitClipboard
             {
                 for (int i = 0; i < unitClipboardDict.Count(); i++)
                 {
+                    GUILayout.BeginHorizontal();
                     if (GUILayout.Button(unitClipboardDict[i.ToString()].dataFirstName))
                     {
                         selectedUnitToPaste = unitClipboardDict[i.ToString()];
                     }
+
+                    GUILayout.EndHorizontal();
                 }
             }
-            
-            if (lastInteractionActor != null && GUILayout.Button("Add selected unit"))
+            GUI.DragWindow();
+        }
+
+        private void CopyUnit(Actor targetActor)
+        {
+            if (targetActor != null)
             {
-                ActorStatus data = Reflection.GetField(lastInteractionActor.GetType(), lastInteractionActor, "data") as ActorStatus;
-                BaseStats curStats = Reflection.GetField(lastInteractionActor.GetType(), lastInteractionActor, "curStats") as BaseStats;
-                
+                ActorStatus data = Reflection.GetField(targetActor.GetType(), targetActor, "data") as ActorStatus;
+                BaseStats curStats = Reflection.GetField(targetActor.GetType(), targetActor, "curStats") as BaseStats;
+
                 UnitData newSavedUnit = new UnitData();
                 foreach (string trait in data.traits)
                 {
@@ -160,14 +185,17 @@ namespace UnitClipboard
                 statsDifference.targets = currentStats.targets - originalStats.targets;
                 statsDifference.warfare = currentStats.warfare - originalStats.warfare;
                 statsDifference.zones = currentStats.zones - originalStats.zones;
-                #endregion
+                #endregion // might be unnecessary with items generating
                 newSavedUnit.statDifference = statsDifference;
-
+                newSavedUnit.equipment = targetActor.equipment;
                 unitClipboardDict.Add(unitClipboardDictNum.ToString(), newSavedUnit);
                 unitClipboardDictNum++;
+                selectedUnitToPaste = newSavedUnit;
+                Debug.Log("Copied " + newSavedUnit.dataFirstName);
             }
-            GUI.DragWindow();
+
         }
+
         int unitClipboardDictNum = 0;
 
         public UnitData selectedUnitToPaste;
@@ -178,6 +206,7 @@ namespace UnitClipboard
             public string statsID = "";
             public BaseStats statDifference;
             public List<string> traits = new List<string>();
+            public ActorEquipment equipment;
         }
 
         public void HarmonyPatchSetup()
