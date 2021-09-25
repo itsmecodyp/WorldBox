@@ -586,7 +586,7 @@ namespace TWrecks_RPG
                 Camera camera = Reflection.GetField(MapBox.instance.GetType(), MapBox.instance, "camera") as Camera;
                 if (camera != null)
                 {
-                    if (controlledActor != null) // need a better check
+                    if (controlledActor != null)
                     {
                         if (Input.GetKey(KeyCode.KeypadMinus) || Input.GetKey(KeyCode.KeypadPlus))
                         {

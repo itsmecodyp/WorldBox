@@ -17,7 +17,7 @@ namespace UnitClipboard
     {
         public const string pluginGuid = "cody.worldbox.unit.clipboard";
         public const string pluginName = "Unit Clipboard";
-        public const string pluginVersion = "0.0.0.1";
+        public const string pluginVersion = "0.0.0.2";
 
         public void Awake()
         {
@@ -58,15 +58,13 @@ namespace UnitClipboard
                 
                 ActorTrait pasted = new ActorTrait();
                 pasted.id = "pasted" + selectedUnitToPaste.dataFirstName; // might need to change to be unique
-                //statCatchup.baseStats = selectedUnitToPaste.statDifference;
                 if (addedTraits.Contains(pasted.id))
                 {
-                    pastedUnit.addTrait(pasted.id);
+                    pastedUnit.addTrait(pasted.id); // refresh stats
                     pastedUnit.removeTrait(pasted.id); // remove because unnecessary
                 }
                 else
                 {
-                    addTraitToLocalizedLibrary(pasted.id, "Unit was copied");
                     AssetManager.traits.add(pasted);
                     addedTraits.Add(pasted.id);
                     pastedUnit.addTrait(pasted.id); // refresh stats
@@ -76,7 +74,7 @@ namespace UnitClipboard
                 {
                     pastedUnit.addTrait(trait);
                 }
-                pastedUnit.restoreHealth(10^5); //lazy
+                pastedUnit.restoreHealth(10^9); //lazy
                 Debug.Log("Pasted " + unitData.dataFirstName);
             }
         }
@@ -142,51 +140,6 @@ namespace UnitClipboard
                 }
                 newSavedUnit.dataFirstName = data.firstName;
                 newSavedUnit.statsID = data.statsID;
-                BaseStats originalStats = AssetManager.unitStats.get(data.statsID).baseStats;
-                BaseStats currentStats = curStats;
-                BaseStats statsDifference = new BaseStats();
-                #region statDifference
-                statsDifference.accuracy = currentStats.accuracy - originalStats.accuracy;
-                statsDifference.areaOfEffect = currentStats.accuracy - originalStats.accuracy;
-                statsDifference.armor = currentStats.armor - originalStats.armor;
-                statsDifference.army = currentStats.army - originalStats.army;
-                statsDifference.attackSpeed = currentStats.attackSpeed - originalStats.attackSpeed;
-                statsDifference.bonus_towers = currentStats.bonus_towers - originalStats.bonus_towers;
-                statsDifference.cities = currentStats.cities - originalStats.cities;
-                statsDifference.crit = currentStats.crit - originalStats.crit;
-                statsDifference.damage = currentStats.damage - originalStats.damage;
-                statsDifference.damageCritMod = currentStats.damageCritMod - originalStats.damageCritMod;
-                statsDifference.diplomacy = currentStats.diplomacy - originalStats.diplomacy;
-                statsDifference.health = currentStats.health - originalStats.health;
-                statsDifference.intelligence = currentStats.intelligence - originalStats.intelligence;
-                statsDifference.knockback = currentStats.knockback - originalStats.knockback;
-                statsDifference.knockbackReduction = currentStats.knockbackReduction - originalStats.knockbackReduction;
-                statsDifference.loyalty_mood = currentStats.loyalty_mood - originalStats.loyalty_mood;
-                statsDifference.loyalty_traits = currentStats.loyalty_traits - originalStats.loyalty_traits;
-                statsDifference.mod_armor = currentStats.mod_armor - originalStats.mod_armor;
-                statsDifference.mod_attackSpeed = currentStats.mod_attackSpeed - originalStats.mod_attackSpeed;
-                statsDifference.mod_crit = currentStats.mod_crit - originalStats.mod_crit;
-                statsDifference.mod_damage = currentStats.mod_damage - originalStats.mod_damage;
-                statsDifference.mod_diplomacy = currentStats.mod_diplomacy - originalStats.mod_diplomacy;
-                statsDifference.mod_health = currentStats.mod_health - originalStats.mod_health;
-                statsDifference.mod_speed = currentStats.mod_speed - originalStats.mod_speed;
-                statsDifference.mod_supply_timer = currentStats.mod_supply_timer - originalStats.mod_supply_timer;
-                statsDifference.opinion = currentStats.opinion - originalStats.opinion;
-                statsDifference.personality_administration = currentStats.personality_administration - originalStats.personality_administration;
-                statsDifference.personality_aggression = currentStats.personality_aggression - originalStats.personality_aggression;
-                statsDifference.personality_diplomatic = currentStats.personality_diplomatic - originalStats.personality_diplomatic;
-                statsDifference.personality_rationality = currentStats.personality_rationality - originalStats.personality_rationality;
-                statsDifference.projectiles = currentStats.projectiles - originalStats.projectiles;
-                statsDifference.range = currentStats.range - originalStats.range;
-                statsDifference.scale = currentStats.scale - originalStats.scale;
-                statsDifference.speed = currentStats.speed - originalStats.speed;
-                statsDifference.stewardship = currentStats.stewardship - originalStats.stewardship;
-                statsDifference.s_crit_chance = currentStats.s_crit_chance - originalStats.s_crit_chance;
-                statsDifference.targets = currentStats.targets - originalStats.targets;
-                statsDifference.warfare = currentStats.warfare - originalStats.warfare;
-                statsDifference.zones = currentStats.zones - originalStats.zones;
-                #endregion // might be unnecessary with items generating
-                newSavedUnit.statDifference = statsDifference;
                 newSavedUnit.equipment = targetActor.equipment;
                 unitClipboardDict.Add(unitClipboardDictNum.ToString(), newSavedUnit);
                 unitClipboardDictNum++;
@@ -204,7 +157,6 @@ namespace UnitClipboard
         {
             public string dataFirstName = "";
             public string statsID = "";
-            public BaseStats statDifference;
             public List<string> traits = new List<string>();
             public ActorEquipment equipment;
         }
@@ -214,39 +166,6 @@ namespace UnitClipboard
             Harmony harmony;
             MethodInfo original;
             MethodInfo patch;
-
-            harmony = new Harmony(pluginName);
-            original = AccessTools.Method(typeof(ActorEquipmentSlot), "setItem");
-            patch = AccessTools.Method(typeof(UnitClipboard_Main), "setItem_Prefix");
-            harmony.Patch(original, new HarmonyMethod(patch));
-            Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
-
-        }
-        // save equipment data in unitData
-        public static bool setItem_Prefix(ItemData pData, ActorEquipmentSlot __instance)
-        {
-            if (manualGeneration)
-            {
-                pData.prefix = itemGenerationPrefix;
-                pData.suffix = itemGenerationSuffix;
-                __instance.data = pData;
-                manualGeneration = false;
-                return false;
-            }
-            return true;
-        }
-        public static string itemGenerationPrefix;
-        public static string itemGenerationSuffix;
-        public static bool manualGeneration;
-        public static void addTraitToLocalizedLibrary(string id, string description)
-        {
-            string language = Reflection.GetField(LocalizedTextManager.instance.GetType(), LocalizedTextManager.instance, "language") as string;
-            Dictionary<string, string> localizedText = Reflection.GetField(LocalizedTextManager.instance.GetType(), LocalizedTextManager.instance, "localizedText") as Dictionary<string, string>;
-            if (language == "en")
-            {
-                localizedText.Add("trait_" + id, id);
-                localizedText.Add("trait_" + id + "_info", description);
-            }
         }
     }
 
