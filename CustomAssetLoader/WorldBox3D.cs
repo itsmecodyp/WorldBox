@@ -17,6 +17,9 @@ namespace WorldBox3D
     class _3D_Main : BaseUnityPlugin
     {
         public static Dictionary<string, int> buildingCustomHeight = new Dictionary<string, int>();
+        public static Dictionary<string, int> buildingCustomThickness = new Dictionary<string, int>();
+        public static Dictionary<string, int> buildingCustomAngle= new Dictionary<string, int>();
+
         public void SettingSetup()
         {
             regularThickeningScale = Config.AddSetting("3D - Scaling", "Regular Thickness", 7, "How many extra layers the buildings get");
@@ -64,7 +67,7 @@ namespace WorldBox3D
                 int a = i * 30;
                 Vector3 pos = RandomCircle(center, 30f, a);
                 Cloud cloud = MapBox.instance.cloudController.getNext();
-                cloud.setScale(Toolbox.randomFloat(0f, 0.75f));
+                cloud.setScale(Toolbox.randomFloat(0f, 0.1f));
                 cloud.tile = MapBox.instance.GetTile((int)center.x, (int)center.y);
                 cloud.transform.localPosition = new Vector3(pos.x, pos.y, -Toolbox.randomFloat(1f, 10f));
                 hurricaneList.Add(cloud);
@@ -203,6 +206,33 @@ namespace WorldBox3D
             }
             return null;
         }
+
+        public int BuildingThickness(Building target)
+        {
+            int thickness = 3;
+            BuildingAsset stats = Reflection.GetField(target.GetType(), target, "stats") as BuildingAsset;
+            if (buildingCustomThickness.ContainsKey(stats.id))
+            {
+                thickness = buildingCustomThickness[stats.id];
+            }
+            return thickness;
+        }
+
+        public int BuildingAngle(Building target)
+        {
+            int angle = 90;
+            BuildingAsset stats = Reflection.GetField(target.GetType(), target, "stats") as BuildingAsset;
+            if (buildingCustomAngle.ContainsKey(stats.id))
+            {
+                angle = buildingCustomAngle[stats.id];
+            }
+            if (angle > 360)
+            {
+                angle = 360;
+            }
+            return angle;
+        }
+
 
         public float BuildingHeight(Building target)
         {
@@ -345,12 +375,12 @@ namespace WorldBox3D
                 autoPlacement = !autoPlacement;
                 _3dEnabled = !_3dEnabled;
             }
-            /*
+            
             if (GUILayout.Button("Spawn 100 cloud hurricane (C)") || Input.GetKeyDown(KeyCode.C))
             {
-                SpawnCloudsInCircle(MapBox.instance.getMouseTilePos(), 300); // hurricane spin is bugged, so this is disabled
+                SpawnCloudsInCircle(MapBox.instance.getMouseTilePos(), 100); // hurricane spin is bugged, so this is disabled
             }
-            */
+            
             try
             {
                 ObjectPositioningButtons();
@@ -604,12 +634,13 @@ namespace WorldBox3D
         {
             bool returnBool = false;
             BuildingAsset stats = Reflection.GetField(target.GetType(), target, "stats") as BuildingAsset;
-            if (stats.canBeUpgraded == false && stats.upgradeTo == "rotate") // weird combo to enable rotation, need something better
+            if (buildingCustomAngle.ContainsKey(stats.id)) // weird combo to enable rotation, need something better
             {
                 returnBool = true;
             }
             return returnBool;
         }
+
         int thickenCount = 10;
         int distanceScaling = 25;
         // upgradelevel assigned through assetloader, custom thickness for 3d (stats.upgradeLevel + 1) * 4; neat value
@@ -623,7 +654,7 @@ namespace WorldBox3D
             else
             {
                 BuildingAsset stats = Reflection.GetField(targetBuilding.GetType(), targetBuilding, "stats") as BuildingAsset;
-                layerCount = (stats.upgradeLevel);
+                layerCount = BuildingThickness(targetBuilding);
                 if (layerCount <= 5)
                 {
                     layerCount = 5;
@@ -652,7 +683,7 @@ namespace WorldBox3D
         {
             int layerCount = 0;
             BuildingAsset stats = Reflection.GetField(targetBuilding.GetType(), targetBuilding, "stats") as BuildingAsset;
-            layerCount = (stats.upgradeLevel);
+            layerCount = BuildingThickness(targetBuilding);
             if (layerCount <= 5)
             {
                 layerCount = 5;

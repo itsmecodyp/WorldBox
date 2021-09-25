@@ -40,6 +40,7 @@
     <Compile Include="Construction.cs" />
     <Compile Include="Patreon_Eggs.cs" />
     <Compile Include="StatSetting.cs" />
+    <Compile Include="UnitClipboard.cs" />
     <Compile Include="z_RectTransformExtensions.cs" />
     <Compile Include="World.cs" />
     <Compile Include="FastCities.cs" />
@@ -83,8 +84,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\..\0wbwb\206\WorldBox\WorldBox_Data\Managed\ArabicSupport.dll</HintPath>
     </Reference>
-    <Reference Include="Assembly-CSharp">
-      <HintPath>..\..\..\..\..\0wbwb\0.10.1\WorldBoxModded\worldbox_Data\Managed\Assembly-CSharp.dll</HintPath>
+    <Reference Include="Assembly-CSharp, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\0wbwb\0.10.3\WorldBoxModded\worldbox_Data\Managed\Assembly-CSharp.dll</HintPath>
     </Reference>
     <Reference Include="Assembly-CSharp-firstpass, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>

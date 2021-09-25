@@ -1461,6 +1461,27 @@ namespace CustomAssetLoader
                                 _3D_Main.buildingCustomHeight.Add(test2.id, int.Parse(splitLine[1]));
                             }
                         }
+                        if (splitLine[0] == "thickness")
+                        {
+                            if (!_3D_Main.buildingCustomThickness.ContainsKey(test2.id))
+                            {
+                                _3D_Main.buildingCustomThickness.Add(test2.id, int.Parse(splitLine[1]));
+                            }
+                        }
+                        if (splitLine[0] == "rotate" && splitLine[1].Contains("true"))
+                        {
+                            if (!_3D_Main.buildingCustomAngle.ContainsKey(test2.id))
+                            {
+                                _3D_Main.buildingCustomAngle.Add(test2.id, 90);
+                            }
+                        }
+                        if (splitLine[0] == "angle")
+                        {
+                            if (!_3D_Main.buildingCustomAngle.ContainsKey(test2.id))
+                            {
+                                _3D_Main.buildingCustomAngle.Add(test2.id, int.Parse(splitLine[1]));
+                            }
+                        }
                     }
                     test2.fundament = new BuildingFundament(left, right, top, bottom);
                     test2.cost = new ConstructionCost(wood, stone, metals, gold);

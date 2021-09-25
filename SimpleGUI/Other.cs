@@ -63,39 +63,15 @@ namespace SimpleGUI
             if (GUILayout.Button("Disable minimap"))
             {
                 GuiMain.disableMinimap.Value = !GuiMain.disableMinimap.Value;
-                //after this is recreation of what happens in the original ZoomUpdated
                 QualityChanger qualityChanger = Reflection.GetField(MapBox.instance.GetType(), MapBox.instance, "qualityChanger") as QualityChanger;
-                Transform transformBuildings = Reflection.GetField(MapBox.instance.GetType(), MapBox.instance, "transformBuildings") as Transform;
-                Transform transformUnits = Reflection.GetField(MapBox.instance.GetType(), MapBox.instance, "transformUnits") as Transform;
-                Transform transformShadows = Reflection.GetField(MapBox.instance.GetType(), MapBox.instance, "transformShadows") as Transform;
-                WorldLayer worldLayer = Reflection.GetField(MapBox.instance.GetType(), MapBox.instance, "worldLayer") as WorldLayer;
+                bool lowRes = (bool)Reflection.GetField(qualityChanger.GetType(), qualityChanger, "lowRes");
                 if (GuiMain.disableMinimap.Value)
                 {
-                    bool lowRes = (bool)Reflection.GetField(qualityChanger.GetType(), qualityChanger, "lowRes");
-                    if (lowRes)
-                    {
-                        lowRes = false;
-                        foreach (Building building in MapBox.instance.buildings)
-                        {
-                            building.forceScale(0f);
-                        }
-                        transformBuildings.gameObject.SetActive(true);
-                        transformUnits.gameObject.SetActive(true);
-                        transformShadows.gameObject.SetActive(true);
-                        worldLayer.setRendererEnabled(true);
-                        MapBox.instance.tilemap.CallMethod("enableTiles", new object[] { true });
-                    }
+                    lowRes = false;
                 }
                 else
                 {
-                    //qualityChanger.lowRes = true;
-                    /*
-                    transformBuildings.gameObject.SetActive(false);
-                    transformUnits.gameObject.SetActive(false);
-                    transformShadows.gameObject.SetActive(false);
-                    worldLayer.setRendererEnabled(false);
-                    MapBox.instance.tilemap.CallMethod("enableTiles", new object[] { false });
-                    */
+                   
                 } // doesnt work properly
             }
             if (!GuiMain.disableMouseDrag.Value)
@@ -146,6 +122,18 @@ namespace SimpleGUI
             if (GUILayout.Button("Disable Level Cap"))
             {
                 disableLevelCap = !disableLevelCap;
+            }
+            if (UnitClipboard_Main.showHideCopyPaste)
+            {
+                GUI.backgroundColor = Color.green;
+            }
+            else
+            {
+                GUI.backgroundColor = Color.red;
+            }
+            if (GUILayout.Button("Unit Clipboard"))
+            {
+                UnitClipboard_Main.showHideCopyPaste = !UnitClipboard_Main.showHideCopyPaste;
             }
             GUI.DragWindow();
         }
@@ -204,13 +192,15 @@ namespace SimpleGUI
         }
 
         // minimap zoom patch
-        public static void zoomUpdated_Postfix(float pZoom, float pMaxZoom, QualityChanger __instance)
+        public static bool update_Prefix(QualityChanger __instance)
         {
             if (GuiMain.disableMinimap.Value && !Config.worldLoading && Config.gameLoaded)
             {
-                bool lowRes = (bool)Reflection.GetField(__instance.GetType(), __instance, "lowRes");
-
-                lowRes = false;
+                return false;
+            }
+            else
+            {
+                return true;
             }
         }
 

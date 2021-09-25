@@ -198,9 +198,9 @@ namespace SimpleGUI
                 Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
             
                 harmony = new Harmony(pluginName);
-                original = AccessTools.Method(typeof(QualityChanger), "zoomUpdated");
-                patch = AccessTools.Method(typeof(GuiOther), "zoomUpdated_Postfix");
-                harmony.Patch(original, null, new HarmonyMethod(patch));
+                original = AccessTools.Method(typeof(QualityChanger), "update");
+                patch = AccessTools.Method(typeof(GuiOther), "update_Prefix");
+                harmony.Patch(original, new HarmonyMethod(patch));
                 Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
             
                 harmony = new Harmony(pluginName);
