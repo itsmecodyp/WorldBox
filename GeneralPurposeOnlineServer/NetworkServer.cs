@@ -26,10 +26,6 @@ namespace GeneralPurposeOnlineServer
         public int maxConnections = 10;
         public string serverIdentifier = "host";
 
-        void Start()
-        {
-
-        }
         void Update()
         {
             int recHostId;
@@ -64,6 +60,7 @@ namespace GeneralPurposeOnlineServer
                     break;
             }
         }
+
         public void startServer()
         {
             gconfig = new GlobalConfig();
@@ -72,17 +69,12 @@ namespace GeneralPurposeOnlineServer
             config = new ConnectionConfig();
             channelId = config.AddChannel(QosType.ReliableSequenced);
             _channelUnreliable = config.AddChannel(QosType.UnreliableSequenced);
-
             topology = new HostTopology(config, maxConnections);
             NetworkTransport.Init(gconfig);
             hostId = NetworkTransport.AddHost(topology, port);
             Debug.Log("Server started on port" + port + " with id of " + hostId);
         }
-        public bool sendMousePosition;
-        public void SendMousePosition()
-        {
-            // discontinued for now
-        }
+
         public string addIdentifier(string input)
         {
             if (serverIdentifier == null)
@@ -91,6 +83,7 @@ namespace GeneralPurposeOnlineServer
             }
             return input = serverIdentifier + ":" + input;
         }
+
         public void SendSocketMessageServer(string input, int connectionId)
         {
             string command;

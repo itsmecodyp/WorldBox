@@ -61,6 +61,7 @@ namespace GeneralPurposeOnlineServer
 
 
         }
+
         public void Update()
         {
             if ((!isServer && !isClient))
@@ -76,40 +77,11 @@ namespace GeneralPurposeOnlineServer
             }
             if (isServer)
             {
-                if (server.sendMousePosition)
-                {
-                    server.SendMousePosition();
-                    if (Input.GetMouseButtonDown(0)) // or mouse or whatever action key
-                    {
-                        foreach (int activeConnection in activeConnections)
-                        {
-                            server.SendSocketMessageServer("mouse0Down", activeConnection); // action named mouse for now
-                        }
-                    }
-                    else if (Input.GetMouseButtonUp(0))
-                    {
-                        foreach (int activeConnection in activeConnections)
-                        {
-                            server.SendSocketMessageServer("mouse0Up", activeConnection);
-                        }
-                    }
-                }
+               
             }
             if (isClient)
             {
                 client.SendActionsPacket();
-                if (client.sendMousePosition)
-                {
-                    client.SendMouseToHost();
-                    if (Input.GetMouseButtonDown(0))
-                    {
-                        client.AddAction("mouse0Down");
-                    }
-                    else if (Input.GetMouseButtonUp(0))
-                    {
-                        client.AddAction("mouse0Up");
-                    }
-                }
             }
             NetworkReceivingStuff();
         }
@@ -158,11 +130,6 @@ namespace GeneralPurposeOnlineServer
                     client.Disconnect();
                     isClient = false;
                 }
-
-                if (GUILayout.Button("send mouse pos:" + client.sendMousePosition.ToString()))
-                {
-                    client.sendMousePosition = !client.sendMousePosition;
-                }
                 GUILayout.BeginHorizontal();
                 GUILayout.Button("Identifier");
                 client.clientIdentifier = GUILayout.TextField(client.clientIdentifier);
@@ -171,7 +138,7 @@ namespace GeneralPurposeOnlineServer
                 //message/command
                 if (GUILayout.Button("Send message from client"))
                 {
-                    client.ClientSendReply(messageToSend);
+                    client.ClientSendMessage(messageToSend);
                     messageToSend = "";
                 }
                 messageToSend = GUILayout.TextField(messageToSend);
@@ -179,12 +146,6 @@ namespace GeneralPurposeOnlineServer
             }
             if (isServer)
             {
-                if (GUILayout.Button("send mouse pos:" + server.sendMousePosition.ToString()))
-                {
-                    server.sendMousePosition = !server.sendMousePosition;
-                }
-                //if (GUILayout.Button("Shutdown server"))
-
                 GUILayout.BeginHorizontal();
                 GUILayout.Button("Active:");
                 GUILayout.Button(activeClientConnections.Count.ToString() + "/" + server.maxConnections.ToString());
@@ -378,10 +339,6 @@ namespace GeneralPurposeOnlineServer
             }
         }
         public bool waitingForMapPacket;
-        public string currentPower = "";
-        public string currentTile = "";
-        public Dictionary<int, string> connectionsPowerEquipped = new Dictionary<int, string>();
-        public Dictionary<int, string> connectionsClickStatus = new Dictionary<int, string>();
 
         public void ParseCommand(string command, string param, int connectionId /*sender*/, string identifier = null) // another mod could patch this method
         {
@@ -401,41 +358,6 @@ namespace GeneralPurposeOnlineServer
                 {
                     DisplayHelp();
                 }
-                if (command == "mouse")
-                {
-                    Vector3 mousePos = StringToVector3(param); // parse remainder which was Vector3.ToString() converted before
-                    lastReceivedMousePos.x = (int)mousePos.x;
-                    lastReceivedMousePos.y = (int)mousePos.y;
-                    if (connectionsClickStatus.ContainsKey(connectionId) && connectionsClickStatus[connectionId] == "down") /*&& connectionsPowerEquipped[connectionId].Contains("tile")*/
-                    {
-                        // do something with last pos, probably add to vector library?
-                        //UsePower(MapBox.instance.GetTile(lastReceivedMousePos.x, lastReceivedMousePos.y), connectionsPowerEquipped[connectionId]);
-                    }
-                }
-                if (command == "mouse0Down")
-                {
-                    if (connectionsClickStatus.ContainsKey(connectionId) == false)
-                    {
-                        connectionsClickStatus.Add(connectionId, "down");
-                    }
-                    else
-                    {
-                        connectionsClickStatus[connectionId] = "down";
-                    }
-                }
-                if (command == "mouse0Up")
-                {
-                    if (connectionsClickStatus.ContainsKey(connectionId) == false)
-                    {
-                        connectionsClickStatus.Add(connectionId, "up");
-                    }
-                    else
-                    {
-                        connectionsClickStatus[connectionId] = "up";
-                    }
-                    // same do something as before
-                    //UsePower(MapBox.instance.GetTile(lastReceivedMousePos.x, lastReceivedMousePos.y), connectionsPowerEquipped[connectionId]);
-                }
                 if (isClient && command == "setID")
                 {
                     if (param != null)
@@ -444,25 +366,17 @@ namespace GeneralPurposeOnlineServer
                         {
                             param = UnityEngine.Random.Range(60000f, 6022220f).ToString();
                         }
-                        client.ClientSendReply(client.clientIdentifier + " changing to " + param);
+                        client.ClientSendMessage(client.clientIdentifier + " changing to " + param);
                         client.clientIdentifier = param;
                     }
                     else
                     {
-                        client.ClientSendReply(client.clientIdentifier);
+                        client.ClientSendMessage(client.clientIdentifier);
                     }
                 }
                 if (command == "ping")
                 {
-                    client.ClientSendReply("pong");
-                }
-                if (command == "mouse0Down")
-                {
-                    isMouseDown = true;
-                }
-                if (command == "mouse0Up")
-                {
-                    isMouseDown = false;
+                    client.ClientSendMessage("pong");
                 }
             }
             catch (Exception e)
@@ -471,6 +385,7 @@ namespace GeneralPurposeOnlineServer
             }
             // Debug.Log("finished: " + command + ", param: " + param);
         }
+
         public void DisplayHelp()
         {
             string outputMessage = "Commands; ";
@@ -480,6 +395,7 @@ namespace GeneralPurposeOnlineServer
             }
             Debug.Log(outputMessage);
         }
+
         public static Vector3 StringToVector3(string sVector)
         {
             // Remove the parentheses
@@ -499,19 +415,12 @@ namespace GeneralPurposeOnlineServer
 
             return result;
         }
+
         public static void InitState_Prefix(ref int seed)
         {
             seed = clientSeed;
         }
-        public static bool GetSpritePixelColorUnderMousePointer_Prefix(MonoBehaviour mono, out Vector2Int pVector)
-        {
-            pVector = new Vector2Int(-1, -1);
-            if (OnlineMain.instance.isMouseDown)
-            {
-                pVector = OnlineMain.instance.lastReceivedMousePos;
-            }
-            return true;
-        }
+
         public void statePatch()
         {
             Harmony harmony = new Harmony(pluginGuid);
@@ -540,12 +449,9 @@ namespace GeneralPurposeOnlineServer
         public bool isServer;
         public bool isClient;
 
-        public string currentAction = "";
-        public bool isMouseDown;
-        public Vector2Int lastReceivedMousePos;
         static int clientSeed = 55; // default seed
 
-        public bool isTestBuild = false; // for publicTest
+        public bool isTestBuild = false; // for publicTest, only allows connecting to one ip
         //eoc
     }
 

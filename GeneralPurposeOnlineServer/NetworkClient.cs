@@ -37,18 +37,17 @@ namespace GeneralPurposeOnlineServer
                 // ex: map(4,5)
             }
         }
+
         public void AddAction(string actionName) // for action list above
         {
             actionListForPacket.Add(actionName, null);
         }
+
         public void AddAction(string actionName, string param) // for action list above
         {
             actionListForPacket.Add(actionName, param);
+        }
 
-        }
-        void Start()
-        {
-        }
         public void Disconnect()
         {
             byte error;
@@ -63,6 +62,7 @@ namespace GeneralPurposeOnlineServer
                 Debug.Log("Disconnected");
             }
         }
+
         public void Connect()
         {
 
@@ -90,8 +90,8 @@ namespace GeneralPurposeOnlineServer
                 Debug.Log(string.Format("Connected to {0}:{1} with hostId: {2}, connectionId: {3}, channelId: {4},", "cody", port, hostId, connectionId, channelId));
                 OnlineMain.instance.isClient = true;
             }
-
         }
+
         void Update()
         {
             int recHostId;
@@ -123,18 +123,11 @@ namespace GeneralPurposeOnlineServer
                     BinaryFormatter formatter = new BinaryFormatter();
                     string message = formatter.Deserialize(stream) as string;
                     Debug.Log("incoming message event received: " + message);
-
-
                     break;
                 case NetworkEventType.DisconnectEvent:
                     Debug.Log("remote client " + recConnectionId + " disconnected");
                     break;
             }
-        }
-        public bool sendMousePosition;
-        public void SendMouseToHost()
-        {
-        // discontinued for now
         }
 
         public string clientIdentifier = System.Security.Principal.WindowsIdentity.GetCurrent().Name.Split(new[] { "\\" }, StringSplitOptions.None)[1];
@@ -147,6 +140,7 @@ namespace GeneralPurposeOnlineServer
             }
             return clientIdentifier + ": " + input;
         }
+
         public void ClientSendMessage(string input)
         {
             input = addIdentifier(input);
@@ -154,27 +148,7 @@ namespace GeneralPurposeOnlineServer
             byte[] buffer = new byte[1024];
             Stream stream = new MemoryStream(buffer);
             BinaryFormatter formatter = new BinaryFormatter();
-            formatter.Serialize(stream, input);
-            int bufferSize = 1024;
-            NetworkTransport.Send(hostId, connectionId, channelId, buffer, bufferSize, out error);
-            NetworkError networkError = (NetworkError)error;
-            if (networkError != NetworkError.Ok)
-            {
-                Debug.LogError("client:" + string.Format("client: Error: {0}, hostId: {1}, connectionId: {2}, channelId: {3}", networkError, hostId, connectionId, channelId));
-            }
-            else
-            {
-                Debug.Log("Message sent from " + clientIdentifier +": '" + input + "'");
-            }
-        }
-        public void ClientSendReply(string input)
-        {
-            input = addIdentifier(input);
-            byte error;
-            byte[] buffer = new byte[1024];
-            Stream stream = new MemoryStream(buffer);
-            BinaryFormatter formatter = new BinaryFormatter();
-          
+
             formatter.Serialize(stream, input);
             int bufferSize = 1024;
             NetworkTransport.Send(hostId, connectionId, channelId, buffer, bufferSize, out error);
@@ -185,5 +159,4 @@ namespace GeneralPurposeOnlineServer
             }
         }
     }
-
 }

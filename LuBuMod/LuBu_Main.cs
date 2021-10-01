@@ -36,7 +36,7 @@ namespace LuBuMod
             LubuTrait.baseStats.dodge = 50f;
             LubuTrait.baseStats.size = 3f;
             LubuTrait.baseStats.targets = 2;
-            LubuTrait.type = TraitType.Positive;
+            //LubuTrait.type = TraitType.Positive; why did i do this
 
             AssetManager.traits.add(LubuTrait);
             addTraitToLocalizedLibrary(LubuTrait.id, "The one and only!");
@@ -47,7 +47,7 @@ namespace LuBuMod
             LubuTrait.baseStats.health = 150;
             lubu_redhare.baseStats.speed = 25f;
             lubu_redhare.baseStats.size = 3f;
-            lubu_redhare.type = TraitType.Positive;
+            //lubu_redhare.type = TraitType.Positive;
 
             AssetManager.traits.add(lubu_redhare);
             addTraitToLocalizedLibrary(lubu_redhare.id, "Lu Bu's beautiful red horse.");
@@ -62,7 +62,7 @@ namespace LuBuMod
             LubuRedHareArmoured.baseStats.dodge = 50f;
             LubuRedHareArmoured.baseStats.targets = 5;
             LubuRedHareArmoured.baseStats.size = 3f;
-            LubuRedHareArmoured.type = TraitType.Positive;
+            //LubuRedHareArmoured.type = TraitType.Positive;
 
             AssetManager.traits.add(LubuRedHareArmoured);
             addTraitToLocalizedLibrary(LubuRedHareArmoured.id, "Lu Bu atop his personal horse adorned with armour.");

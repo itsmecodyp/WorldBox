@@ -19,6 +19,17 @@ namespace SimpleGUI
 
         public void fastCitiesWindowUpdate()
         {
+            if (Config.fastCities)
+            {
+                foreach (City city in MapBox.instance.citiesList)
+                {
+                    CityData cityData = Reflection.GetField(city.GetType(), city, "data") as CityData;
+                    foreach (ResourceAsset resource in AssetManager.resources.list)
+                    {
+                        cityData.storage.set(resource.id, 999);
+                    }
+                }
+            }
             if (GuiMain.showWindowMinimizeButtons.Value)
             {
                 string buttontext = "F";

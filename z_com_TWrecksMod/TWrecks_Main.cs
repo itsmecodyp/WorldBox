@@ -1037,7 +1037,7 @@ namespace TWrecks_RPG
                 for (int i = 0; i < formation.Count; i++)
                 {
                     float f = (float)i * num;
-                    Vector3 vector = position; // the radius * count/10f makes the radius grow slightly the more people are used
+                    Vector3 vector = position; // the radius * count/10f makes the radius grow slightly the more people are used0
                     WorldTile tileFromVector = MapBox.instance.GetTile((int)vector.x, (int)vector.y);
                     if (tileFromVector == null)
                     {
@@ -1445,7 +1445,7 @@ namespace TWrecks_RPG
             {
                 __instance.addTrait("veteran");
             }
-            __instance.CallMethod("addExperience", new object[] { expGainOnKill });
+            __instance.CallMethod("addExperience", new object[] { expGainOnKill.Value });
 
             if (controlledActor != null)
             {
@@ -1455,8 +1455,6 @@ namespace TWrecks_RPG
                     controlledActor.restoreHealth(curStats.health / 10); // 10%
                 }
             }
-
-          
             return false;
         }
 
@@ -1482,6 +1480,7 @@ namespace TWrecks_RPG
         public static ConfigEntry<int> otherAgeExp { get; set; }
         public static ConfigEntry<int> baseExpToLevelup { get; set; }
         public static ConfigEntry<int> expToLevelUpScale { get; set; }
+
         //public static int expGainOnKill = 10;
         //public static int kingAgeExp = 20;
         //public static int leaderAgeExp = 10;
@@ -1492,6 +1491,7 @@ namespace TWrecks_RPG
         public static bool updateAge_Prefix(Actor __instance)
         {
             ActorStatus data = Reflection.GetField(__instance.GetType(), __instance, "data") as ActorStatus;
+            int currentAge = data.age;
             Race race = Reflection.GetField(__instance.GetType(), __instance, "race") as Race;
             bool updateAge = (bool)data.CallMethod("updateAge", new object[] { race });
             if (!updateAge && !__instance.haveTrait("immortal"))
@@ -1499,6 +1499,8 @@ namespace TWrecks_RPG
                 __instance.killHimself(false, AttackType.Age, true, true);
                 return false;
             }
+            int currentAge2 = data.age;
+            Debug.Log("\nDebug: old age: " + currentAge + "\n" + "Debug: new age: " + currentAge2);
             if (__instance.city != null)
             {
                 Kingdom kingdom = Reflection.GetField(__instance.city.GetType(), __instance.city, "kingdom") as Kingdom;
@@ -1506,12 +1508,12 @@ namespace TWrecks_RPG
                 {
                     if (kingdom.king == __instance)
                     {
-                        __instance.CallMethod("addExperience", new object[] { kingAgeExp });
+                        __instance.CallMethod("addExperience", new object[] { kingAgeExp.Value });
                     }
                 }
                 if (__instance.city.leader == __instance)
                 {
-                    __instance.CallMethod("addExperience", new object[] { leaderAgeExp });
+                    __instance.CallMethod("addExperience", new object[] { leaderAgeExp.Value });
                 }
                 if (
                     (kingdom == null || (kingdom != null && kingdom.king != __instance))
@@ -1519,7 +1521,7 @@ namespace TWrecks_RPG
                     (__instance.city == null || (__instance.city != null && __instance.city.leader != __instance))
                     )
                 {
-                    __instance.CallMethod("addExperience", new object[] { otherAgeExp });
+                    __instance.CallMethod("addExperience", new object[] { otherAgeExp.Value });
                 }
             }
             if (data.age > 40 && Toolbox.randomChance(0.3f))

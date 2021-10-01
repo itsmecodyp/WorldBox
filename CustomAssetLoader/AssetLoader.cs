@@ -696,7 +696,109 @@ namespace CustomAssetLoader
             //_ = LoadSounds(path);
             path = Directory.GetCurrentDirectory() + "\\WorldBox_Data//assets//custom//" + "tiletype" + "//";
             //LoadTiles(path);
+            path = Directory.GetCurrentDirectory() + "\\WorldBox_Data//assets//custom//" + "resources" + "//";
+            LoadResources(path);
         }
+
+        public bool hasLoadedResources;
+        public void LoadResources(string path)
+        {
+            if (Directory.Exists(path) && !hasLoadedResources)
+            {
+                FileInfo[] files = new DirectoryInfo(path).GetFiles("*.txt");
+                for (int i = 0; i < files.Count<FileInfo>(); i++)
+                {
+                    ResourceAsset newResource = new ResourceAsset();
+                    newResource.id = files[i].Name;
+
+                    string[] lines = File.ReadAllLines(files[i].FullName);
+                    foreach (string readLine in lines)
+                    {
+                        string[] splitLine = readLine.ToLower().Replace(" ", "").Split(":"[0]);
+
+                        if (splitLine[0] == "id")
+                        {
+                            newResource.id = splitLine[1];
+                        }
+
+                        if (splitLine[0] == "icon")
+                        {
+                            newResource.icon = splitLine[1];
+                        }
+                        if (splitLine[0] == "ingredients")
+                        {
+                            newResource.ingredients = splitLine[1].Split(',');
+                            Debug.Log("ing");
+                        }
+                        if (splitLine[0] == "ingredientsamount")
+                        {
+                            newResource.ingredientsAmount = int.Parse(splitLine[1]);
+                        }
+                        if (splitLine[0] == "maximum")
+                        {
+                            newResource.maximum = int.Parse(splitLine[1]);
+                        }
+                        if (splitLine[0] == "minerate")
+                        {
+                            newResource.mineRate = int.Parse(splitLine[1]);
+                        }
+                        if (splitLine[0] == "restorehealth")
+                        {
+                            newResource.restoreHealth = int.Parse(splitLine[1]);
+                        }
+                        if (splitLine[0] == "restorehunger")
+                        {
+                            newResource.restoreHunger = int.Parse(splitLine[1]);
+                        }
+                        if (splitLine[0] == "supplyboundgive")
+                        {
+                            newResource.supplyBoundGive = int.Parse(splitLine[1]);
+                        }
+                        if (splitLine[0] == "supplyboundtake")
+                        {
+                            newResource.supplyBoundTake = int.Parse(splitLine[1]);
+                        }
+                        if (splitLine[0] == "supplygive")
+                        {
+                            newResource.supplyGive = int.Parse(splitLine[1]);
+                        }
+                        if (splitLine[0] == "tradebound")
+                        {
+                            newResource.tradeBound = int.Parse(splitLine[1]);
+                        }
+                        if (splitLine[0] == "tradecost")
+                        {
+                            newResource.tradeCost = int.Parse(splitLine[1]);
+                        }
+                        if (splitLine[0] == "tradegive")
+                        {
+                            newResource.tradeGive = int.Parse(splitLine[1]);
+                        }
+                        if (splitLine[0] == "type")
+                        {
+                            if (splitLine[1] == "currency")
+                            {
+                                newResource.type = ResType.Currency;
+                            }
+                            if (splitLine[1] == "food")
+                            {
+                                newResource.type = ResType.Food;
+                            }
+                            if (splitLine[1] == "ingredient")
+                            {
+                                newResource.type = ResType.Ingredient;
+                            }
+                            if (splitLine[1] == "strategic")
+                            {
+                                newResource.type = ResType.Strategic;
+                            }
+                        }
+                    }
+                    AssetManager.resources.add(newResource);
+                }
+            }
+        }
+
         public static Dictionary<string, TileType> addedTileTypes = new Dictionary<string, TileType>();
         public bool hasLoadedTiles;
         public void LoadTiles(string path)
@@ -964,50 +1066,25 @@ namespace CustomAssetLoader
                             newTileType.z = int.Parse(splitLine[1]);
                         }
                     }
-                    Debug.Log("1");
                     newTileType.id = TileType.dict.Count;
-                    Debug.Log("12");
-
                     addedTileTypes.Add(newTileType.name, newTileType);
-                    Debug.Log("13");
-
                     TileType.dict.Add(newTileType.name, newTileType);
-                    Debug.Log("14");
-
                     if (TextureLoader.TextureLoader_Main.customTextures != null)
                     {
-                        Debug.Log("15");
                         List<string> variationsForTile = TextureLoader.TextureLoader_Main.variationsOfCustomTexture(newTileType.name);
                         if (variationsForTile.Count >= 1)
                         {
-                            Debug.Log("16");
-
                             TileLib tileLib = new TileLib();
-                            Debug.Log("17");
-
                             List<Tile> tiles = Reflection.GetField(tileLib.GetType(), tileLib, "tiles") as List<Tile>;
-                            Debug.Log("18");
-
                             Dictionary<string, Tile> tiles_dict = Reflection.GetField(tileLib.GetType(), tileLib, "tiles_dict") as Dictionary<string, Tile>;
-                            Debug.Log("19");
-
                             //addvariation replacement
                             Tile tile = (Tile)Resources.Load("tilemap/" + "close_ocean", typeof(Tile));
-                            Debug.Log("20: " + newTileType.name + ", total custom textures:" + TextureLoader.TextureLoader_Main.customTextures.Count);
                             //Sprite sprite = TextureLoader.TextureLoader_Main.customTextures[variationsForTile.GetRandom()];
                             //tile.sprite = sprite;
-                            Debug.Log("21");
-
                             tiles.Add(tile);
-                            Debug.Log("202");
-
                             tiles_dict.Add(newTileType.name, tile);
-                            Debug.Log("203");
-
                             // add to d_tiles, usually happens during worldtilemap.create
                             Dictionary<TileType, TileLib> d_tiles = Reflection.GetField(MapBox.instance.tilemap.GetType(), MapBox.instance.tilemap, "d_tiles") as Dictionary<TileType, TileLib>;
-                            Debug.Log("204");
-
                             d_tiles.Add(newTileType, tileLib);
                         }
                         else

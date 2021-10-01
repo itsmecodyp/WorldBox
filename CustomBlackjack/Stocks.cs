@@ -7,6 +7,7 @@ using Firebase.Auth;
 using Proyecto26;
 using SimpleJSON;
 using UnityEngine;
+using static Mono.Security.X509.X520;
 
 namespace CustomBlackjack
 {
@@ -310,21 +311,13 @@ namespace CustomBlackjack
 
 
             }
-
-            int spot = 0;
             GUILayout.BeginHorizontal();
             foreach (ModStock stock in currentStocks.Values)
             {
-                if (spot % 5 == 0)
-                {
-                    GUILayout.EndHorizontal();
-                    GUILayout.BeginHorizontal();
-                }
                 if (GUILayout.Button(stock.Name))
                 {
                     selectedStock = stock;
                 }
-                spot++;
             }
             GUILayout.EndHorizontal();
             GUI.DragWindow();
@@ -356,18 +349,18 @@ namespace CustomBlackjack
                 newStockHistory.Add(targetstock.Price);
                 stockPriceHistory.Add(targetstock.Name, newStockHistory);
             }
-            Debug.Log("updatestock price now: " + targetstock.Price.ToString());
+            //Debug.Log("updatestock price now: " + targetstock.Price.ToString());
 
             int adjustment = UnityEngine.Random.Range(-stockAdjustmentMinMax, stockAdjustmentMinMax);
             targetstock.Price += adjustment;
-            if (targetstock.Price < 10)
+            if (targetstock.Price < UnityEngine.Random.Range(0, 100))
             {
-                targetstock.Price = 10;
+                targetstock.Price = UnityEngine.Random.Range(100, stockAdjustmentMinMax);
             }
-            Debug.Log("updatestock price after: " + targetstock.Price.ToString());
+            //Debug.Log("updatestock price after: " + targetstock.Price.ToString());
 
         }
-        public int stockAdjustmentMinMax = 100;
+        public int stockAdjustmentMinMax = 1500;
 
         public Dictionary<string, List<int>> stockPriceHistory = new Dictionary<string, List<int>>();
 
@@ -414,8 +407,9 @@ namespace CustomBlackjack
             }
             if (Input.GetKeyDown(KeyCode.P))
             {
-                CheckStockPrices();
-                UpdateAllStocks();
+                //CheckStockPrices();
+                //UpdateAllStocks();
+
                 // if debug/auth
                 //UpdateAllStocks();
 
@@ -438,16 +432,16 @@ namespace CustomBlackjack
                 }
                 */
 
-              
 
 
+                // needs redone
 
                 // user stocks, why not
-                /* stock creation
+                //stock creation
                 ModStock nikonStock = new ModStock
                 {
                     Name = "DON",
-                    FullName = "Don Nikon",
+                    FullName = "Don Nikon - Nikon",
                     Price = UnityEngine.Random.Range(0, 1000),
                 };
                 var vURL = "https://mymods-2-default-rtdb.firebaseio.com/stocks/" + nikonStock.Name + "/.json";
@@ -456,7 +450,7 @@ namespace CustomBlackjack
                 ModStock mystStock = new ModStock
                 {
                     Name = "MST",
-                    FullName = "Myst Colors",
+                    FullName = "Misty - Myst Colors",
                     Price = UnityEngine.Random.Range(0, 1000),
                 };
                 vURL = "https://mymods-2-default-rtdb.firebaseio.com/stocks/" + mystStock.Name + "/.json";
@@ -465,8 +459,7 @@ namespace CustomBlackjack
                 ModStock maximStock = new ModStock
                 {
                     Name = "MAX",
-                    FullName = "Maxim",
-                    Description = "Developer of WorldBox",
+                    FullName = "Maxim - Developer of WorldBox",
                     Price = UnityEngine.Random.Range(0, 1000),
                 };
                 vURL = "https://mymods-2-default-rtdb.firebaseio.com/stocks/" + maximStock.Name + "/.json";
@@ -475,8 +468,7 @@ namespace CustomBlackjack
                 ModStock mastefStock = new ModStock
                 {
                     Name = "MAS",
-                    FullName = "Mastef",
-                    Description = "Developer of WorldBox",
+                    FullName = "Mastef - Developer of WorldBox",
                     Price = UnityEngine.Random.Range(0, 1000),
                 };
                 vURL = "https://mymods-2-default-rtdb.firebaseio.com/stocks/" + mastefStock.Name + "/.json";
@@ -487,8 +479,7 @@ namespace CustomBlackjack
                 ModStock worldStock = new ModStock
                 {
                     Name = "WLD",
-                    FullName = "WorldBox",
-                    Description = "Official stock for Super WorldBox",
+                    FullName = "WorldBox - Official stock for Super WorldBox",
                     Price = UnityEngine.Random.Range(0, 1000)
                 };
                 vURL = "https://mymods-2-default-rtdb.firebaseio.com/stocks/" + worldStock.Name + "/.json";
@@ -497,14 +488,13 @@ namespace CustomBlackjack
                 ModStock sorStock = new ModStock
                 {
                     Name = "SOR",
-                    FullName = "Streets of Rogue",
-                    Description = "Official stock for Streets of Rogue",
+                    FullName = "Streets of Rogue - Official stock for Streets of Rogue",
                     Price = UnityEngine.Random.Range(0, 1000)
                 };
                 vURL = "https://mymods-2-default-rtdb.firebaseio.com/stocks/" + sorStock.Name + "/.json";
                 RestClient.Put(vURL, sorStock);
 
-                */
+
 
                 //StartCoroutine(GetText("https://pastebin.com/raw/Jh1a54rf"));
             }
@@ -512,7 +502,8 @@ namespace CustomBlackjack
 
         public void CheckUserData() // unnecessary right now
         {
-            Debug.Log("shcecking user data");
+            //Debug.Log("shcecking user data");
+
             //var vURL = "https://mymods-2-default-rtdb.firebaseio.com/stocks/.json";
             /*
             var vURL = "https://mymods-2-default-rtdb.firebaseio.com/users.json"; // " + myUser.Id + "
@@ -554,21 +545,6 @@ namespace CustomBlackjack
 
 
                 }
-                /*
-                foreach (JSONNode nodeChild in node.Children)
-                {
-                    Debug.Log("nodechild: " + nodeChild.Value);
-                    if (nodeChild.Children.ToList().Count >= 1)
-                    {
-                        Debug.Log("userschild: " + nodeChild.Value);
-                        foreach (JSONNode nodeGrandchild in nodeChild.Children)
-                        {
-                            Debug.Log("usersgrandchild: " + nodeGrandchild.Value);
-                        }
-
-                    }
-                }
-                */
             });
             Debug.Log("shcecking user data end");
 
@@ -604,11 +580,11 @@ namespace CustomBlackjack
                                     newStock.Price = newPrice;
                                 }
                             }
-                            else if (nodeGrandchild.Value.Length == 1 || nodeGrandchild.Value.Length == 2)
+                            if (nodeGrandchild.Value.Length != 3)
                             {
                                 if (int.TryParse(nodeGrandchild.Value, out int newPrice) == false)
                                 {
-                                    newStock.Name = nodeGrandchild.Value;
+                                    newStock.FullName = nodeGrandchild.Value;
                                 }
                                 else
                                 {

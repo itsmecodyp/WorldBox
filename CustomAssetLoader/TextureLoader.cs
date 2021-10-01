@@ -68,12 +68,12 @@ namespace TextureLoader
             patch = AccessTools.Method(typeof(TextureLoader_Main), "checkSpriteRenderer_Prefix");
             harmony.Patch(original, new HarmonyMethod(patch));
             Debug.Log("Pre patch: Building.checkShadow");
-            
+
             original = AccessTools.Method(typeof(Building), "checkRoof");
             patch = AccessTools.Method(typeof(TextureLoader_Main), "checkRoof_Prefix");
             harmony.Patch(original, new HarmonyMethod(patch));
             Debug.Log("Pre patch: Building.checkRoof");
-            
+
             original = AccessTools.Method(typeof(LocalizedTextManager), "loadLocalizedText");
             patch = AccessTools.Method(typeof(TextureLoader_Main), "loadLocalizedText_Postfix");
             harmony.Patch(original, null, new HarmonyMethod(patch));
@@ -114,19 +114,25 @@ namespace TextureLoader
             harmony.Patch(original, null, new HarmonyMethod(patch));
             Debug.Log("tload_Postfix");
 
-           
+
             harmony = new Harmony(pluginGuid);
             original = AccessTools.Method(typeof(Actor), "newUnitRender");
             patch = AccessTools.Method(typeof(TextureLoader_Main), "newUnitRender_Postfix");
             harmony.Patch(original, null, new HarmonyMethod(patch));
             Debug.Log("newUnitRender_Postfix");
-            
-           harmony = new Harmony(pluginGuid);
-           original = AccessTools.Method(typeof(Actor), "forceAnimation");
-           patch = AccessTools.Method(typeof(TextureLoader_Main), "forceAnimation_Prefix");
-           harmony.Patch(original, new HarmonyMethod(patch));
-           Debug.Log("forceAnimation_Prefix");
-           
+
+            harmony = new Harmony(pluginGuid);
+            original = AccessTools.Method(typeof(Actor), "forceAnimation");
+            patch = AccessTools.Method(typeof(TextureLoader_Main), "forceAnimation_Prefix");
+            harmony.Patch(original, new HarmonyMethod(patch));
+            Debug.Log("forceAnimation_Prefix");
+
+            harmony = new Harmony(pluginGuid);
+            original = AccessTools.Method(typeof(ResourceAsset), "getSprite");
+            patch = AccessTools.Method(typeof(TextureLoader_Main), "getSprite_Postfix");
+            harmony.Patch(original,null, new HarmonyMethod(patch));
+            Debug.Log("getSprite_Postfix");
+
         }
 
         public static List<Building> spriteReplacedBuildings = new List<Building>();
@@ -154,8 +160,31 @@ namespace TextureLoader
         }
         */
 
+        public static void getSprite_Postfix(ResourceAsset __instance)
+        {
+            List<string> resourceVariations = variationsOfCustomTexture(__instance.icon);
 
+            if (resourceVariations.Count >= 1)
+            {
+                if (__instance != null)
+                {
+                    string newTraitIcon = resourceVariations.GetRandom();
 
+                    customTextures.TryGetValue(newTraitIcon, out Sprite replacement);
+
+                    Sprite sprite = replacement;
+
+                    __instance.sprite = sprite;
+                }
+            }
+            else
+            {
+                if (__instance.sprite == null)
+                {
+                    __instance.sprite = (Sprite)Resources.Load("ui/Icons/" + __instance.icon, typeof(Sprite));
+                }
+            }
+        }
         public static void tload_Postfix(string pTrait, TraitButton __instance)
         {
             ActorTrait loadedTrait = AssetManager.traits.get(pTrait);
@@ -251,6 +280,17 @@ namespace TextureLoader
                     tiles.Add(pGraphic);
                     return false;
                 }
+                else
+                {
+                    {
+                        List<Vector3Int> vec = Reflection.GetField(__instance.GetType(), __instance, "vec") as List<Vector3Int>;
+                        List<Tile> tiles = Reflection.GetField(__instance.GetType(), __instance, "tiles") as List<Tile>;
+                        Tile curGraphics = Reflection.GetField(pWorldTile.GetType(), pWorldTile, "curGraphics") as Tile;
+                        curGraphics = pGraphic;
+                        vec.Add(pVec);
+                        tiles.Add(pGraphic);
+                    }
+                }
                 return true;
             }
             else
@@ -263,6 +303,23 @@ namespace TextureLoader
         public bool drawCustomTypeOnEmptyClick;
         public void mainWindow(int windowID)
         {
+            string[] textureSets = Directory.GetDirectories(Directory.GetCurrentDirectory() + "\\WorldBox_Data//");
+            if (textureSets != null && textureSets.Length >= 1)
+            {
+                for (int i = 0; i < textureSets.Length; i++)
+                {
+                    string set = textureSets[i].Replace(Directory.GetCurrentDirectory() + "\\WorldBox_Data//", "");
+                    if (set.ToLower().Contains("assets") == false && set.ToLower().Contains("resources") == false && set.ToLower().Contains("plugins") == false && set.ToLower().Contains("managed") == false)
+                    {
+                        if (GUILayout.Button("Textures: " + set))
+                        {
+                            customTextures = new Dictionary<string, Sprite>();
+                            loadCustomTextures(set); // change entire sets by folder 
+                        }
+                    }
+                }
+            }
+            
             if (CustomAssetLoader.AssetLoader_Main.customSoundControllers != null && CustomAssetLoader.AssetLoader_Main.customSoundControllers.Count >= 1)
             {
                 if (GUILayout.Button("Change_NF"))
@@ -350,8 +407,7 @@ namespace TextureLoader
                 // automatic one time loading
                 readTileColorFile();
                 customTextures = new Dictionary<string, Sprite>();
-                loadCustomTextures("images");
-                
+                loadCustomTextures("images"); // change entire sets by folder 
             }
             List<string> variations = new List<string>();
             foreach (string key in customTextures.Keys)
@@ -788,6 +844,25 @@ namespace TextureLoader
                         }
                     }
                 }
+                if (directoryOfSet.Contains("resource"))
+                {
+                    fullPath = path + "resource//custom//";
+                    if (Directory.Exists(fullPath))
+                    {
+                        Debug.Log("Started loading resource icon textures");
+                        foreach (string newTexturePath in Directory.GetFiles(fullPath))
+                        {
+                            Sprite resourceIcon = LoadSprite(newTexturePath, 0.5f, 0f);
+                            resourceIcon.name = newTexturePath.Replace(fullPath, "").Replace(".png", "");
+                            if (!customTextures.ContainsKey(resourceIcon.name))
+                            {
+                                customTextures.Add(resourceIcon.name, resourceIcon);
+                            }
+                            Debug.Log("Added " + resourceIcon.name + " to custom texture library");
+                        }
+                    }
+                }
+
                 // Supports weapons almost 100%, heads are difficult to get right and should be left out
                 #region Head & Weapon
                 /*
