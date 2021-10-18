@@ -17,7 +17,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>..\..\..\..\..\0wbwb\0.10.1\WorldBoxModded\BepInEx\plugins\</OutputPath>
+    <OutputPath>..\..\..\..\..\0wbwb\0.10.3\WorldBoxModded\BepInEx\plugins\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>

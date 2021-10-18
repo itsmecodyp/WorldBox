@@ -1485,7 +1485,8 @@ namespace TWrecks_RPG
         //public static int kingAgeExp = 20;
         //public static int leaderAgeExp = 10;
         //public static int otherAgeExp = 2;
-        //public static int baseExpToLevelup = 100; // default: 100 + (this.data.level - 1) * 20;
+        //public static int baseExpToLevelup = 100; 
+        // default: 100 + (this.data.level - 1) * 20;
         //public static int expToLevelUpScale = 20;
 
         public static bool updateAge_Prefix(Actor __instance)
@@ -1500,7 +1501,7 @@ namespace TWrecks_RPG
                 return false;
             }
             int currentAge2 = data.age;
-            Debug.Log("\nDebug: old age: " + currentAge + "\n" + "Debug: new age: " + currentAge2);
+            //Debug.Log("\nDebug: old age: " + currentAge + "\n" + "Debug: new age: " + currentAge2);
             if (__instance.city != null)
             {
                 Kingdom kingdom = Reflection.GetField(__instance.city.GetType(), __instance.city, "kingdom") as Kingdom;

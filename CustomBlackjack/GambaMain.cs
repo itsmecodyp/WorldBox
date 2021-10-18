@@ -366,7 +366,7 @@ namespace CustomBlackjack
             }
 
            
-            GUILayout.BeginArea(new Rect(Screen.width - 120, 175, 120, 30));
+            GUILayout.BeginArea(new Rect(Screen.width - 120, 150, 120, 50));
 
             if (GUILayout.Button("CustomBlackjack"))
             {

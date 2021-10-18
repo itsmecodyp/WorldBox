@@ -17,7 +17,7 @@
     <DebugSymbols>false</DebugSymbols>
     <DebugType>none</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>..\..\..\..\..\0wbwb\0.9.0\WorldBoxModded\BepInEx\plugins\</OutputPath>
+    <OutputPath>..\..\..\..\..\0wbwb\0.10.3\WorldBoxModded\BepInEx\plugins\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -43,8 +43,9 @@
     <Reference Include="ArabicSupport">
       <HintPath>..\..\Library\ArabicSupport.dll</HintPath>
     </Reference>
-    <Reference Include="Assembly-CSharp">
-      <HintPath>..\..\..\..\..\0wbwb\0.8.2\WorldBoxModded\worldbox_Data\Managed\Assembly-CSharp.dll</HintPath>
+    <Reference Include="Assembly-CSharp, Version=0.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\0wbwb\0.10.3\WorldBoxModded\worldbox_Data\Managed\Assembly-CSharp.dll</HintPath>
     </Reference>
     <Reference Include="Assembly-CSharp-firstpass">
       <HintPath>..\..\Library\Assembly-CSharp-firstpass.dll</HintPath>
