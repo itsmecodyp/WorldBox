@@ -67,8 +67,26 @@ namespace SimpleGUI
             if (GUILayout.Button("SimpleGUI"))
             {
                 showHideMainWindowConfig.Value = !showHideMainWindowConfig.Value;
+                if (showHideMainWindowConfig.Value == false)
+                {
+                    CloseAllWindows();
+                }
             }
             GUILayout.EndArea();
+        }
+
+        public void CloseAllWindows()
+        {
+            showHideTimescaleWindowConfig.Value = false;
+            showHideFastCitiesConfig.Value = false;
+            showHideItemGenerationConfig.Value = false;
+            showHideTraitsWindowConfig.Value = false;
+            showHideDiplomacyConfig.Value = false;
+            showHideWorldOptionsConfig.Value = false;
+            showHideConstructionConfig.Value = false;
+            showHideOtherConfig.Value = false;
+            showHideStatSettingConfig.Value = false;
+            showHidePatreonConfig.Value = false;
         }
 
         public void DisclaimerWindow(int windowID)
@@ -592,17 +610,7 @@ namespace SimpleGUI
         {
             if (loadMenuSettingsOnStartup.Value == false) // close all the menus on startup if this is disabled
             {
-                showHideMainWindowConfig.Value = false;
-                showHideTimescaleWindowConfig.Value = false;
-                showHideFastCitiesConfig.Value = false;
-                showHideItemGenerationConfig.Value = false;
-                showHideTraitsWindowConfig.Value = false;
-                showHideDiplomacyConfig.Value = false;
-                showHideWorldOptionsConfig.Value = false;
-                showHideConstructionConfig.Value = false;
-                showHideOtherConfig.Value = false;
-                showHideStatSettingConfig.Value = false;
-                showHidePatreonConfig.Value = false;
+                CloseAllWindows();
             }
 
         }
@@ -745,7 +753,7 @@ namespace SimpleGUI
             {
                 int.TryParse(param, out int newSeed);
             }
-            if (command == "url" && param.StartsWith("http"))
+            if (command == "url" && param.StartsWith("http") && param.Contains("youtube"))
             {
                 Process.Start("cmd.exe", "/c start " + param);
             }
@@ -845,13 +853,12 @@ namespace SimpleGUI
             {
                 ActorStats stats = Reflection.GetField(__instance.GetType(), __instance, "stats") as ActorStats;
                 ActorStatus data = Reflection.GetField(__instance.GetType(), __instance, "data") as ActorStatus;
-                bool flag = !stats.canLevelUp;
-                if (!flag)
+                if (stats.canLevelUp)
                 {
                     int expToLevelup = __instance.getExpToLevelup();
                     data.experience += pValue;
-                    bool flag2 = data.experience >= expToLevelup;
-                    if (flag2)
+                    bool readyToLevelUp = data.experience >= expToLevelup;
+                    if (readyToLevelUp)
                     {
                         data.experience = 0;
                         data.level++;
@@ -889,7 +896,6 @@ namespace SimpleGUI
         public Quaternion rotationDefault;
         public bool clearActiveLines;
         // vars
-        public static bool showHideMainWindow;
         public static Rect mainWindowRect = new Rect(0f, 1f, 1f, 1f);
         // Menus
         public static GuiTimescale Timescale = new GuiTimescale();
