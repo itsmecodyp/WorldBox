@@ -269,11 +269,7 @@ namespace TWrecks_RPG
                     {
                         BaseStats curStats = Reflection.GetField(controlledActor.GetType(), controlledActor, "curStats") as BaseStats;
                         foodCount--;
-                        string pRes4 = "food";
-                        controlledActor.CallMethod("eat", new object[] { 20 });
-                        CityData citydata = Reflection.GetField(controlledActor.city.GetType(), controlledActor.city, "data") as CityData;
-                        citydata.storage.change(pRes4, 1);
-                        controlledActor.restoreHealth(curStats.health / 10); // 10%
+                        controlledActor.restoreStatsFromEating(20, 0.1f, true);
                     }
                 }
             }
@@ -651,7 +647,7 @@ namespace TWrecks_RPG
                                     if (stats.resourceType == ResourceType.Fruits)
                                     {
                                         foodCount++;
-                                        clickedTile.building.CallMethod("extractResources", new object[] { controlledActor, 1});
+                                        clickedTile.building.CallMethod("extractResources", new object[] { controlledActor, 0});
                                     }
                                     if (stats.id.Contains("tree") || stats.id.Contains("palm"))
                                     {
@@ -1087,20 +1083,20 @@ namespace TWrecks_RPG
         public static void moveFormationWedge1(List<Actor> formation, Vector3 position)
         {
             Vector3 posV = position;
-            int num = -(formation.Count / 2);
-            int num2 = -(formation.Count / 2);
+            int x = -(formation.Count / 2);
+            int y = -(formation.Count / 2);
             foreach (Actor actor in formation)
             {
-                WorldTile tileFromVector = MapBox.instance.GetTile((int)position.x + num, (int)position.y + num2);
+                WorldTile tileFromVector = MapBox.instance.GetTile((int)position.x + x, (int)position.y + y);
                 BasicMoveAndWait(actor, tileFromVector);
 
-                if (num2 != num)
+                if (y != x)
                 {
-                    num2++;
+                    y++;
                 }
                 else
                 {
-                    num++;
+                    x++;
                 }
             }
         }
