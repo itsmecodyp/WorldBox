@@ -623,12 +623,14 @@ namespace TWrecks_RPG
                             bool haveResources = (bool)Reflection.GetField(clickedTile.building.GetType(), clickedTile.building, "haveResources");
                             BuildingAsset stats = Reflection.GetField(clickedTile.building.GetType(), clickedTile.building, "stats") as BuildingAsset;
                             BuildingData data = Reflection.GetField(clickedTile.building.GetType(), clickedTile.building, "data") as BuildingData;
-                            CityData citydata = Reflection.GetField(controlledActor.city.GetType(), controlledActor.city, "data") as CityData;
+							CityData citydata = Reflection.GetField(controlledActor.city.GetType(), controlledActor.city, "data") as CityData;
+                            /*
                             if (haveResources && stats.resourceType != ResourceType.None)
                             {
                                 // If controlled unit is part of a city, add the resources to it's inventory
                                 if (controlledActor.city != null)
                                 {
+                                    
                                     if (stats.resourceType == ResourceType.Gold)
                                     {
                                         string pRes = "gold";
@@ -660,11 +662,14 @@ namespace TWrecks_RPG
                                     {
                                         Sfx.play("mining", true, clickedTile.building.transform.localPosition.x, clickedTile.building.transform.localPosition.y);
                                     }
-                                }
-                                //controlledActor.timer_action = 1f; // delay after interact
-                            }
+                            
+                        }
+
+                        //controlledActor.timer_action = 1f; // delay after interact
+                    }
+                             */
                             // add progress to unfinished building
-                            if (clickedTile.building.city != null && controlledActor.city != null && clickedTile.building.city == controlledActor.city && data.underConstruction)
+                            if(clickedTile.building.city != null && controlledActor.city != null && clickedTile.building.city == controlledActor.city && data.underConstruction)
                             {
                                 clickedTile.building.CallMethod("updateBuild", new object[] { 3 });
                                 //controlledActor.timer_action = 1f;

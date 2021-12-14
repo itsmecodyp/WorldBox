@@ -35,7 +35,7 @@ namespace SimpleGUI
 			}
 			foreach (WorldTile pTile in listOfUndos.Last<List<WorldTile>>()) // each tile inside the last list
 			{
-				MapBox.instance.terraformTile2(pTile, TileType.get(listOfUndoTypes.Last<string>()), AssetManager.terraform.get("flash"));
+				MapAction.terraformMain(pTile, AssetManager.tiles.get(listOfUndoTypes.Last<string>()), AssetManager.terraform.get("flash"));
 			}
 			listOfUndoTypes.Remove(listOfUndoTypes.Last<string>()); // remove type from end of list
 			listOfUndos.Remove(listOfUndos.Last<List<WorldTile>>()); // remove list of undo tiles
@@ -43,21 +43,13 @@ namespace SimpleGUI
 
 		public void replaceAllTilesOnMap(string oldType, string newType)
 		{
-			if (newType == "random")
-			{
-				newType = TileType.list.GetRandom<TileType>().name;
-			}
-			if (oldType == "random")
-			{
-				oldType = TileType.list.GetRandom<TileType>().name;
-			}
 			if (newType == "mouse")
 			{
-				newType = MapBox.instance.getMouseTilePos().Type.name;
+				newType = MapBox.instance.getMouseTilePos().Type.id;
 			}
 			if (oldType == "mouse")
 			{
-				oldType = MapBox.instance.getMouseTilePos().Type.name;
+				oldType = MapBox.instance.getMouseTilePos().Type.id;
 			}
 			if (listOfUndos == null)
 			{
@@ -83,20 +75,20 @@ namespace SimpleGUI
 				if (oldType == "all")
 				{
 					list.Add(worldTile);
-					MapBox.instance.terraformTile2(worldTile, TileType.get(newType), AssetManager.terraform.get("flash"));
+					MapAction.terraformMain(worldTile, AssetManager.tiles.get(newType), AssetManager.terraform.get("flash"));
 				}
 				if (oldType != "last")
 				{
-					if (worldTile.Type.name.ToString() == oldType)
+					if (worldTile.Type.id.ToString() == oldType)
 					{
 						list.Add(worldTile);
-						MapBox.instance.terraformTile2(worldTile, TileType.get(newType), AssetManager.terraform.get("flash"));
+						MapAction.terraformMain(worldTile, AssetManager.tiles.get(newType), AssetManager.terraform.get("flash"));
 					}
 				}
 				else if (oldType == "last")
 				{
 					list.Add(worldTile);
-					MapBox.instance.terraformTile2(worldTile, TileType.get(newType), AssetManager.terraform.get("flash"));
+					MapAction.terraformMain(worldTile, AssetManager.tiles.get(newType), AssetManager.terraform.get("flash"));
 				}
 			}
 			listOfUndos.Add(list);
@@ -525,10 +517,12 @@ namespace SimpleGUI
 						{
 
 							Building building = MapBox.instance.CallMethod("addBuilding", new object[] { buildingName, tile.building.getConstructionTile(), null, false, true, BuildPlacingType.New }) as Building;
+							/*
 							if (AssetManager.buildings.get(buildingName).construction_site_texture != null)
 							{
 								building.CallMethod("updateBuild", new object[] { 100 });
 							}
+							*/
 							WorldTile currentTile = Reflection.GetField(building.GetType(), building, "currentTile") as WorldTile;
 							if (currentTile.zone.city != null)
 							{
@@ -560,7 +554,7 @@ namespace SimpleGUI
 					{
 						if (selectedPower().tileType != null && selectedPower().tileType != "")
 						{
-							MapBox.instance.terraformTile2(tile, TileType.get(selectedPower().tileType), AssetManager.terraform.get("flash"));
+							MapAction.terraformMain(tile, AssetManager.tiles.get(selectedPower().tileType), AssetManager.terraform.get("flash"));
 						}
 						else if (selectedPower().dropID != null && selectedPower().dropID != "")
 						{
@@ -568,7 +562,7 @@ namespace SimpleGUI
 						}
 						else
 						{
-							UsePower(tile, selectedPower().id);
+							//UsePower(tile, selectedPower().id);
 						}
 					}
 				}
@@ -611,11 +605,13 @@ namespace SimpleGUI
 				}
 				foreach (Building building in buildingsToClear)
 				{
+					/*
 					BuildingAsset stats = Reflection.GetField(building.GetType(), building, "stats") as BuildingAsset;
 					if (stats.resourceType != ResourceType.None && stats.resourceType != ResourceType.Wheat)
 					{
 						building.CallMethod("startDestroyBuilding", new object[] { true });
 					}
+					*/
 				}
 			}
 			GUILayout.EndHorizontal();
@@ -862,13 +858,13 @@ namespace SimpleGUI
 									}
 									else if (GUIConstruction.placingField)
 									{
-                                        MapBox.instance.terraformTile2(activeTile, TileTypeShortcut.field, AssetManager.terraform.get("flash"));
+                                        //MapAction.terraformMain(activeTile, TileTypeShortcut.field, AssetManager.terraform.get("flash"));
 										tileActionComplete = true;
 									}
 								}
 								else if (!GuiMain.Construction.placingToggleEnabled && selectedPower().tileType != null && selectedPower().tileType != "")
 								{
-                                    MapBox.instance.terraformTile2(activeTile, TileType.get(selectedPower().tileType), AssetManager.terraform.get("flash"));
+                                    MapAction.terraformMain(activeTile, AssetManager.tiles.get(selectedPower().tileType), AssetManager.terraform.get("flash"));
 									tileActionComplete = true;
 								}
 								else if (!GuiMain.Construction.placingToggleEnabled && (selectedPower().dropID != null && selectedPower().dropID != ""))
@@ -878,7 +874,7 @@ namespace SimpleGUI
 								}
 								if(!tileActionComplete)
 								{
-                                    UsePower(activeTile, selectedPower().id);
+                                    //UsePower(activeTile, selectedPower().id); @@@@@2
 									tileActionComplete = true;
 								}
 								/* // this stuff went before the else above
@@ -904,103 +900,6 @@ namespace SimpleGUI
 				}
 			}
 		}
-		public void UsePower(WorldTile targetTile, string power)
-		{
-			GodPower chosenPower = AssetManager.powers.get(power);
-			if (chosenPower != null)
-			{
-				// this needs turned into a switch statement.. lol
-				if (chosenPower.actionType == PowerActionType.SpawnActor)
-				{
-					Sfx.play("spawn", true, -1f, -1f);
-					if (chosenPower.spawnSound != "")
-					{
-						Sfx.play(chosenPower.spawnSound, true, -1f, -1f);
-					}
-					if (chosenPower.showSpawnEffect != string.Empty)
-					{
-						MapBox.instance.stackEffects.CallMethod("startSpawnEffect", new object[] { targetTile, chosenPower.showSpawnEffect });
-					}
-					string pStatsID;
-					if (chosenPower.actorStatsId.Contains(","))
-					{
-						pStatsID = Toolbox.getRandom<string>(chosenPower.actorStatsId.Split(new char[]
-						{
-					','
-						}));
-					}
-					else
-					{
-						pStatsID = chosenPower.actorStatsId;
-					}
-					Actor actor = MapBox.instance.createNewUnit(pStatsID, targetTile, "", chosenPower.actorSpawnHeight * 5, null);
-					if (actor.stats.unit)
-					{
-						ActorStatus data = Reflection.GetField(actor.GetType(), actor, "data") as ActorStatus;
-						data.age = 18;
-						actor.CallMethod("setKingdom", new object[] { MapBox.instance.kingdoms.dict_hidden["nomads_" + actor.stats.race] });
-						return;
-					}
-				}
-				if (chosenPower.actionType == PowerActionType.Special)
-				{
-					if (chosenPower.id == "cloudRain" || chosenPower.id == "cloudAcid" || chosenPower.id == "cloudLava" || chosenPower.id == "cloudSnow")
-					{
-						MapBox.instance.cloudController.CallMethod("spawnCloud", new object[] { targetTile.posV3, chosenPower.id });
-					}
-				}
-				if (chosenPower.actionType == PowerActionType.Tile)
-				{
-					MapBox.instance.drawWithBrush(targetTile.pos, Brush.get("sqr_1"), 1, "tile", chosenPower.tileType, chosenPower, true);
-				}
-				if (chosenPower.actionType == PowerActionType.Draw)
-				{
-					MapBox.instance.drawWithBrush(targetTile.pos, Brush.get("sqr_1"), 1, chosenPower.id, null, chosenPower, true);
-				}
-				if (chosenPower.id == "lightning" || chosenPower.id == "Lightning")
-				{
-					MapBox.spawnLightning(targetTile, 0.25f);
-					//MapBox.instance.CallMethod("spawnLightning", new object[] { });
-				}
-				if (chosenPower.id == "magnet")
-				{
-					MapBox.instance.actions.CallMethod("magnetAction", new object[] { false, targetTile });
-				}
-				if (chosenPower.id == "divineLight")
-				{
-					MapBox.instance.drawWithBrush(targetTile.pos, Brush.get("sqr_1"), 1, "divineLight", null, chosenPower, true);
-					MapBox.instance.fxDivineLight.CallMethod("playOn", new object[] { targetTile });
-				}
-				if (chosenPower.id == "temperaturePlus")
-				{
-					Sfx.play("temperatureU", true, -1f, -1f);
-					MapBox.instance.drawWithBrush(targetTile.pos, Brush.get("sqr_1"), 1, "temperaturePlus", null, chosenPower, true);
-				}
-				if (chosenPower.id == "temperatureMinus")
-				{
-					Sfx.play("temperatureD", true, -1f, -1f);
-					MapBox.instance.drawWithBrush(targetTile.pos, Brush.get("sqr_1"), 1, "temperatureMinus", null, chosenPower, true);
-				}
-				if (chosenPower.id == "heatray")
-				{
-					Sfx.play("temperatureU", true, -1f, -1f);
-					MapBox.instance.heatRayFx.CallMethod("play", new object[] { targetTile.pos, 10 });
-				}
-				if (chosenPower.id == "rainfallPlus")
-				{
-					MapBox.instance.drawWithBrush(targetTile.pos, Brush.get("sqr_1"), 1, "rainfall", null, chosenPower, true);
-				}
-				if (chosenPower.id == "rainfallMinus")
-				{
-					MapBox.instance.drawWithBrush(targetTile.pos, Brush.get("sqr_1"), 1, "rainfall", null, chosenPower, true);
-				}
-
-
-				MapBox.instance.drawWithBrush(targetTile.pos, Brush.get("sqr_1"), 1, "draw", null, chosenPower, true);
-
-			}
-
-		}
 
 		private void ResetFill()
 		{
@@ -1009,7 +908,7 @@ namespace SimpleGUI
 				listOfFills.Add(alreadyChanged);
 				if (alreadyChanged.Count >= 1)
 				{
-					listOfFillTypes.Add(alreadyChanged.GetRandom().Type.name);
+					listOfFillTypes.Add(alreadyChanged.GetRandom().Type.id);
 				}
 			}
 			alreadyChanged = null;
@@ -1022,28 +921,28 @@ namespace SimpleGUI
 		{
 			if (target.tile_left != null)
 			{
-				if ((target.tile_left.Type == fillOriginalType || fillOriginalType.name.Contains("grass") && target.tile_left.Type.name.Contains("grass") || fillOriginalType.name.Contains("forest") && target.tile_left.Type.name.Contains("forest")) && !alreadyChanged.Contains(target.tile_left))
+				if ((target.tile_left.Type == fillOriginalType || fillOriginalType.id.Contains("grass") && target.tile_left.Type.id.Contains("grass") || fillOriginalType.id.Contains("forest") && target.tile_left.Type.id.Contains("forest")) && !alreadyChanged.Contains(target.tile_left))
 				{
 					activeFill.Add(target.tile_left);
 				}
 			}
 			if (target.tile_right != null)
 			{
-				if ((target.tile_right.Type == fillOriginalType || fillOriginalType.name.Contains("grass") && target.tile_right.Type.name.Contains("grass") || fillOriginalType.name.Contains("forest") && target.tile_right.Type.name.Contains("forest")) && !alreadyChanged.Contains(target.tile_right))
+				if ((target.tile_right.Type == fillOriginalType || fillOriginalType.id.Contains("grass") && target.tile_right.Type.id.Contains("grass") || fillOriginalType.id.Contains("forest") && target.tile_right.Type.id.Contains("forest")) && !alreadyChanged.Contains(target.tile_right))
 				{
 					activeFill.Add(target.tile_right);
 				}
 			}
 			if (target.tile_up != null)
 			{
-				if ((target.tile_up.Type == fillOriginalType || fillOriginalType.name.Contains("grass") && target.tile_up.Type.name.Contains("grass") || fillOriginalType.name.Contains("forest") && target.tile_up.Type.name.Contains("forest")) && !alreadyChanged.Contains(target.tile_up))
+				if ((target.tile_up.Type == fillOriginalType || fillOriginalType.id.Contains("grass") && target.tile_up.Type.id.Contains("grass") || fillOriginalType.id.Contains("forest") && target.tile_up.Type.id.Contains("forest")) && !alreadyChanged.Contains(target.tile_up))
 				{
 					activeFill.Add(target.tile_up);
 				}
 			}
 			if (target.tile_down != null)
 			{
-				if ((target.tile_down.Type == fillOriginalType || fillOriginalType.name.Contains("grass") && target.tile_down.Type.name.Contains("grass") || fillOriginalType.name.Contains("forest") && target.tile_down.Type.name.Contains("forest")) && !alreadyChanged.Contains(target.tile_down))
+				if ((target.tile_down.Type == fillOriginalType || fillOriginalType.id.Contains("grass") && target.tile_down.Type.id.Contains("grass") || fillOriginalType.id.Contains("forest") && target.tile_down.Type.id.Contains("forest")) && !alreadyChanged.Contains(target.tile_down))
 				{
 					activeFill.Add(target.tile_down);
 				}
@@ -1079,7 +978,7 @@ namespace SimpleGUI
 			}
 			foreach (WorldTile pTile in listOfFills.Last<List<WorldTile>>())
 			{
-				MapBox.instance.terraformTile2(pTile, TileType.get(listOfFillTypes.Last<string>()), AssetManager.terraform.get("flash"));
+				MapAction.terraformMain(pTile, AssetManager.tiles.get(listOfFillTypes.Last<string>()), AssetManager.terraform.get("flash"));
 			}
 			listOfFillTypes.Remove(listOfFillTypes.Last<string>());
 			listOfFills.Remove(listOfFills.Last<List<WorldTile>>());
@@ -1104,7 +1003,7 @@ namespace SimpleGUI
 		public List<WorldTile> activeFill;
 		public List<WorldTile> alreadyChanged;
 		public WorldTile fillOriginalTile;
-		public TileType fillOriginalType;
+		public TileTypeBase fillOriginalType;
 		public float lastUpdate;
 		public int fillTileCount;
 		public int fillIterationPosition;

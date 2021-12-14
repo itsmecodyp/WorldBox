@@ -53,20 +53,7 @@ namespace SimpleGUI
         }
         public void createRoad(WorldTile pTile)
         {
-            string text = "road_" + pTile._type.name;
-            bool flag = pTile._type.name.StartsWith("road");
-            if (flag)
-            {
-                text = pTile._type.name;
-            }
-            TileType tileType = TileType.get(text);
-            bool flag2 = tileType == null;
-            if (flag2)
-            {
-                Debug.Log("missing " + text);
-                tileType = TileType.get("road");
-            }
-            MapBox.instance.terraformTile2(pTile, tileType, AssetManager.terraform.get("road"));
+            MapAction.createRoad(pTile);
         }
 
         public static bool startDestroyBuilding_Prefix(bool pRemove = false)
@@ -89,7 +76,7 @@ namespace SimpleGUI
             }
             else if (placingField)
             {
-                MapBox.instance.terraformTile2(MapBox.instance.getMouseTilePos(), TileTypeShortcut.field, AssetManager.terraform.get("flash"));
+                MapAction.terraformTop(MapBox.instance.getMouseTilePos(), TopTileLibrary.field, AssetManager.terraform.get("flash"));
             }
             else
             {

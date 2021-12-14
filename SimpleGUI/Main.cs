@@ -175,8 +175,8 @@ namespace SimpleGUI
             MethodInfo patch;
             
                 harmony = new Harmony(pluginName);
-                original = AccessTools.Method(typeof(MapBox), "useDivineLight");
-                patch = AccessTools.Method(typeof(GuiTraits), "useDivineLight_Postfix");
+                original = AccessTools.Method(typeof(PowerLibrary), "drawDivineLight");
+                patch = AccessTools.Method(typeof(GuiTraits), "drawDivineLight_Postfix");
                 harmony.Patch(original, null, new HarmonyMethod(patch));
                 UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
             

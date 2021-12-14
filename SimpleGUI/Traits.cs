@@ -179,10 +179,10 @@ namespace SimpleGUI
             }
         }
 
-        public static void useDivineLight_Postfix(WorldTile pTile, MapBox __instance)
+        public static void drawDivineLight_Postfix(WorldTile pCenterTile, string pPowerID, MapBox __instance)
         {
             if (divineLight)
-                foreach (Actor actor in pTile.units)
+                foreach (Actor actor in pCenterTile.units)
                 {
                     if (divineLightFunction)
                     {
