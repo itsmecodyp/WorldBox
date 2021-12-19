@@ -108,7 +108,7 @@ namespace SimpleGUI
         {
             if(placingRoad || placingField)
             {
-                if (placingToggleEnabled && MapBox.instance.getMouseTilePos() != null)
+                if (MapBox.instance.getMouseTilePos() != null)
                 {
                     PixelFlashEffects flashEffects = Reflection.GetField(MapBox.instance.GetType(), MapBox.instance, "flashEffects") as PixelFlashEffects;
                     flashEffects.flashPixel(MapBox.instance.getMouseTilePos(), 10, ColorType.White);
@@ -117,7 +117,7 @@ namespace SimpleGUI
             else // placing buildings
             {
 
-                if (placingToggleEnabled && selectedBuildingAsset != null && MapBox.instance.getMouseTilePos() != null)
+                if (selectedBuildingAsset != null && MapBox.instance.getMouseTilePos() != null)
                 {
                     // Building construction
                     BuildingAsset constructionTemplate = selectedBuildingAsset;
@@ -244,7 +244,9 @@ namespace SimpleGUI
                 GUILayout.MinWidth(200f)
                 });
             }
-            constructionPreviewUpdate();
+            if(placingToggleEnabled) {
+                constructionPreviewUpdate();
+            }
         }
 
         public bool showHideConstruction;

@@ -510,7 +510,6 @@ namespace SimpleGUI
 		public static string randomStatsMaxString = "10";
 		public static bool useRandomBaseStats;
 		public static Actor lastSelectedActor;
-		public Actor lastSelectedPublic => lastSelectedActor;
 		public bool showHideItemGeneration;
 		public Rect itemGenerationWindowRect; public static string tempSavedString;
 	}

@@ -9,7 +9,6 @@ using BepInEx.Configuration;
 using HarmonyLib;
 using UnityEngine;
 using UnityEngine.UIElements;
-using z_com_TWrecksMod;
 using static UnityEngine.GraphicsBuffer;
 
 namespace TWrecks_RPG
@@ -176,10 +175,12 @@ namespace TWrecks_RPG
 
         public void OnGUI()
         {
-            if (GUILayout.Button("TWreck settings"))
-            {
+            GUILayout.BeginArea(new Rect(Screen.width - 120, 75, 120, 30));
+            if(GUILayout.Button("TWreck settings")) {
                 showHideMainWindow = !showHideMainWindow;
             }
+            GUILayout.EndArea();
+           
             if (showHideMainWindow)
             {
                 mainWindowRect = GUILayout.Window(79001, mainWindowRect, new GUI.WindowFunction(mainWindow), "Main", new GUILayoutOption[] { GUILayout.MaxWidth(300f), GUILayout.MinWidth(200f) });
@@ -468,8 +469,6 @@ namespace TWrecks_RPG
         public bool assigningLeader;
 
         public static int squadDictPos = 0;
-
-        RPGActorWindow rpgWindow = new RPGActorWindow();
 
         public static void ClearDicts()
         {

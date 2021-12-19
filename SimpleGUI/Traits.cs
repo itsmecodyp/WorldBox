@@ -190,7 +190,10 @@ namespace SimpleGUI
                         {
                             actor.addTrait(trait.id);
                         }
-                        AddShieldToActor(actor);
+                        if(addingShieldToActor) {
+                            AddShieldToActor(actor);
+                        }
+                      
                     }
                     else if (!divineLightFunction)
                     {
@@ -204,10 +207,7 @@ namespace SimpleGUI
 
         public static void AddShieldToActor(Actor target)
         {
-            if (addingShieldToActor)
-            {
-                target.CallMethod("addStatusEffect", new object[] { "shield", 5000f });
-            }
+            target.CallMethod("addStatusEffect", new object[] { "shield", 5000f });
         }
 
         public static void RemoveShieldFromActor(Actor target)
@@ -244,8 +244,14 @@ namespace SimpleGUI
                 GUILayout.MaxWidth(300f),
                 GUILayout.MinWidth(200f)
                 });
+
+                if(lastSelectedActor == null || (lastSelectedActor != null && lastSelectedActor != Config.selectedUnit)) {
+                    lastSelectedActor = Config.selectedUnit;
+                }
             }
         }
+
+        public static Actor lastSelectedActor;
 
         public static void TraitWindow(int windowID)
         {
@@ -307,21 +313,25 @@ namespace SimpleGUI
             {
 
                 GUILayout.BeginHorizontal();
-                if (GUILayout.Button("Add traits to last selected") && GuiItemGeneration.lastSelectedActor != null)
+                if (GUILayout.Button("Add traits to last selected") && lastSelectedActor != null)
                 {
                     foreach (ActorTrait trait in activeTraits)
                     {
-                        GuiItemGeneration.lastSelectedActor.addTrait(trait.id);
+                        lastSelectedActor.addTrait(trait.id);
                     }
-                    AddShieldToActor(GuiItemGeneration.lastSelectedActor);
+                    if(addingShieldToActor)
+                        AddShieldToActor(lastSelectedActor);
+                    bool statsDirty = (bool)Reflection.GetField(lastSelectedActor.GetType(), lastSelectedActor, "statsDirty");
+                    statsDirty = true;
+                   
                 }
-                if (GUILayout.Button("Remove traits to last selected") && GuiItemGeneration.lastSelectedActor != null)
+                if (GUILayout.Button("Remove traits to last selected") && lastSelectedActor != null)
                 {
                     foreach (ActorTrait trait in activeTraits)
                     {
-                        GuiItemGeneration.lastSelectedActor.removeTrait(trait.id);
+                        lastSelectedActor.removeTrait(trait.id);
                     }
-                    RemoveShieldFromActor(GuiItemGeneration.lastSelectedActor);
+                    RemoveShieldFromActor(lastSelectedActor);
                 }
 
                 GUILayout.EndHorizontal();

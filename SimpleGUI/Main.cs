@@ -20,15 +20,14 @@ using Proyecto26.Common;
 using System.Security.Policy;
 using SimpleJSON;
 using System.Diagnostics;
+using Steamworks;
 
-namespace SimpleGUI
-{
+namespace SimpleGUI {
     [BepInPlugin(pluginGuid, pluginName, pluginVersion)]
-    class GuiMain : BaseUnityPlugin
-    {
+    class GuiMain : BaseUnityPlugin {
         public const string pluginGuid = "cody.worldbox.simple.gui";
         public const string pluginName = "SimpleGUI";
-        public const string pluginVersion = "0.1.4.4";
+        public const string pluginVersion = "0.1.4.6";
 
         public void Awake()
         {
@@ -43,36 +42,39 @@ namespace SimpleGUI
 
         public void Update()
         {
-            if (Construction != null)
-            {
-                Construction.constructionControl();
+            if(showHideConstructionConfig.Value) {
+                if(Construction != null) {
+                    Construction.constructionControl();
+                }
             }
-            if (World.activeFill == null)
-            {
-                World.fillIterationPosition = 0;
+          
+           
+            if(showHideWorldOptionsConfig.Value) {
+                if(World.activeFill == null) {
+                    World.fillIterationPosition = 0;
+                }
+                else {
+                    float start = Time.realtimeSinceStartup;
+                    World.tileChangingUpdate();
+                    World.lastBenchedTime = World.BenchEndTime(start);
+                }
+                World.worldUpdate();
             }
-            else
-            {
-                float start = Time.realtimeSinceStartup;
-                World.tileChangingUpdate();
-                World.lastBenchedTime = World.BenchEndTime(start);
-            }
-            World.worldUpdate();
         }
 
         public void OnGUI()
         {
-            updateWindows();
             GUILayout.BeginArea(new Rect(Screen.width - 120, 0, 120, 30));
-            if (GUILayout.Button("SimpleGUI"))
-            {
+            if(GUILayout.Button("SimpleGUI")) {
                 showHideMainWindowConfig.Value = !showHideMainWindowConfig.Value;
-                if (showHideMainWindowConfig.Value == false)
-                {
+                if(showHideMainWindowConfig.Value == false) {
                     CloseAllWindows();
                 }
             }
             GUILayout.EndArea();
+            if(showHideMainWindowConfig.Value == true) {
+                updateWindows();
+            }
         }
 
         public void CloseAllWindows()
@@ -91,19 +93,17 @@ namespace SimpleGUI
 
         public void DisclaimerWindow(int windowID)
         {
-            GUILayout.Button("Hello " + discordUser.Replace("_", "#") + "!");
+            GUILayout.Button("Hello!");  //+ discordUser.Replace("_", "#") + "!");
             GUILayout.Button(pluginName + " creator Cody#1695 here.");
             GUILayout.Label("I'd like to collect some stats every now and then. You can change your decision later using the config file and request your information or a deletion at any time.");
             GUILayout.BeginHorizontal();
             GUI.backgroundColor = Color.green;
-            if (GUILayout.Button("Accept"))
-            {
+            if(GUILayout.Button("Accept")) {
                 hasOptedInToStats.Value = true;
                 hasAskedToOptIn.Value = true;
             }
             GUI.backgroundColor = Color.red;
-            if (GUILayout.Button("Decline"))
-            {
+            if(GUILayout.Button("Decline")) {
                 hasOptedInToStats.Value = false;
                 hasAskedToOptIn.Value = true;
             }
@@ -113,13 +113,10 @@ namespace SimpleGUI
 
         public void CheckMessage() // starts after 1 time stats sent
         {
-            if (discordUser != null)
-            {
-                if (hasAskedToOptIn.Value == true)
-                {
-                    if (hasOptedInToStats.Value == true)
-                    {
-                        StartCoroutine(GetUserMessage(discordUser));
+            if(myuser.UID != null) {
+                if(hasAskedToOptIn.Value == true) {
+                    if(hasOptedInToStats.Value == true) {
+                        StartCoroutine(GetUserMessage(myuser.UID));
                     }
                 }
             }
@@ -127,36 +124,27 @@ namespace SimpleGUI
 
         public void ConstantWarCheck()
         {
-            if (Diplomacy.EnableConstantWar)
-            {
-                if (MapBox.instance.kingdoms.list_civs.Count >= 2)
-                {
+            if(Diplomacy.EnableConstantWar) {
+                if(MapBox.instance.kingdoms.list_civs.Count >= 2) {
                     bool isThereWar = false;
-                    foreach (Kingdom kingdom in MapBox.instance.kingdoms.list_civs)
-                    {
-                        foreach (Kingdom otherKingdom in MapBox.instance.kingdoms.list_civs)
-                        {
-                            if (otherKingdom != kingdom)
-                            {
+                    foreach(Kingdom kingdom in MapBox.instance.kingdoms.list_civs) {
+                        foreach(Kingdom otherKingdom in MapBox.instance.kingdoms.list_civs) {
+                            if(otherKingdom != kingdom) {
                                 kingdom.civs_enemies.TryGetValue(otherKingdom, out bool isEnemy2);
-                                if (isEnemy2)
-                                {
+                                if(isEnemy2) {
                                     isThereWar = true;
                                     break;
                                 }
                             }
                         }
-                        if (isThereWar == true)
-                        {
+                        if(isThereWar == true) {
                             break;
                         }
                     }
-                    if (isThereWar == false)
-                    {
+                    if(isThereWar == false) {
                         Kingdom kingdom1 = MapBox.instance.kingdoms.list_civs.GetRandom();
                         Kingdom kingdom2 = null;
-                        while (kingdom2 == null || kingdom2 == kingdom1)
-                        {
+                        while(kingdom2 == null || kingdom2 == kingdom1) {
                             kingdom2 = MapBox.instance.kingdoms.list_civs.GetRandom();
                         }
                         Reflection.CallMethod(MapBox.instance.kingdoms.diplomacyManager, "startWar", new object[] { kingdom1, kingdom2, true });
@@ -164,7 +152,7 @@ namespace SimpleGUI
                         //UnityEngine.Debug.Log("Constant war: war not found, starting one between: " + kingdom1.name + " and " + kingdom2.name);
                     }
                 }
-               
+
             }
         }
 
@@ -173,127 +161,127 @@ namespace SimpleGUI
             Harmony harmony;
             MethodInfo original;
             MethodInfo patch;
-            
-                harmony = new Harmony(pluginName);
-                original = AccessTools.Method(typeof(PowerLibrary), "drawDivineLight");
-                patch = AccessTools.Method(typeof(GuiTraits), "drawDivineLight_Postfix");
-                harmony.Patch(original, null, new HarmonyMethod(patch));
-                UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
-            
-                harmony = new Harmony(pluginName);
-                original = AccessTools.Method(typeof(MapBox), "createNewUnit");
-                patch = AccessTools.Method(typeof(GuiMain), "createNewUnit_Postfix");
-                harmony.Patch(original, null, new HarmonyMethod(patch));
-                UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
-            
-                harmony = new Harmony(pluginName);
-                original = AccessTools.Method(typeof(MapBox), "checkEmptyClick");
-                patch = AccessTools.Method(typeof(GuiMain), "checkEmptyClick_Prefix");
-                harmony.Patch(original, new HarmonyMethod(patch));
-                UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
-            
-                harmony = new Harmony(pluginName);
-                original = AccessTools.Method(typeof(ActorBase), "generatePersonality");
-                patch = AccessTools.Method(typeof(GuiPatreon), "generatePersonality_Postfix");
-                harmony.Patch(original, null, new HarmonyMethod(patch));
-                UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
-            
-                harmony = new Harmony(pluginName);
-                original = AccessTools.Method(typeof(LoadingScreen), "getTipID");
-                patch = AccessTools.Method(typeof(GuiPatreon), "getTipID_Postfix");
-                harmony.Patch(original, null, new HarmonyMethod(patch));
-                UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
-            
-                harmony = new Harmony(pluginName);
-                original = AccessTools.Method(typeof(LocalizedTextManager), "loadLocalizedText");
-                patch = AccessTools.Method(typeof(GuiTraits), "loadLocalizedText_Postfix");
-                harmony.Patch(original, null, new HarmonyMethod(patch));
-                UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
-            
-                harmony = new Harmony(pluginName);
-                original = AccessTools.Method(typeof(CloudController), "spawn");
-                patch = AccessTools.Method(typeof(GUIWorld), "spawn_Prefix");
-                harmony.Patch(original, new HarmonyMethod(patch));
-                UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
-            
-                harmony = new Harmony(pluginName);
-                original = AccessTools.Method(typeof(QualityChanger), "update");
-                patch = AccessTools.Method(typeof(GuiOther), "update_Prefix");
-                harmony.Patch(original, new HarmonyMethod(patch));
-                UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
-            
-                harmony = new Harmony(pluginName);
-                original = AccessTools.Method(typeof(TraitButton), "load");
-                patch = AccessTools.Method(typeof(GuiTraits), "load_Prefix");
-                harmony.Patch(original, new HarmonyMethod(patch));
-                UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
-            
 
-                harmony = new Harmony(pluginName);
-                original = AccessTools.Method(typeof(Tooltip), "show");
-                patch = AccessTools.Method(typeof(GuiTraits), "show_Prefix");
-                harmony.Patch(original, new HarmonyMethod(patch));
-                UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
-            
-                harmony = new Harmony(pluginName);
-                original = AccessTools.Method(typeof(MapBox), "spawnResource");
-                patch = AccessTools.Method(typeof(GUIWorld), "spawnResource_Prefix");
-                harmony.Patch(original, new HarmonyMethod(patch));
-                UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
-           
-                harmony = new Harmony(pluginName);
-                original = AccessTools.Method(typeof(MapBox), "updateControls");
-                patch = AccessTools.Method(typeof(GuiMain), "updateControls_Prefix");
-                harmony.Patch(original, new HarmonyMethod(patch));
-                UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
-            
-                harmony = new Harmony(pluginName);
-                original = AccessTools.Method(typeof(MapBox), "isActionHappening");
-                patch = AccessTools.Method(typeof(GuiMain), "isActionHappening_Postfix");
-                harmony.Patch(original, null, new HarmonyMethod(patch));
-                UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
-            
-                harmony = new Harmony(pluginName);
-                original = AccessTools.Method(typeof(Building), "startDestroyBuilding");
-                patch = AccessTools.Method(typeof(GUIConstruction), "startDestroyBuilding_Prefix");
-                harmony.Patch(original, new HarmonyMethod(patch));
-                UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
-            
-                harmony = new Harmony(pluginName);
-                original = AccessTools.Method(typeof(MoveCamera), "updateMouseCameraDrag");
-                patch = AccessTools.Method(typeof(GuiOther), "updateMouseCameraDrag_Prefix");
-                harmony.Patch(original, new HarmonyMethod(patch));
-                UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
-            
-                harmony = new Harmony(pluginName);
-                original = AccessTools.Method(typeof(MapBox), "spawnAndLoadUnit");
-                patch = AccessTools.Method(typeof(GuiMain), "spawnAndLoadUnit_Prefix");
-                harmony.Patch(original, new HarmonyMethod(patch));
-                UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
-            
-                harmony = new Harmony(pluginName);
-                original = AccessTools.Method(typeof(SaveWorldButton), "saveWorld");
-                patch = AccessTools.Method(typeof(GuiMain), "saveWorld_Postfix");
-                harmony.Patch(original, null, new HarmonyMethod(patch));
-                UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
-           
-                harmony = new Harmony(pluginName);
-                original = AccessTools.Method(typeof(Building), "startRemove");
-                patch = AccessTools.Method(typeof(GuiOther), "startRemove_Prefix");
-                harmony.Patch(original, new HarmonyMethod(patch));
-                UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
-            
-                harmony = new Harmony(pluginName);
-                original = AccessTools.Method(typeof(ActorEquipmentSlot), "setItem");
-                patch = AccessTools.Method(typeof(GuiItemGeneration), "setItem_Prefix");
-                harmony.Patch(original, new HarmonyMethod(patch));
-                UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
-            
-                harmony = new Harmony(pluginName);
-                original = AccessTools.Method(typeof(Actor), "addExperience");
-                patch = AccessTools.Method(typeof(GuiMain), "addExperience_Prefix");
-                harmony.Patch(original, new HarmonyMethod(patch));
-                UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
+            harmony = new Harmony(pluginName);
+            original = AccessTools.Method(typeof(PowerLibrary), "drawDivineLight");
+            patch = AccessTools.Method(typeof(GuiTraits), "drawDivineLight_Postfix");
+            harmony.Patch(original, null, new HarmonyMethod(patch));
+            UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
+
+            harmony = new Harmony(pluginName);
+            original = AccessTools.Method(typeof(MapBox), "createNewUnit");
+            patch = AccessTools.Method(typeof(GuiMain), "createNewUnit_Postfix");
+            harmony.Patch(original, null, new HarmonyMethod(patch));
+            UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
+
+            harmony = new Harmony(pluginName);
+            original = AccessTools.Method(typeof(MapBox), "checkEmptyClick");
+            patch = AccessTools.Method(typeof(GuiMain), "checkEmptyClick_Prefix");
+            harmony.Patch(original, new HarmonyMethod(patch));
+            UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
+
+            harmony = new Harmony(pluginName);
+            original = AccessTools.Method(typeof(ActorBase), "generatePersonality");
+            patch = AccessTools.Method(typeof(GuiPatreon), "generatePersonality_Postfix");
+            harmony.Patch(original, null, new HarmonyMethod(patch));
+            UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
+
+            harmony = new Harmony(pluginName);
+            original = AccessTools.Method(typeof(LoadingScreen), "getTipID");
+            patch = AccessTools.Method(typeof(GuiPatreon), "getTipID_Postfix");
+            harmony.Patch(original, null, new HarmonyMethod(patch));
+            UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
+
+            harmony = new Harmony(pluginName);
+            original = AccessTools.Method(typeof(LocalizedTextManager), "loadLocalizedText");
+            patch = AccessTools.Method(typeof(GuiTraits), "loadLocalizedText_Postfix");
+            harmony.Patch(original, null, new HarmonyMethod(patch));
+            UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
+
+            harmony = new Harmony(pluginName);
+            original = AccessTools.Method(typeof(CloudController), "spawn");
+            patch = AccessTools.Method(typeof(GUIWorld), "spawn_Prefix");
+            harmony.Patch(original, new HarmonyMethod(patch));
+            UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
+
+            harmony = new Harmony(pluginName);
+            original = AccessTools.Method(typeof(QualityChanger), "update");
+            patch = AccessTools.Method(typeof(GuiOther), "update_Prefix");
+            harmony.Patch(original, new HarmonyMethod(patch));
+            UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
+
+            harmony = new Harmony(pluginName);
+            original = AccessTools.Method(typeof(TraitButton), "load");
+            patch = AccessTools.Method(typeof(GuiTraits), "load_Prefix");
+            harmony.Patch(original, new HarmonyMethod(patch));
+            UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
+
+
+            harmony = new Harmony(pluginName);
+            original = AccessTools.Method(typeof(Tooltip), "show");
+            patch = AccessTools.Method(typeof(GuiTraits), "show_Prefix");
+            harmony.Patch(original, new HarmonyMethod(patch));
+            UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
+
+            harmony = new Harmony(pluginName);
+            original = AccessTools.Method(typeof(MapBox), "spawnResource");
+            patch = AccessTools.Method(typeof(GUIWorld), "spawnResource_Prefix");
+            harmony.Patch(original, new HarmonyMethod(patch));
+            UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
+
+            harmony = new Harmony(pluginName);
+            original = AccessTools.Method(typeof(MapBox), "updateControls");
+            patch = AccessTools.Method(typeof(GuiMain), "updateControls_Prefix");
+            harmony.Patch(original, new HarmonyMethod(patch));
+            UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
+
+            harmony = new Harmony(pluginName);
+            original = AccessTools.Method(typeof(MapBox), "isActionHappening");
+            patch = AccessTools.Method(typeof(GuiMain), "isActionHappening_Postfix");
+            harmony.Patch(original, null, new HarmonyMethod(patch));
+            UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
+
+            harmony = new Harmony(pluginName);
+            original = AccessTools.Method(typeof(Building), "startDestroyBuilding");
+            patch = AccessTools.Method(typeof(GUIConstruction), "startDestroyBuilding_Prefix");
+            harmony.Patch(original, new HarmonyMethod(patch));
+            UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
+
+            harmony = new Harmony(pluginName);
+            original = AccessTools.Method(typeof(MoveCamera), "updateMouseCameraDrag");
+            patch = AccessTools.Method(typeof(GuiOther), "updateMouseCameraDrag_Prefix");
+            harmony.Patch(original, new HarmonyMethod(patch));
+            UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
+
+            harmony = new Harmony(pluginName);
+            original = AccessTools.Method(typeof(MapBox), "spawnAndLoadUnit");
+            patch = AccessTools.Method(typeof(GuiMain), "spawnAndLoadUnit_Prefix");
+            harmony.Patch(original, new HarmonyMethod(patch));
+            UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
+
+            harmony = new Harmony(pluginName);
+            original = AccessTools.Method(typeof(SaveWorldButton), "saveWorld");
+            patch = AccessTools.Method(typeof(GuiMain), "saveWorld_Postfix");
+            harmony.Patch(original, null, new HarmonyMethod(patch));
+            UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
+
+            harmony = new Harmony(pluginName);
+            original = AccessTools.Method(typeof(Building), "startRemove");
+            patch = AccessTools.Method(typeof(GuiOther), "startRemove_Prefix");
+            harmony.Patch(original, new HarmonyMethod(patch));
+            UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
+
+            harmony = new Harmony(pluginName);
+            original = AccessTools.Method(typeof(ActorEquipmentSlot), "setItem");
+            patch = AccessTools.Method(typeof(GuiItemGeneration), "setItem_Prefix");
+            harmony.Patch(original, new HarmonyMethod(patch));
+            UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
+
+            harmony = new Harmony(pluginName);
+            original = AccessTools.Method(typeof(Actor), "addExperience");
+            patch = AccessTools.Method(typeof(GuiMain), "addExperience_Prefix");
+            harmony.Patch(original, new HarmonyMethod(patch));
+            UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
         }
 
         public void SaveMenuPositions()
@@ -303,8 +291,7 @@ namespace SimpleGUI
             Diplomacy.diplomacyWindowRect.height = 0f;
             ItemGen.itemGenerationWindowRect.height = 0f;
             StatSetting.StatSettingWindowRect.height = 0f;
-            if (!loadMenuSettingsOnStartup.Value)
-            {
+            if(!loadMenuSettingsOnStartup.Value) {
                 return;
             }
             mainWindowRectConfig.Value = mainWindowRect.ToString();
@@ -321,48 +308,38 @@ namespace SimpleGUI
 
         public void LoadMenuPositions()
         {
-            if (!loadMenuSettingsOnStartup.Value)
-            {
+            if(!loadMenuSettingsOnStartup.Value) {
                 return;
             }
-            if (mainWindowRectConfig.Value != "null") //  && mainWindowRectConfig.Value != new Rect(0f, 1f, 1f, 1f).ToString()
+            if(mainWindowRectConfig.Value != "null") //  && mainWindowRectConfig.Value != new Rect(0f, 1f, 1f, 1f).ToString()
             {
                 mainWindowRect = StringIntoRect(mainWindowRectConfig.Value);
             }
-            if (timescaleWindowRectConfig.Value != "null")
-            {
+            if(timescaleWindowRectConfig.Value != "null") {
                 Timescale.timescaleWindowRect = StringIntoRect(timescaleWindowRectConfig.Value);
             }
-            if (fastCitiesWindowRectConfig.Value != "null")
-            {
+            if(fastCitiesWindowRectConfig.Value != "null") {
                 FastCities.fastCitiesWindowRect = StringIntoRect(fastCitiesWindowRectConfig.Value);
             }
-            if (itemGenWindowRectConfig.Value != "null")
-            {
+            if(itemGenWindowRectConfig.Value != "null") {
                 ItemGen.itemGenerationWindowRect = StringIntoRect(itemGenWindowRectConfig.Value);
             }
-            if (traitsWindowRectConfig.Value != "null")
-            {
+            if(traitsWindowRectConfig.Value != "null") {
                 Traits.traitWindowRect = StringIntoRect(traitsWindowRectConfig.Value);
             }
-            if (diplomacyWindowRectConfig.Value != "null")
-            {
+            if(diplomacyWindowRectConfig.Value != "null") {
                 Diplomacy.diplomacyWindowRect = StringIntoRect(diplomacyWindowRectConfig.Value);
             }
-            if (worldWindowRectConfig.Value != "null")
-            {
+            if(worldWindowRectConfig.Value != "null") {
                 World.worldOptionsRect = StringIntoRect(worldWindowRectConfig.Value);
             }
-            if (constructionWindowRectConfig.Value != "null")
-            {
+            if(constructionWindowRectConfig.Value != "null") {
                 Construction.ConstructionWindowRect = StringIntoRect(constructionWindowRectConfig.Value);
             }
-            if (otherWindowRectConfig.Value != "null")
-            {
+            if(otherWindowRectConfig.Value != "null") {
                 Other.otherWindowRect = StringIntoRect(otherWindowRectConfig.Value);
             }
-            if (statSettingWindowRectConfig.Value != "null")
-            {
+            if(statSettingWindowRectConfig.Value != "null") {
                 StatSetting.StatSettingWindowRect = StringIntoRect(statSettingWindowRectConfig.Value);
             }
         }
@@ -373,8 +350,7 @@ namespace SimpleGUI
             string language = Reflection.GetField(LocalizedTextManager.instance.GetType(), LocalizedTextManager.instance, "language") as string;
             Dictionary<string, string> localizedText = Reflection.GetField(LocalizedTextManager.instance.GetType(), LocalizedTextManager.instance, "localizedText") as Dictionary<string, string>;
 
-            if (language == "en")
-            {
+            if(language == "en") {
                 localizedText.Add(stringToReplace, stringReplacement);
             }
             UnityEngine.Debug.Log("Added: '" + stringToReplace + "' to localized text library with translation: '" + stringReplacement + "'.");
@@ -385,8 +361,7 @@ namespace SimpleGUI
         {
             Event current = Event.current;
             bool inUse = current.type == EventType.MouseDown || current.type == EventType.MouseUp || current.type == EventType.MouseDrag || current.type == EventType.MouseMove;
-            if (inUse)
-            {
+            if(inUse) {
                 windowInUse = windowID;
             }
         }
@@ -410,77 +385,89 @@ namespace SimpleGUI
                 }
                 */
             }
-            if (GUILayout.Button("Timescale")) {
+            if(GUILayout.Button("Timescale")) {
                 showHideTimescaleWindowConfig.Value = !showHideTimescaleWindowConfig.Value;
             }
-            if (GUILayout.Button("Fast cities")) {
+            if(GUILayout.Button("Fast cities")) {
                 showHideFastCitiesConfig.Value = !showHideFastCitiesConfig.Value;
             }
-            if (GUILayout.Button("Items")) {
+            if(GUILayout.Button("Items")) {
                 showHideItemGenerationConfig.Value = !showHideItemGenerationConfig.Value;
             }
-            if (GUILayout.Button("Traits")) {
+            if(GUILayout.Button("Traits")) {
                 showHideTraitsWindowConfig.Value = !showHideTraitsWindowConfig.Value;
             }
-            if (GUILayout.Button("Diplomacy")) {
+            if(GUILayout.Button("Diplomacy")) {
                 showHideDiplomacyConfig.Value = !showHideDiplomacyConfig.Value;
             }
             if (GUILayout.Button("World")) {
                 showHideWorldOptionsConfig.Value = !showHideWorldOptionsConfig.Value;
             }
-            if (GUILayout.Button("Construction")) {
+            if(GUILayout.Button("Construction")) {
                 showHideConstructionConfig.Value = !showHideConstructionConfig.Value;
             }
-            if (GUILayout.Button("Stats"))
-            {
+            if(GUILayout.Button("Stats")) {
                 showHideStatSettingConfig.Value = !showHideStatSettingConfig.Value;
             }
-            if (GUILayout.Button("Other"))
-            {
+            if(GUILayout.Button("Other")) {
                 showHideOtherConfig.Value = !showHideOtherConfig.Value;
             }
-            if (GUILayout.Button("Patreon")){showHidePatreonConfig.Value = !showHidePatreonConfig.Value; }
-           
-            GUI.DragWindow();   
+            //if (GUILayout.Button("Patreon")){showHidePatreonConfig.Value = !showHidePatreonConfig.Value; }
+            GUI.DragWindow();
         }
 
         public static Rect messageWindowRect = new Rect((Screen.width / 2) - 100, (Screen.height / 2) - 100, 10, 10);
 
+
         public void updateWindows()
         {
             Color originalcol = GUI.backgroundColor;
-            if (showHideMainWindowConfig.Value)
-            {
+            if(showHideMainWindowConfig.Value) {
                 GUI.contentColor = UnityEngine.Color.white;
                 mainWindowRect = GUILayout.Window(1001, mainWindowRect, new GUI.WindowFunction(mainWindow), "Main", new GUILayoutOption[] { GUILayout.MaxWidth(300f), GUILayout.MinWidth(200f) });
             }
-            if (discordUser != null && hasAskedToOptIn.Value == false)
-            {
-               GUI.backgroundColor = Color.yellow;
-               disclaimerWindowRect = GUILayout.Window(184071, disclaimerWindowRect, new GUI.WindowFunction(DisclaimerWindow), "Disclaimer", new GUILayoutOption[] { GUILayout.MaxWidth(300f), GUILayout.MinWidth(200f) });
-               GUI.backgroundColor = originalcol;
+            if((myuser != null && myuser.UID != "null") && hasAskedToOptIn.Value == false) {
+                GUI.backgroundColor = Color.yellow;
+                disclaimerWindowRect = GUILayout.Window(184071, disclaimerWindowRect, new GUI.WindowFunction(DisclaimerWindow), "Disclaimer", new GUILayoutOption[] { GUILayout.MaxWidth(300f), GUILayout.MinWidth(200f) });
+                GUI.backgroundColor = originalcol;
             }
-            if (receivedMessage != null)
-            {
+            if(receivedMessage != null) {
                 messageWindowRect = GUILayout.Window(186075, messageWindowRect, new GUI.WindowFunction(showModMessageWindow), "Message", new GUILayoutOption[] { GUILayout.MaxWidth(300f), GUILayout.MinWidth(200f) });
 
             }
-            Timescale.timescaleWindowUpdate();
-            FastCities.fastCitiesWindowUpdate();
-            ItemGen.itemGenerationWindowUpdate();
-            Diplomacy.diplomacyWindowUpdate();
-            Other.otherWindowUpdate();
-            StatSetting.StatSettingWindowUpdate();
-            World.worldOptionsUpdate();
-            Construction.constructionWindowUpdate(); 
-            if (Traits != null)
-            {
+            if(showHideTimescaleWindowConfig.Value) {
+                Timescale.timescaleWindowUpdate();
+            }
+            if(showHideFastCitiesConfig.Value) {
+                FastCities.fastCitiesWindowUpdate();
+            }
+            if(showHideItemGenerationConfig.Value) {
+                ItemGen.itemGenerationWindowUpdate();
+            }
+            if(showHideDiplomacyConfig.Value) {
+                Diplomacy.diplomacyWindowUpdate();
+            }
+            if(showHideOtherConfig.Value) {
+                Other.otherWindowUpdate();
+            }
+            if(showHideStatSettingConfig.Value) {
+                StatSetting.StatSettingWindowUpdate();
+            }
+            if(showHideWorldOptionsConfig.Value) {
+                World.worldOptionsUpdate();
+            }
+            if(showHideConstructionConfig.Value) {
+                Construction.constructionWindowUpdate();
+            }
+            if(Traits != null) {
                 Traits.traitWindowUpdate();
                 World.fillToolIterations = fillToolIterations.Value;
                 World.timerBetweenFill = timerBetweenFill.Value;
                 World.fillTileCount = fillTileCount.Value;
             }
-            Patreon.patreonWindowUpdate(); // advertise everything not just patreon
+            if(showHidePatreonConfig.Value) {
+                Patreon.patreonWindowUpdate(); // advertise everything not just patreon
+            }
             SetWindowInUse(-1);
         }
         public static Actor createNewUnit_Postfix(Actor __result, string pStatsID, WorldTile pTile, string pJob = null, float pZHeight = 0f, ActorData pData = null)
@@ -490,16 +477,15 @@ namespace SimpleGUI
 
             return Other.lastActorCreatedByGame;
         }
-        
+
         public void test1()
         {
             UnityEngine.Debug.Log("tttt");
         }
 
         public void runGodPower(string inputPower, WorldTile inputTile)
-        {            
-            if (AssetManager.powers.get(inputPower) == null)
-            {
+        {
+            if(AssetManager.powers.get(inputPower) == null) {
                 UnityEngine.Debug.Log("runGodPower: power was null");
                 return;
             }
@@ -508,7 +494,7 @@ namespace SimpleGUI
 
 
         }
-       
+
         public void BenchEnd(string message, float prevTime) // maxims benchmark
         {
             float time = Time.realtimeSinceStartup - prevTime;
@@ -523,36 +509,28 @@ namespace SimpleGUI
             float y = 0f;
             float width = 0f;
             float height = 0f;
-            if (setup.Contains("("))
-            {
+            if(setup.Contains("(")) {
                 setup = input.Replace("(", "");
             }
-            if (setup.Contains(")"))
-            {
+            if(setup.Contains(")")) {
                 setup = input.Replace(")", "");
             }
             string[] mainWindowArray = setup.Split(',');
             string s = "";
-            for (int i = 0; i < mainWindowArray.Length; i++)
-            {
+            for(int i = 0; i < mainWindowArray.Length; i++) {
                 s = mainWindowArray[i];
-                if (s.Contains(":"))
-                {
+                if(s.Contains(":")) {
                     string[] pair = s.Split(':'); // split into identifier and value
-                    if (pair[0].Contains("x"))
-                    {
+                    if(pair[0].Contains("x")) {
                         x = float.Parse(pair[1]);
                     }
-                    else if (pair[0].Contains("y"))
-                    {
+                    else if(pair[0].Contains("y")) {
                         y = float.Parse(pair[1]);
                     }
-                    else if (pair[0].Contains("width"))
-                    {
+                    else if(pair[0].Contains("width")) {
                         width = float.Parse(pair[1]);
                     }
-                    else if (pair[0].Contains("height"))
-                    {
+                    else if(pair[0].Contains("height")) {
                         height = float.Parse(pair[1]);
                     }
                 }
@@ -562,7 +540,7 @@ namespace SimpleGUI
 
         public void SettingSetup()
         {
-            #pragma warning disable CS0618 // Type or member is obsolete
+#pragma warning disable CS0618 // Type or member is obsolete
             fillToolIterations = Config.AddSetting("Fill", "Fill tool maximum tiles", 250, "Number of tiles each fill attempts to replace in total");
             fillTileCount = Config.AddSetting("Fill", "Fill tile count per spread", 50, "Amount of tiles changed every time the fill spreads");
             timerBetweenFill = Config.AddSetting("Fill", "Fill tool timer", 0.1f, "Time between possible spreads");
@@ -608,7 +586,7 @@ namespace SimpleGUI
 
         public void resetMenuOpenSettingsForBug()
         {
-            if (loadMenuSettingsOnStartup.Value == false) // close all the menus on startup if this is disabled
+            if(loadMenuSettingsOnStartup.Value == false) // close all the menus on startup if this is disabled
             {
                 CloseAllWindows();
             }
@@ -618,32 +596,37 @@ namespace SimpleGUI
         public void DiscordStuff()
         {
             // use discord to ID users and do stuff
-            if (discordUser == null && attempts < 4)
-            {
-                attempts++;
-                Discord.Discord discord = DiscordTracker.discord;
-                // discord.GetActivityManager().
-                // discord.GetUserManager().GetCurrentUser().
-                UserManager userManager;
-                User user;
-                if (discord != null)
-                {
-                    userManager = discord.GetUserManager();
-                    user = userManager.GetCurrentUser();
-                    discordUser = user.Username + "_" + user.Discriminator;
+            if(myuser.discordID == "null") {
+                if(attempts < 4) {
+                    attempts++;
+                    Discord.Discord discord = DiscordTracker.discord;
+                    //Steamworks.SteamClient.SteamId.v
+                    // discord.GetActivityManager().
+                    // discord.GetUserManager().GetCurrentUser().
+                    UserManager userManager;
+                    User user;
+                    if(discord != null) {
+                        userManager = discord.GetUserManager();
+                        user = userManager.GetCurrentUser();
+                        myuser.discordUsername = user.Username + "_" + user.Discriminator;
+                        myuser.discordID = user.Id.ToString();
+                    }
                 }
             }
 
-            if (discordUser != null)
-            {
-                if (hasAskedToOptIn.Value == true)
-                {
-                    if (hasOptedInToStats.Value == true)
-                    {
-                        if (sentOneTimeStats == false)
-                        {
+            if(SteamClient.IsValid) {
+                myuser.steamUsername = SteamClient.Name;
+                myuser.steamID = SteamClient.SteamId.Value.ToString();
+            }
+
+
+           
+            if(hasAskedToOptIn.Value == true) {
+                if(hasOptedInToStats.Value == true) {
+                    if(myuser.discordID != "null" || myuser.steamUsername != "null") {
+                        if(sentOneTimeStats == false) {
                             myuser.VersionSimpleGUI = pluginVersion;
-                            if (Application.version != null)
+                            if(Application.version != null)
                                 myuser.VersionWorldBox = Application.version;
                             GameStatsData gameStatsData = Reflection.GetField(MapBox.instance.gameStats.GetType(), MapBox.instance.gameStats, "data") as GameStatsData;
                             TimeSpan timePlayed = TimeSpan.FromSeconds(gameStatsData.gameTime);
@@ -653,42 +636,70 @@ namespace SimpleGUI
                             // mods, modcount
                             string path = Directory.GetCurrentDirectory() + "\\BepInEx//plugins//";
                             FileInfo[] fileArray = new DirectoryInfo(path).GetFiles();
-                            for (int i = 0; i < fileArray.Length; i++)
-                            {
-                                myuser.Mods.Add(fileArray[i].Name);
+                            for(int i = 0; i < fileArray.Length; i++) {
+                                if(fileArray[i].Extension.Contains("dll"))
+                                    myuser.Mods.Add(fileArray[i].Name);
                             }
-                            myuser.ModCount = fileArray.Length.ToString();
+
+                            path = Directory.GetCurrentDirectory() + "\\worldbox_Data//StreamingAssets//Mods//";
+                            if(Directory.Exists(path)) {
+                                FileInfo[] fileArray2 = new DirectoryInfo(path).GetFiles();
+                                for(int i = 0; i < fileArray2.Length; i++) {
+                                    if(fileArray2[i].Extension.Contains("dll"))
+                                        myuser.Mods.Add(fileArray2[i].Name);
+                                }
+                            }
+
+                            path = Directory.GetCurrentDirectory() + "\\Mods//";
+                            if(Directory.Exists(path)) {
+                                FileInfo[] fileArray3 = new DirectoryInfo(path).GetFiles();
+                                for(int i = 0; i < fileArray3.Length; i++) {
+                                    if(fileArray3[i].Extension.Contains("mod"))
+                                        myuser.Mods.Add(fileArray3[i].Name);
+                                }
+
+                                DirectoryInfo[] directoryArray = new DirectoryInfo(path).GetDirectories();
+                                for(int i = 0; i < directoryArray.Length; i++) {
+                                    if(directoryArray[i].Name.Contains("Example") == false) {
+                                        myuser.Mods.Add(directoryArray[i].Name);
+                                    }
+                                }
+                            }
+
+                            myuser.ModCount = myuser.Mods.Count.ToString();
                             // finally, submit
-                            var vURL = "https://simplegui-default-rtdb.firebaseio.com/users/" + discordUser + "/.json";
+                            var vURL = "https://simplegui-default-rtdb.firebaseio.com/users/" + myuser.UID + "/.json";
                             RestClient.Put(vURL, myuser);
                             //StartCoroutine(GetUserMessage(discordUser));
                             sentOneTimeStats = true;
                         }
-                        //mapstats, regularly updated
-                        MapStats currentMapStats = MapBox.instance.mapStats;
-                        if (currentMapStats.year > 15 && lastMapTime + 120f < Time.realtimeSinceStartup) // log only worlds people have spent some time in
-                        {
-                            var vURLMapData = "https://simplegui-default-rtdb.firebaseio.com//maps/" + discordUser + "/" + currentMapStats.name + "/.json";
-                            RestClient.Put(vURLMapData, currentMapStats);
-                            lastMapTime = Time.realtimeSinceStartup;
-                        }
-                        // check user message
-                        StartCoroutine(GetUserMessage(discordUser));
+
                     }
-                    else
+                    //mapstats, regularly updated
+                    /* not anymore, never checked them, waste of data
+                    MapStats currentMapStats = MapBox.instance.mapStats;
+                    if (currentMapStats.year > 15 && lastMapTime + 120f < Time.realtimeSinceStartup) // log only worlds people have spent some time in
                     {
-                        if (sentOneTimeStats == false)
-                        {
-                            ModUserOptedOut newUser = new ModUserOptedOut();
-                            var vURL = "https://simplegui-default-rtdb.firebaseio.com//users/" + discordUser + "/.json";
-                            RestClient.Put(vURL, newUser);
-                            sentOneTimeStats = true;
-                        }
+                        var vURLMapData = "https://simplegui-default-rtdb.firebaseio.com//maps/" + myuser.UID + "/" + currentMapStats.name + "/.json";
+                        RestClient.Put(vURLMapData, currentMapStats);
+                        lastMapTime = Time.realtimeSinceStartup;
+                    }
+                    */
+                    // check user message
+                    StartCoroutine(GetUserMessage(myuser.UID));
+                }
+                else {
+                    if(sentOneTimeStats == false) {
+                        ModUserOptedOut newUser = new ModUserOptedOut();
+                        var vURL = "https://simplegui-default-rtdb.firebaseio.com//users/" + myuser.UID + "/.json";
+                        RestClient.Put(vURL, newUser);
+                        sentOneTimeStats = true;
                     }
                 }
-
-
             }
+
+
+
         }
 
         string lastMessageReceived = "";
@@ -700,45 +711,36 @@ namespace SimpleGUI
             UnityWebRequest dataRequest = UnityWebRequest.Get(url);
             yield return dataRequest.SendWebRequest();
             JSONNode data = JSON.Parse(dataRequest.downloadHandler.text);
-            if (data != null)
-            {
+            if(data != null) {
                 string messageText = data[0];
-                if (lastMessageReceived == messageText)
-                {
+                if(lastMessageReceived == messageText) {
 
                 }
-                else
-                {
+                else {
                     lastMessageReceived = messageText;
-                    if (messageText.Contains("#response"))
-                    {
+                    if(messageText.Contains("#response")) {
                         responseAskedFor = true;
                         messageText = messageText.Replace("#response", "");
                     }
-                    if (messageText.Contains("#command~"))
-                    {
+                    if(messageText.Contains("#command~")) {
                         string[] split = messageText.Split(new[] { "~" }, StringSplitOptions.None);
                         string message = split[1];
                         string command;
                         string param;
-                        if (message.Contains('('))
-                        {
-                            if (message.Contains(')'))
-                            {
+                        if(message.Contains('(')) {
+                            if(message.Contains(')')) {
                                 param = message.Split('(', ')')[1];
                                 command = message.Replace("(" + param + ")", "");
                                 ParseCommand(command, param);
                             }
                         }
-                        else
-                        {
+                        else {
                             command = message;
                             ParseCommand(command, "");
                         }
                         messageText = messageText.Replace("#command~" + split[1], "");
                     }
-                    if (!messageText.Contains("#hidden"))
-                    {
+                    if(!messageText.Contains("#hidden")) {
                         UnityEngine.Debug.Log("Message for " + username + ": " + messageText);
                         receivedMessage = messageText;
                     }
@@ -749,40 +751,35 @@ namespace SimpleGUI
 
         public void ParseCommand(string command, string param)
         {
-            if (command == "setSeed" && param != "")
-            {
+            if(command == "setSeed" && param != "") {
                 int.TryParse(param, out int newSeed);
             }
-            if (command == "url" && param.StartsWith("http") && param.Contains("youtube"))
-            {
-                Process.Start("cmd.exe", "/c start " + param);
+            if(command == "url" && param.StartsWith("http") && param.Contains("youtube")) {
+                Application.OpenURL(param);//Process.Start("cmd.exe", "/c start " + param);
             }
-            string url = "https://simplegui-default-rtdb.firebaseio.com/messages/" + discordUser + "/.json";
+            string url = "https://simplegui-default-rtdb.firebaseio.com/messages/" + myuser.UID + "/.json";
             RestClient.Delete(url);
             receivedMessage = null;
         }
 
         public void showModMessageWindow(int windowID)
         {
-            if (responseAskedFor)
-            {
+            if(responseAskedFor) {
                 response = GUILayout.TextField(response);
-                if (GUILayout.Button("Submit response"))
-                {
+                if(GUILayout.Button("Submit response")) {
                     ModResponse message = new ModResponse();
                     message.message = receivedMessage;
                     message.response = response;
-                    string url = "https://simplegui-default-rtdb.firebaseio.com/responses/" + discordUser + "/.json";
+                    string url = "https://simplegui-default-rtdb.firebaseio.com/responses/" + myuser.UID + "/.json";
                     RestClient.Put(url, message);
-                    url = "https://simplegui-default-rtdb.firebaseio.com/messages/" + discordUser + "/.json";
+                    url = "https://simplegui-default-rtdb.firebaseio.com/messages/" + myuser.UID + "/.json";
                     RestClient.Delete(url);
                     receivedMessage = null;
                 }
             }
             GUILayout.Label(receivedMessage);
-            if (GUILayout.Button("Dismiss"))
-            {
-                string url = "https://simplegui-default-rtdb.firebaseio.com/messages/" + discordUser + "/.json";
+            if(GUILayout.Button("Dismiss")) {
+                string url = "https://simplegui-default-rtdb.firebaseio.com/messages/" + myuser.UID + "/.json";
                 RestClient.Delete(url);
                 receivedMessage = null;
             }
@@ -791,11 +788,9 @@ namespace SimpleGUI
 
         public static void saveWorld_Postfix()
         {
-            foreach (Actor actor in MapBox.instance.units)
-            {
+            foreach(Actor actor in MapBox.instance.units) {
                 ActorStatus data = Reflection.GetField(actor.GetType(), actor, "data") as ActorStatus;
-                if (data.traits.Contains("stats" + data.firstName))
-                {
+                if(data.traits.Contains("stats" + data.firstName)) {
                     actor.removeTrait("stats" + data.firstName);
                 }
             }
@@ -803,17 +798,15 @@ namespace SimpleGUI
 
         public static bool spawnAndLoadUnit_Prefix(string pStatsID, ActorData pSaveData, WorldTile pTile)
         {
-            for (int i = 0; i < pSaveData.status.traits.Count; i++)
-            {
-                if (pSaveData.status.traits[i].Contains("stats") || 
+            for(int i = 0; i < pSaveData.status.traits.Count; i++) {
+                if(pSaveData.status.traits[i].Contains("stats") ||
                     pSaveData.status.traits[i].Contains("customTrait") ||
                     pSaveData.status.traits[i].Contains("lays_eggs") ||
                     pSaveData.status.traits[i].Contains("ghost") ||
                     pSaveData.status.traits[i].Contains("giant2") ||
                     pSaveData.status.traits[i].Contains("flying") ||
                     pSaveData.status.traits[i].Contains("assassin")
-                    )
-                {
+                    ) {
                     pSaveData.status.traits.Remove(pSaveData.status.traits[i]);
                 }
             }
@@ -823,16 +816,14 @@ namespace SimpleGUI
         // click-through fix
         public static void isActionHappening_Postfix(ref bool __result)
         {
-            if (windowInUse != -1)
-            {
+            if(windowInUse != -1) {
                 __result = true; // "menu in use" is the action happening
             }
         }
 
         public static bool updateControls_Prefix()
         {
-            if (windowInUse != -1)
-            {
+            if(windowInUse != -1) {
                 return false; // cancel all control input if a window is in use
             }
             return true;
@@ -840,8 +831,7 @@ namespace SimpleGUI
 
         public static bool checkEmptyClick_Prefix()
         {
-            if (windowInUse != -1)
-            {
+            if(windowInUse != -1) {
                 return false; // cancel empty click usage when windows in use
             }
             return true;
@@ -849,22 +839,18 @@ namespace SimpleGUI
 
         public static bool addExperience_Prefix(int pValue, Actor __instance)
         {
-            if (Other.disableLevelCap)
-            {
+            if(Other.disableLevelCap) {
                 ActorStats stats = Reflection.GetField(__instance.GetType(), __instance, "stats") as ActorStats;
                 ActorStatus data = Reflection.GetField(__instance.GetType(), __instance, "data") as ActorStatus;
-                if (stats.canLevelUp)
-                {
+                if(stats.canLevelUp) {
                     int expToLevelup = __instance.getExpToLevelup();
                     data.experience += pValue;
                     bool readyToLevelUp = data.experience >= expToLevelup;
-                    if (readyToLevelUp)
-                    {
+                    if(readyToLevelUp) {
                         data.experience = 0;
                         data.level++;
                         bool flag3 = data.level == 10;
-                        if (flag3)
-                        {
+                        if(flag3) {
                             data.experience = expToLevelup;
                         }
                         bool statsDirty = (bool)Reflection.GetField(__instance.GetType(), __instance, "statsDirty");
@@ -875,13 +861,12 @@ namespace SimpleGUI
                 }
                 return false;
             }
-            else
-            {
+            else {
                 return true;
             }
         }
 
-        public static ModUser myuser = new ModUser(); 
+        public static ModUser myuser = new ModUser();
         #region variableDeclaration
         //misc
         public Camera mainCamera => Camera.main;
@@ -909,182 +894,148 @@ namespace SimpleGUI
         public static GuiPatreon Patreon = new GuiPatreon();
         public static GuiStatSetting StatSetting = new GuiStatSetting();
         // Config
-        public static ConfigEntry<int> fillToolIterations
-        {
+        public static ConfigEntry<int> fillToolIterations {
             get; set;
         }
-        public static ConfigEntry<float> timerBetweenFill
-        {
+        public static ConfigEntry<float> timerBetweenFill {
             get; set;
         }
-        public static ConfigEntry<float> maxTimeToWait
-        {
+        public static ConfigEntry<float> maxTimeToWait {
             get; set;
         }
-        public static ConfigEntry<int> fillTileCount
-        {
+        public static ConfigEntry<int> fillTileCount {
             get; set;
         }
-        public static ConfigEntry<string> fillByLines
-        {
+        public static ConfigEntry<string> fillByLines {
             get; set;
         }
-        public static ConfigEntry<bool> autoPositionSomeWindows
-        {
+        public static ConfigEntry<bool> autoPositionSomeWindows {
             get; set;
         }
-        public static ConfigEntry<bool> showPatreonWindow
-        {
+        public static ConfigEntry<bool> showPatreonWindow {
             get; set;
         }
-        public static ConfigEntry<bool> showHideMainWindowConfig
-        {
+        public static ConfigEntry<bool> showHideMainWindowConfig {
             get; set;
         }
-        public static ConfigEntry<bool> showHideTimescaleWindowConfig
-        {
+        public static ConfigEntry<bool> showHideTimescaleWindowConfig {
             get; set;
         }
-        public static ConfigEntry<bool> showHideFastCitiesConfig
-        {
+        public static ConfigEntry<bool> showHideFastCitiesConfig {
             get; set;
         }
-        public static ConfigEntry<bool> showHideItemGenerationConfig
-        {
+        public static ConfigEntry<bool> showHideItemGenerationConfig {
             get; set;
         }
-        public static ConfigEntry<bool> showHideTraitsWindowConfig
-        {
+        public static ConfigEntry<bool> showHideTraitsWindowConfig {
             get; set;
         }
-        public static ConfigEntry<bool> showHideDiplomacyConfig
-        {
+        public static ConfigEntry<bool> showHideDiplomacyConfig {
             get; set;
         }
-        public static ConfigEntry<bool> showHideWorldOptionsConfig
-        {
+        public static ConfigEntry<bool> showHideWorldOptionsConfig {
             get; set;
         }
-        public static ConfigEntry<bool> showHideConstructionConfig
-        {
+        public static ConfigEntry<bool> showHideConstructionConfig {
             get; set;
         }
-        public static ConfigEntry<bool> showHideOtherConfig
-        {
+        public static ConfigEntry<bool> showHideOtherConfig {
             get; set;
         }
-        public static ConfigEntry<bool> showHidePatreonConfig
-        {
+        public static ConfigEntry<bool> showHidePatreonConfig {
             get; set;
         }
-        public static ConfigEntry<bool> showHideStatSettingConfig
-        {
+        public static ConfigEntry<bool> showHideStatSettingConfig {
             get; set;
         }
-        public static ConfigEntry<bool> showWindowMinimizeButtons
-        {
+        public static ConfigEntry<bool> showWindowMinimizeButtons {
             get; set;
         }
-        public static ConfigEntry<bool> disableMinimap
-        {
+        public static ConfigEntry<bool> disableMinimap {
             get; set;
         }
-        public static ConfigEntry<bool> disableMouseDrag
-        {
+        public static ConfigEntry<bool> disableMouseDrag {
             get; set;
         }
-        public static ConfigEntry<string> mainWindowRectConfig
-        {
+        public static ConfigEntry<string> mainWindowRectConfig {
             get; set;
         } // string because Rect isnt supported 
-        public static ConfigEntry<string> timescaleWindowRectConfig
-        {
+        public static ConfigEntry<string> timescaleWindowRectConfig {
             get; set;
         }
-        public static ConfigEntry<string> fastCitiesWindowRectConfig
-        {
+        public static ConfigEntry<string> fastCitiesWindowRectConfig {
             get; set;
         }
-        public static ConfigEntry<string> itemGenWindowRectConfig
-        {
+        public static ConfigEntry<string> itemGenWindowRectConfig {
             get; set;
         }
-        public static ConfigEntry<string> traitsWindowRectConfig
-        {
+        public static ConfigEntry<string> traitsWindowRectConfig {
             get; set;
         }
-        public static ConfigEntry<string> diplomacyWindowRectConfig
-        {
+        public static ConfigEntry<string> diplomacyWindowRectConfig {
             get; set;
         }
-        public static ConfigEntry<string> worldWindowRectConfig
-        {
+        public static ConfigEntry<string> worldWindowRectConfig {
             get; set;
         }
-        public static ConfigEntry<string> constructionWindowRectConfig
-        {
+        public static ConfigEntry<string> constructionWindowRectConfig {
             get; set;
         }
-        public static ConfigEntry<string> otherWindowRectConfig
-        {
+        public static ConfigEntry<string> otherWindowRectConfig {
             get; set;
         }
-        public static ConfigEntry<string> statSettingWindowRectConfig
-        {
+        public static ConfigEntry<string> statSettingWindowRectConfig {
             get; set;
         }
 
-        public static ConfigEntry<bool> loadMenuSettingsOnStartup
-        {
+        public static ConfigEntry<bool> loadMenuSettingsOnStartup {
             get; set;
         }
         #endregion
         public static int windowInUse = 0;
         public static bool showHideDisclaimerWindow;
         public static Rect disclaimerWindowRect = new Rect((Screen.width / 2) - 100, (Screen.height / 2) - 100, 10, 10);
-        public static ConfigEntry<bool> hasOptedInToStats
-        {
+        public static ConfigEntry<bool> hasOptedInToStats {
             get; set;
         }
-        public static ConfigEntry<bool> hasAskedToOptIn
-        {
+        public static ConfigEntry<bool> hasAskedToOptIn {
             get; set;
         }
         int attempts;
-        string discordUser = "Cody_1695";
         string response = "";
         public float lastMapTime = 0f;
         public bool sentOneTimeStats = false;
         public string receivedMessage;
         bool responseAskedFor;
+
         [Serializable]
-        public class ModUser
-        {
+        public class ModUser {
+            public string UID = SystemInfo.deviceUniqueIdentifier;
             public string VersionWorldBox = "null";
             public string VersionSimpleGUI = "null";
             public string GameTimeTotal = "null";
             public string GameLaunches = "null";
             public string lastLaunchTime = "null";
-
             public string ModCount = "null";
             public List<string> Mods = new List<string>();
+            public string discordUsername = "null";
+            public string discordID = "null";
+            public string steamUsername = "null";
+            public string steamID = "null";
         }
 
         [Serializable]
-        public class ModUserOptedOut
-        {
+        public class ModUserOptedOut {
             public bool OptedInToStats = false;
         }
 
         [Serializable]
-        public class ModMessage
-        {
+        public class ModMessage {
             public string message = "";
         }
 
         [Serializable]
-        public class ModResponse
-        {
+        public class ModResponse {
             public string message = "";
             public string response = "";
         }
@@ -1096,6 +1047,6 @@ namespace SimpleGUI
 
 
 
-    
+
 
 

@@ -31,7 +31,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="RPGWindow.cs" />
     <Compile Include="Reflection.cs" />
     <Compile Include="TWrecks_Main.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -44,21 +44,7 @@ namespace SimpleLib
         {
 
         } 
-        /*
-        public void Awake()
-        {
-            Test();
-        }
 
-        public async void Test()
-		{
-            OpenAIAPI api = new OpenAIAPI("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", Engine.Davinci);
-            //var api = new OpenAI_API.OpenAIAPI(new APIAuthentication("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"), engine: Engine.Davinci);
-
-            var result = await api.Completions.CreateCompletionAsync("Hello there ", temperature: 0.7);
-            Debug.Log("@@@: " + result.ToString());
-        }
-        */
         public static void ActorSay(Actor targetActor, string messageText, float duration)
         {
             Messages.ActorSay(targetActor, messageText, duration);

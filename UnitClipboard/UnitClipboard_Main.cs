@@ -57,7 +57,7 @@ namespace UnitClipboard
                 }
                 
                 ActorTrait pasted = new ActorTrait();
-                pasted.id = "pasted" + selectedUnitToPaste.dataFirstName; // might need to change to be unique
+                pasted.id = "pasted " + selectedUnitToPaste.dataFirstName.Replace("pasted ",""); // might need to change to be unique
                 if (addedTraits.Contains(pasted.id))
                 {
                     pastedUnit.addTrait(pasted.id); // refresh stats
@@ -84,6 +84,12 @@ namespace UnitClipboard
 
         public void OnGUI()
         {
+            GUILayout.BeginArea(new Rect(Screen.width - 120, 25, 120, 30));
+            if(GUILayout.Button("UnitClipboard")) // "WorldBox3D"
+            {
+                showHideMainWindow = !showHideMainWindow;
+            }
+            GUILayout.EndArea();
             if (showHideMainWindow)
             {
                 mainWindowRect = GUILayout.Window(500401, mainWindowRect, new GUI.WindowFunction(UnitClipboardWindow), "Unit Clipboard", new GUILayoutOption[] { GUILayout.MaxWidth(300f), GUILayout.MinWidth(200f) });

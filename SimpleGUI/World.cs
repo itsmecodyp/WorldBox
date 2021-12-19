@@ -11,6 +11,12 @@ namespace SimpleGUI
 {
 	class GUIWorld
 	{
+		public bool hasRun;
+		public void firstRunT()
+		{
+			Config.MODDED = true;
+			hasRun = true;
+		}
 		public float bench() // maxims benchmark
 		{
 			return Time.realtimeSinceStartup;
@@ -255,6 +261,9 @@ namespace SimpleGUI
 		{
 			if (Config.gameLoaded && !Config.worldLoading)
 			{
+				if(hasRun == false) {
+					firstRunT();
+				}
 				DragSelectionUpdate();
 				PixelFlashEffects flashEffects = Reflection.GetField(MapBox.instance.GetType(), MapBox.instance, "flashEffects") as PixelFlashEffects;
 				if (lastSelectedTiles != null)

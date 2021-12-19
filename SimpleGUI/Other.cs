@@ -123,18 +123,6 @@ namespace SimpleGUI
             {
                 disableLevelCap = !disableLevelCap;
             }
-            if (UnitClipboard_Main.showHideCopyPaste)
-            {
-                GUI.backgroundColor = Color.green;
-            }
-            else
-            {
-                GUI.backgroundColor = Color.red;
-            }
-            if (GUILayout.Button("Unit Clipboard"))
-            {
-                UnitClipboard_Main.showHideCopyPaste = !UnitClipboard_Main.showHideCopyPaste;
-            }
             GUI.DragWindow();
         }
 
