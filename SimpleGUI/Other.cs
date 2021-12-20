@@ -225,7 +225,6 @@ namespace SimpleGUI
         public bool disableLevelCap = false;
         public bool showHideOther;
         public Rect otherWindowRect;
-        public Actor lastActorCreatedByGame;
         public Actor selectedActor;
         public bool selectActor;
         public Actor lastActor

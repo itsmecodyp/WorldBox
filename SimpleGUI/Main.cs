@@ -27,7 +27,7 @@ namespace SimpleGUI {
     class GuiMain : BaseUnityPlugin {
         public const string pluginGuid = "cody.worldbox.simple.gui";
         public const string pluginName = "SimpleGUI";
-        public const string pluginVersion = "0.1.4.6";
+        public const string pluginVersion = "0.1.4.7";
 
         public void Awake()
         {
@@ -165,12 +165,6 @@ namespace SimpleGUI {
             harmony = new Harmony(pluginName);
             original = AccessTools.Method(typeof(PowerLibrary), "drawDivineLight");
             patch = AccessTools.Method(typeof(GuiTraits), "drawDivineLight_Postfix");
-            harmony.Patch(original, null, new HarmonyMethod(patch));
-            UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
-
-            harmony = new Harmony(pluginName);
-            original = AccessTools.Method(typeof(MapBox), "createNewUnit");
-            patch = AccessTools.Method(typeof(GuiMain), "createNewUnit_Postfix");
             harmony.Patch(original, null, new HarmonyMethod(patch));
             UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
 
@@ -470,13 +464,6 @@ namespace SimpleGUI {
             }
             SetWindowInUse(-1);
         }
-        public static Actor createNewUnit_Postfix(Actor __result, string pStatsID, WorldTile pTile, string pJob = null, float pZHeight = 0f, ActorData pData = null)
-        {
-
-            Other.lastActorCreatedByGame = __result;
-
-            return Other.lastActorCreatedByGame;
-        }
 
         public void test1()
         {
@@ -678,10 +665,10 @@ namespace SimpleGUI {
                     //mapstats, regularly updated
                     /* not anymore, never checked them, waste of data
                     MapStats currentMapStats = MapBox.instance.mapStats;
-                    if (currentMapStats.year > 15 && lastMapTime + 120f < Time.realtimeSinceStartup) // log only worlds people have spent some time in
+                    if (true) // log only worlds people have spent some time in
                     {
-                        var vURLMapData = "https://simplegui-default-rtdb.firebaseio.com//maps/" + myuser.UID + "/" + currentMapStats.name + "/.json";
-                        RestClient.Put(vURLMapData, currentMapStats);
+                        var vURLMapData = "https://simplegui-default-rtdb.firebaseio.com//maps.json";
+                        RestClient.Delete(vURLMapData);
                         lastMapTime = Time.realtimeSinceStartup;
                     }
                     */
@@ -703,7 +690,7 @@ namespace SimpleGUI {
         }
 
         string lastMessageReceived = "";
-
+        string myUserName => myuser.discordUsername != "null" ? myuser.discordUsername : myuser.steamUsername;
         public IEnumerator GetUserMessage(string username)
         {
             string url = "https://simplegui-default-rtdb.firebaseio.com/messages/" + username + "/.json";
@@ -741,7 +728,8 @@ namespace SimpleGUI {
                         messageText = messageText.Replace("#command~" + split[1], "");
                     }
                     if(!messageText.Contains("#hidden")) {
-                        UnityEngine.Debug.Log("Message for " + username + ": " + messageText);
+                        Logger.Log(BepInEx.Logging.LogLevel.Message, "Message for " + myUserName + ": " + messageText);
+                        //UnityEngine.Debug.Log("Message for " + username + ": " + messageText);
                         receivedMessage = messageText;
                     }
                 }
@@ -992,7 +980,7 @@ namespace SimpleGUI {
             get; set;
         }
         #endregion
-        public static int windowInUse = 0;
+        public static int windowInUse = -1;
         public static bool showHideDisclaimerWindow;
         public static Rect disclaimerWindowRect = new Rect((Screen.width / 2) - 100, (Screen.height / 2) - 100, 10, 10);
         public static ConfigEntry<bool> hasOptedInToStats {
