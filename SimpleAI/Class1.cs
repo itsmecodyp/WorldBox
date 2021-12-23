@@ -93,7 +93,7 @@ namespace SimpleAI {
 		public bool firstOpen;
 		public void OnGUI()
 		{
-			GUILayout.BeginArea(new Rect(Screen.width - 120, 75, 120, 30));
+			GUILayout.BeginArea(new Rect(Screen.width - 120, 100, 120, 30));
 			if(GUILayout.Button("SimpleAI")) {
 				if(firstOpen == false) {
 					GenerateNewAI();
@@ -235,9 +235,9 @@ namespace SimpleAI {
 				if(string.IsNullOrEmpty(lastResult) == false) {
 					string fullPrompt = newFullPrompt + "\nYou: " + input + "\n" + aiPerson.pName + ":";
 					tlastprompt = fullPrompt;
-					Debug.Log("(db)full prompt2: " + fullPrompt);
+					//Debug.Log("(db)full prompt2: " + fullPrompt);
 					CompletionRequest newRequest = new CompletionRequest() {
-						Temperature = 0.9,
+						Temperature = 1.0,
 						MultipleStopSequences = new string[] { "\n", " You:", " " + aiPerson.pName + ":" },
 						MaxTokens = 150,
 						TopP = 1,
@@ -249,15 +249,15 @@ namespace SimpleAI {
 					lastResult = result.ToString();
 					newFullPrompt = fullPrompt + result;
 					displayString = newFullPrompt;
-					Debug.Log("(db)result2: " + result);
+					//Debug.Log("(db)result2: " + result);
 
 				}
 				else {
 					string fullPrompt = "The following is a conversation with a " + aiPerson.pDescriptor1 + " " + aiPerson.pRace + ". The " + aiPerson.pRace + " is " + aiPerson.pDescriptor2 + "\n\nYou: Hello, who are you?\n" + aiPerson.pName + ": I am " + aiPerson.pName + ", a " + aiPerson.pRace + ". How can I help you today?\nYou: " + input + "\n" + aiPerson.pName + ":";
 					tlastprompt = fullPrompt;
-					Debug.Log("(db)full prompt: " + fullPrompt);
+					//Debug.Log("(db)full prompt: " + fullPrompt);
 					CompletionRequest newRequest = new CompletionRequest() {
-						Temperature = 0.9,
+						Temperature = 1.0,
 						MultipleStopSequences = new string[] { "\n", " You:", " " + aiPerson.pName + ":" },
 						MaxTokens = 150,
 						TopP = 1,
@@ -269,7 +269,7 @@ namespace SimpleAI {
 					lastResult = result.ToString();
 					newFullPrompt = fullPrompt + result;
 					displayString = newFullPrompt;
-					Debug.Log("(db)result: " + result);
+					//Debug.Log("(db)result: " + result);
 				}
 			}
 

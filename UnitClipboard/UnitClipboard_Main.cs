@@ -46,6 +46,8 @@ namespace UnitClipboard
             {
                 Actor pastedUnit = MapBox.instance.createNewUnit(unitData.statsID, targetTile, null, 0f, null);
                 ActorStatus data = Reflection.GetField(pastedUnit.GetType(), pastedUnit, "data") as ActorStatus;
+                data.level = unitData.level;
+                data.experience = unitData.exp;
                 data.firstName = unitData.dataFirstName;
                 if (data.traits != null && data.traits.Count >= 1)
                 {
@@ -147,6 +149,8 @@ namespace UnitClipboard
                 newSavedUnit.dataFirstName = data.firstName;
                 newSavedUnit.statsID = data.statsID;
                 newSavedUnit.equipment = targetActor.equipment;
+                newSavedUnit.level = data.level;
+                newSavedUnit.exp = data.experience;
                 unitClipboardDict.Add(unitClipboardDictNum.ToString(), newSavedUnit);
                 unitClipboardDictNum++;
                 selectedUnitToPaste = newSavedUnit;
@@ -162,6 +166,8 @@ namespace UnitClipboard
         public class UnitData
         {
             public string dataFirstName = "";
+            public int level;
+            public int exp;
             public string statsID = "";
             public List<string> traits = new List<string>();
             public ActorEquipment equipment;

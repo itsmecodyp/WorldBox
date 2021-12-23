@@ -30,11 +30,11 @@ namespace TWrecks_RPG
         {
             UpdateControls();
             UpdateSquadBehaviour();
-            if (Input.GetKeyDown(KeyCode.C))
+            if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.H))
             {
                 if (controlledActor != null)
                 {
-                    AddActorToSquad(currentlySelectedFormation, (ClosestActorToTile(MouseTile, controlledActor, 3f)));
+                    AddActorToSquad(currentlySelectedFormation, (ClosestActorToTile(MouseTile, 3f)));
                     //rpgWindow.OpenControlledWindow();
                 }
                 //TWrecks_RPG
@@ -602,7 +602,7 @@ namespace TWrecks_RPG
 
                 if (MouseTile != null && Input.GetKeyDown(KeyCode.F))
                 {
-                    lastInteractionActor = ClosestActorToTile(MouseTile, null, 3f);
+                    lastInteractionActor = ClosestActorToTile(MouseTile, 3f);
                 }
 
                 if (controlledActor != null)
@@ -696,7 +696,7 @@ namespace TWrecks_RPG
                     */
                     if (Input.GetKey(KeyCode.E))
                     {
-                        Actor target = ClosestActorToTile(MouseTile, controlledActor, 100f);
+                        Actor target = ClosestActorToTile(MouseTile, 3f);
                         if (target != null)
                         {
                             try
@@ -746,31 +746,22 @@ namespace TWrecks_RPG
                     }
                     // need to update the list somewhere and clear dead/nulls
                 }
-                if (Input.GetKey(KeyCode.E))
-                {
-                    foreach (SquadFormation activeSquad in squadsInUse.Values)
-                    {
-                        foreach (Actor squadMate in activeSquad.actorList)
-                        {
-
-                            Actor target = ClosestActorToTile(MouseTile, controlledActor, 100f);
-                            if (target != null)
-                            {
-                                try
-                                {
-                                    if ((bool)squadMate.CallMethod("tryToAttack", new object[] { target }))
-                                    {
-                                        // Debug.Log("Attack success")
-                                    }
+                if(Input.GetKey(KeyCode.E)) {
+                    Actor target = ClosestActorToTile(MouseTile, 3f);
+                    if(target != null) {
+                        foreach(Actor squadMate in totalSquadActorList) {
+                            try {
+                                if((bool)squadMate.CallMethod("tryToAttack", new object[] { target })) {
+                                    // Debug.Log("Attack success")
                                 }
-                                catch (Exception e)
-                                {
-                                    Debug.Log("exception caught");
-                                }
+                            }
+                            catch(Exception e) {
+                                Debug.Log("exception caught");
                             }
                         }
                     }
-                   
+
+
                 }
             }
         }
@@ -945,8 +936,10 @@ namespace TWrecks_RPG
         public static List<Actor> totalSquadActorList = new List<Actor>();
         public void AddActorToSquad(SquadFormation targetSquad, Actor targetActor)
         {
-            targetSquad.actorList.Add(targetActor);
-            totalSquadActorList.Add(targetActor);
+            if(targetSquad.actorList.Contains(targetActor) == false)
+                targetSquad.actorList.Add(targetActor);
+            if(totalSquadActorList.Contains(targetActor) == false)
+                totalSquadActorList.Add(targetActor);
         }
         public void RemoveActorFromSquad(Actor targetActor)
         {
@@ -968,59 +961,39 @@ namespace TWrecks_RPG
                     }
                 }
             }
+            if(totalSquadActorList.Contains(targetActor)) {
+                totalSquadActorList.Remove(targetActor);
+			}
         }
 
-        public static Actor ClosestActorToTile(WorldTile pTarget, Actor exclusionTarget, float range)
+        public static Actor ClosestActorToTile(WorldTile pTarget, float range)
         {
             Actor returnActor = null;
             foreach (Actor actorToCheck in MapBox.instance.units)
             {
-                if (exclusionTarget != null)
+                if(controlledActor != null && actorToCheck != controlledActor) // exclude hired actors if they exist
                 {
-                    if (actorToCheck != exclusionTarget)
-                    {
-                        if (exclusionTarget == controlledActor) // exclude hired actors if they exist
-                        {
-                            if (totalSquadActorList != null && totalSquadActorList.Count >= 1)
-                            {
-                                if (totalSquadActorList.Contains(actorToCheck) == false)
-                                {
-                                    float actorDistanceFromTile = Toolbox.Dist(actorToCheck.currentPosition.x, actorToCheck.currentPosition.y, (float)pTarget.pos.x, (float)pTarget.pos.y);
-                                    if (actorDistanceFromTile < range)
-                                    {
-                                        range = actorDistanceFromTile;
-                                        returnActor = actorToCheck;
-                                    }
-                                }
-                            }
-                            else
-                            {
-                                float actorDistanceFromTile = Toolbox.Dist(actorToCheck.currentPosition.x, actorToCheck.currentPosition.y, (float)pTarget.pos.x, (float)pTarget.pos.y);
-                                if (actorDistanceFromTile < range)
-                                {
-                                    range = actorDistanceFromTile;
-                                    returnActor = actorToCheck;
-                                }
-                            }
-                          
-                        }
-                        else // if hired actors dont exist, only exclude the controlled guy
-                        {
+                    if(totalSquadActorList != null && totalSquadActorList.Count >= 1) {
+                        if(totalSquadActorList.Contains(actorToCheck) == false) {
                             float actorDistanceFromTile = Toolbox.Dist(actorToCheck.currentPosition.x, actorToCheck.currentPosition.y, (float)pTarget.pos.x, (float)pTarget.pos.y);
-                            if (actorDistanceFromTile < range)
-                            {
+                            if(actorDistanceFromTile < range) {
                                 range = actorDistanceFromTile;
                                 returnActor = actorToCheck;
                             }
                         }
-
+                    }
+                    else {
+                        float actorDistanceFromTile = Toolbox.Dist(actorToCheck.currentPosition.x, actorToCheck.currentPosition.y, (float)pTarget.pos.x, (float)pTarget.pos.y);
+                        if(actorDistanceFromTile < range) {
+                            range = actorDistanceFromTile;
+                            returnActor = actorToCheck;
+                        }
                     }
                 }
-                else if (exclusionTarget == null)
+                else // if hired actors dont exist, only exclude the controlled guy
                 {
                     float actorDistanceFromTile = Toolbox.Dist(actorToCheck.currentPosition.x, actorToCheck.currentPosition.y, (float)pTarget.pos.x, (float)pTarget.pos.y);
-                    if (actorDistanceFromTile < range)
-                    {
+                    if(actorDistanceFromTile < range) {
                         range = actorDistanceFromTile;
                         returnActor = actorToCheck;
                     }

@@ -238,7 +238,27 @@ namespace SimpleGUI
 							itemGenerationMaterial = "base";
 							break;
 						case "necromancer_staff":
-							itemGenerationWeaponType = "sword";
+							//SimpleAdditions compat
+							if(AssetManager.items.get("blueSword1") != null) {
+								itemGenerationWeaponType = "blueSword1";
+								itemGenerationMaterial = itemGenerationWeaponType;
+							}
+							else {
+								itemGenerationWeaponType = "sword";
+								itemGenerationMaterial = tempSavedString;
+								tempSavedString = "";
+							}
+							break;
+						case "blueSword1":
+							itemGenerationWeaponType = "blueSword2";
+							itemGenerationMaterial = itemGenerationWeaponType;
+							break;
+						case "blueSword2":
+							itemGenerationWeaponType = "blueSword3";
+							itemGenerationMaterial = itemGenerationWeaponType;
+							break;
+						case "blueSword3":
+							itemGenerationWeaponType = "sword"; // last valid case
 							itemGenerationMaterial = tempSavedString;
 							tempSavedString = "";
 							break;
@@ -249,13 +269,17 @@ namespace SimpleGUI
 					}
 
 				}
-				bool flag24 = lastSelectedActor != null && GUILayout.Button("single item", new GUILayoutOption[0]);
-				if (flag24)
+				if(lastSelectedActor != null && GUILayout.Button("single item", new GUILayoutOption[0]))
 				{
-					bool flag25 = itemGenerationSlot == "weapon";
-					if (flag25)
+					if (itemGenerationSlot == "weapon")
 					{
-						ItemAsset weapon = AssetManager.items.get(itemGenerationWeaponType);
+						ItemAsset weapon;
+						if(simpleAdditionItems.Contains(itemGenerationWeaponType)) {
+							weapon = AssetManager.items.get("sword");
+						}
+						else {
+							weapon = AssetManager.items.get(itemGenerationWeaponType);
+						}
 						weapon.quality = itemGenerationQuality;
 						bool flag26 = useRandomBaseStats;
 						if (flag26)
@@ -265,8 +289,7 @@ namespace SimpleGUI
 						manualGeneration = true;
 						ItemGenerator.generateItem(weapon, itemGenerationMaterial, lastSelectedActor.equipment.weapon, MapBox.instance.mapStats.year, lastSelectedActor.kingdom.name, "a mod", 1);
 					}
-					bool flag27 = itemGenerationSlot == "amulet";
-					if (flag27)
+					if (itemGenerationSlot == "amulet")
 					{
 						ItemAsset amulet = AssetManager.items.get(itemGenerationSlot);
 						amulet.quality = itemGenerationQuality;
@@ -278,8 +301,7 @@ namespace SimpleGUI
 						manualGeneration = true;
 						ItemGenerator.generateItem(amulet, itemGenerationMaterial, lastSelectedActor.equipment.amulet, MapBox.instance.mapStats.year, lastSelectedActor.kingdom.name, "a mod", 1);
 					}
-					bool flag29 = itemGenerationSlot == "armor";
-					if (flag29)
+					if(itemGenerationSlot == "armor")
 					{
 						ItemAsset armor = AssetManager.items.get(itemGenerationSlot);
 						armor.quality = itemGenerationQuality;
@@ -292,8 +314,7 @@ namespace SimpleGUI
 
 						ItemGenerator.generateItem(armor, itemGenerationMaterial, lastSelectedActor.equipment.armor, MapBox.instance.mapStats.year, lastSelectedActor.kingdom.name, "a mod", 1);
 					}
-					bool flag31 = itemGenerationSlot == "boots";
-					if (flag31)
+					if (itemGenerationSlot == "boots")
 					{
 						ItemAsset boots = AssetManager.items.get(itemGenerationSlot);
 						boots.quality = itemGenerationQuality;
@@ -306,8 +327,7 @@ namespace SimpleGUI
 
 						ItemGenerator.generateItem(boots, itemGenerationMaterial, lastSelectedActor.equipment.boots, MapBox.instance.mapStats.year, lastSelectedActor.kingdom.name, "a mod", 1);
 					}
-					bool flag33 = itemGenerationSlot == "helmet";
-					if (flag33)
+					if (itemGenerationSlot == "helmet")
 					{
 						ItemAsset helmet = AssetManager.items.get(itemGenerationSlot);
 						helmet.quality = itemGenerationQuality;
@@ -320,8 +340,7 @@ namespace SimpleGUI
 
 						ItemGenerator.generateItem(helmet, itemGenerationMaterial, lastSelectedActor.equipment.helmet, MapBox.instance.mapStats.year, lastSelectedActor.kingdom.name, "a mod", 1);
 					}
-					bool flag35 = itemGenerationSlot == "ring";
-					if (flag35)
+					if (itemGenerationSlot == "ring")
 					{
 						ItemAsset ring = AssetManager.items.get(itemGenerationSlot);
 						ring.quality = itemGenerationQuality;
@@ -512,5 +531,7 @@ namespace SimpleGUI
 		public static Actor lastSelectedActor;
 		public bool showHideItemGeneration;
 		public Rect itemGenerationWindowRect; public static string tempSavedString;
+
+		public static List<string> simpleAdditionItems = new List<string>() { "blueSword1", "blueSword2", "blueSword3" };
 	}
 }

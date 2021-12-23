@@ -176,6 +176,14 @@ namespace WorldBox3D {
             harmony.Patch(original, new HarmonyMethod(patch));
             Debug.Log("setTileDirty_Prefix");
 
+            harmony = new Harmony(pluginGuid);
+            original = AccessTools.Method(typeof(GroupSpriteObject), "setRotation");
+            //patch = AccessTools.Method(typeof(_3D_Main), "setRotation_Postfix");
+            //harmony.Patch(original, new HarmonyMethod(patch));
+            //Debug.Log("setTileDirty_Prefix");
+
+
+            
             Debug.Log("Post patch: Actor.updatePos");
             SettingSetup();
         }
@@ -726,13 +734,33 @@ namespace WorldBox3D {
                             height = (-actor.currentTile.Height) / dividerAmount;
                         }
                         actor.transform.position = new Vector3(actor.transform.position.x, actor.transform.position.y, height);
-                        actor.transform.rotation = Quaternion.Euler(-90, 0, 0);
+                        SpriteRenderer spriteRenderer = Reflection.GetField(actor.GetType(), actor, "spriteRenderer") as SpriteRenderer;
+                        spriteRenderer.transform.rotation = Quaternion.Euler(-90, 0, 0);
+						//actor.transform.rotation = Quaternion.Euler(-90, 0, 0);
+
+                        //Vector3 curAngle = (Vector3)Reflection.GetField(actor.GetType(), actor, "curAngle");
+                        //curAngle.(actor.transform.rotation);
+                        //Sprite s_item_sprite = Reflection.GetField(actor.GetType(), actor, "s_item_sprite") as Sprite;
+                        //s_item_sprite..rotation = Quaternion.Euler(-90, 0, 0);
+
 
                     }
                 }
             }
         }
+        /*
+        public static void setRotation_Postfix(Vector3 pVec, GroupSpriteObject __instance)
+        {
+            if(_3dEnabled)
+                __instance.transform.rotation = Quaternion.Euler(-90, 0, 0);
 
+            //__instance.transform.position = new Vector3(__instance.transform.position.x, __instance.transform.position.y, 0f);
+            Transform m_transform = (Transform)Reflection.GetField(__instance.GetType(), __instance, "m_transform");
+            if(_3dEnabled)
+                m_transform.rotation = Quaternion.Euler(-90, 0, 0);
+            //m_transform.position = new Vector3(m_transform.transform.position.x, m_transform.transform.position.y, 0f);
+        }
+        */
         public void ObjectRotationButtons()
         {
             if(GUILayout.Button("Actor flip")) {

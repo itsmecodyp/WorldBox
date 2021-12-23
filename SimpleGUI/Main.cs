@@ -29,6 +29,8 @@ namespace SimpleGUI {
         public const string pluginName = "SimpleGUI";
         public const string pluginVersion = "0.1.4.7";
 
+        public static BepInEx.Logging.ManualLogSource logger;
+
         public void Awake()
         {
             SettingSetup();
@@ -38,6 +40,7 @@ namespace SimpleGUI {
             InvokeRepeating("SaveMenuPositions", 10, 10);
             InvokeRepeating("ConstantWarCheck", 10, 10);
             InvokeRepeating("DiscordStuff", 10, 10);
+            logger = Logger;
         }
 
         public void Update()
@@ -276,7 +279,47 @@ namespace SimpleGUI {
             patch = AccessTools.Method(typeof(GuiMain), "addExperience_Prefix");
             harmony.Patch(original, new HarmonyMethod(patch));
             UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
+
+            harmony = new Harmony(pluginName);
+            original = AccessTools.Method(typeof(ActorBase), "addTrait");
+            patch = AccessTools.Method(typeof(GuiMain), "addTrait_Prefix");
+            harmony.Patch(original, new HarmonyMethod(patch));
+            UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
+
+            harmony.PatchAll();
         }
+
+        public static bool addTrait_Prefix(string pTrait, ActorBase __instance)
+        {
+            ActorStatus data = Reflection.GetField(__instance.GetType(), __instance, "data") as ActorStatus;
+            if(__instance.haveTrait(pTrait) && Other.allowMultipleSameTrait == false) {
+                return false;
+            }
+
+            ActorTrait trait = AssetManager.traits.get(pTrait);
+            if(trait != null) {
+                if(trait.oppositeArr == null) {
+                    //return false;
+                }
+                else {
+                    for(int i = 0; i < trait.oppositeArr.Length; i++) {
+                        string pTrait2 = trait.oppositeArr[i];
+                        if(__instance.haveTrait(pTrait2)) {
+                            return false;
+                        }
+                    }
+                }
+                data.traits.Add(pTrait);
+                __instance.setStatsDirty();
+            }
+            if(pTrait == "madness") {
+                foreach(BaseActionActor baseActionActor in __instance.callbacks_added_madness) {
+                    baseActionActor((Actor)__instance);
+                }
+            }
+            return false;
+        }
+
 
         public void SaveMenuPositions()
         {
