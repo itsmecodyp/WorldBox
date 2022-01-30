@@ -150,7 +150,8 @@ namespace SimpleGUI {
                         while(kingdom2 == null || kingdom2 == kingdom1) {
                             kingdom2 = MapBox.instance.kingdoms.list_civs.GetRandom();
                         }
-                        Reflection.CallMethod(MapBox.instance.kingdoms.diplomacyManager, "startWar", new object[] { kingdom1, kingdom2, true });
+                        MapBox.instance.kingdoms.diplomacyManager.startWar(kingdom1, kingdom2, true);
+                        //Reflection.CallMethod(MapBox.instance.kingdoms.diplomacyManager, "startWar", new object[] { kingdom1, kingdom2, true });
                         WorldLog.logNewWar(kingdom1, kingdom2);
                         //UnityEngine.Debug.Log("Constant war: war not found, starting one between: " + kingdom1.name + " and " + kingdom2.name);
                     }
@@ -291,7 +292,7 @@ namespace SimpleGUI {
 
         public static bool addTrait_Prefix(string pTrait, ActorBase __instance)
         {
-            ActorStatus data = Reflection.GetField(__instance.GetType(), __instance, "data") as ActorStatus;
+            ActorStatus data = __instance.data; //Reflection.GetField(__instance.GetType(), __instance, "data") as ActorStatus;
             if(__instance.haveTrait(pTrait) && Other.allowMultipleSameTrait == false) {
                 return false;
             }
@@ -384,8 +385,8 @@ namespace SimpleGUI {
         // quick fix for string replacing
         public void addTextToLocalized(string stringToReplace, string stringReplacement)
         {
-            string language = Reflection.GetField(LocalizedTextManager.instance.GetType(), LocalizedTextManager.instance, "language") as string;
-            Dictionary<string, string> localizedText = Reflection.GetField(LocalizedTextManager.instance.GetType(), LocalizedTextManager.instance, "localizedText") as Dictionary<string, string>;
+            string language = LocalizedTextManager.instance.language; //Reflection.GetField(LocalizedTextManager.instance.GetType(), LocalizedTextManager.instance, "language") as string;
+            Dictionary<string, string> localizedText = LocalizedTextManager.instance.localizedText; //Reflection.GetField(LocalizedTextManager.instance.GetType(), LocalizedTextManager.instance, "localizedText") as Dictionary<string, string>;
 
             if(language == "en") {
                 localizedText.Add(stringToReplace, stringReplacement);
@@ -658,7 +659,7 @@ namespace SimpleGUI {
                             myuser.VersionSimpleGUI = pluginVersion;
                             if(Application.version != null)
                                 myuser.VersionWorldBox = Application.version;
-                            GameStatsData gameStatsData = Reflection.GetField(MapBox.instance.gameStats.GetType(), MapBox.instance.gameStats, "data") as GameStatsData;
+                            GameStatsData gameStatsData = MapBox.instance.gameStats.data; //Reflection.GetField(MapBox.instance.gameStats.GetType(), MapBox.instance.gameStats, "data") as GameStatsData;
                             TimeSpan timePlayed = TimeSpan.FromSeconds(gameStatsData.gameTime);
                             GuiMain.myuser.GameTimeTotal = timePlayed.Days + " days, " + timePlayed.Hours + " hours, " + timePlayed.Minutes + " minutes"; //gameStatsData.gameTime.ToString();
                             GuiMain.myuser.GameLaunches = gameStatsData.gameLaunches.ToString();
@@ -820,7 +821,7 @@ namespace SimpleGUI {
         public static void saveWorld_Postfix()
         {
             foreach(Actor actor in MapBox.instance.units) {
-                ActorStatus data = Reflection.GetField(actor.GetType(), actor, "data") as ActorStatus;
+                ActorStatus data = actor.data; //Reflection.GetField(actor.GetType(), actor, "data") as ActorStatus;
                 if(data.traits.Contains("stats" + data.firstName)) {
                     actor.removeTrait("stats" + data.firstName);
                 }
@@ -871,8 +872,8 @@ namespace SimpleGUI {
         public static bool addExperience_Prefix(int pValue, Actor __instance)
         {
             if(Other.disableLevelCap) {
-                ActorStats stats = Reflection.GetField(__instance.GetType(), __instance, "stats") as ActorStats;
-                ActorStatus data = Reflection.GetField(__instance.GetType(), __instance, "data") as ActorStatus;
+                ActorStats stats = __instance.stats; //Reflection.GetField(__instance.GetType(), __instance, "stats") as ActorStats;
+                ActorStatus data = __instance.data; //Reflection.GetField(actor.GetType(), actor, "data") as ActorStatus;
                 if(stats.canLevelUp) {
                     int expToLevelup = __instance.getExpToLevelup();
                     data.experience += pValue;
@@ -884,10 +885,8 @@ namespace SimpleGUI {
                         if(flag3) {
                             data.experience = expToLevelup;
                         }
-                        bool statsDirty = (bool)Reflection.GetField(__instance.GetType(), __instance, "statsDirty");
-                        bool event_full_heal = (bool)Reflection.GetField(__instance.GetType(), __instance, "event_full_heal");
-                        statsDirty = true;
-                        event_full_heal = true;
+                        __instance.statsDirty = true;
+                        __instance.event_full_heal = true;
                     }
                 }
                 return false;

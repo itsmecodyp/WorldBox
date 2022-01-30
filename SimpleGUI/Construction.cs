@@ -80,12 +80,12 @@ namespace SimpleGUI
             }
             else
             {
-                Building building = MapBox.instance.CallMethod("addBuilding", new object[] { selectedBuildingAssetName, MapBox.instance.getMouseTilePos(), null, false, true, BuildPlacingType.New }) as Building;
-                building.CallMethod("updateBuild", new object[] { 100 });
-                WorldTile currentTile = Reflection.GetField(building.GetType(), building, "currentTile") as WorldTile;
+                Building building = MapBox.instance.addBuilding(selectedBuildingAssetName, MapBox.instance.getMouseTilePos(), null, false, true, BuildPlacingType.New); //CallMethod("addBuilding", new object[] { selectedBuildingAssetName, MapBox.instance.getMouseTilePos(), null, false, true, BuildPlacingType.New }) as Building;
+                building.updateBuild(100); //CallMethod("updateBuild", new object[] { 100 });
+                WorldTile currentTile = building.currentTile; //Reflection.GetField(building.GetType(), building, "currentTile") as WorldTile;
                 if (currentTile.zone.city != null)
                 {
-                    building.CallMethod("setCity", new object[] { currentTile.zone.city, false });
+                    building.setCity(currentTile.zone.city, false); //CallMethod("setCity", new object[] { currentTile.zone.city, false });
                 }
                 if (building.city != null)
                 {
@@ -110,7 +110,7 @@ namespace SimpleGUI
             {
                 if (MapBox.instance.getMouseTilePos() != null)
                 {
-                    PixelFlashEffects flashEffects = Reflection.GetField(MapBox.instance.GetType(), MapBox.instance, "flashEffects") as PixelFlashEffects;
+                    PixelFlashEffects flashEffects = MapBox.instance.flashEffects; //Reflection.GetField(MapBox.instance.GetType(), MapBox.instance, "flashEffects") as PixelFlashEffects;
                     flashEffects.flashPixel(MapBox.instance.getMouseTilePos(), 10, ColorType.White);
                 }
             }
@@ -125,9 +125,9 @@ namespace SimpleGUI
                     int num2 = MapBox.instance.getMouseTilePos().y - constructionTemplate.fundament.bottom;
                     int num3 = constructionTemplate.fundament.right + constructionTemplate.fundament.left + 1;
                     int num4 = constructionTemplate.fundament.top + constructionTemplate.fundament.bottom + 1;
-                    PixelFlashEffects flashEffects = Reflection.GetField(MapBox.instance.GetType(), MapBox.instance, "flashEffects") as PixelFlashEffects;
+                    PixelFlashEffects flashEffects = MapBox.instance.flashEffects; //Reflection.GetField(MapBox.instance.GetType(), MapBox.instance, "flashEffects") as PixelFlashEffects;
 
-                    for (int j = 0; j < num3; j++)
+                    for(int j = 0; j < num3; j++)
                     {
                         for (int k = 0; k < num4; k++)
                         {

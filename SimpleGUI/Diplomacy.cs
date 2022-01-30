@@ -42,7 +42,7 @@ namespace SimpleGUI
             }
             else if (selectedCity1 != null)
             {
-                CityData city1Data = Reflection.GetField(selectedCity1.GetType(), selectedCity1, "data") as CityData;
+                CityData city1Data = selectedCity1.data; //Reflection.GetField(selectedCity1.GetType(), selectedCity1, "data") as CityData;
                 if (selectingCity1)
                 {
                     GUI.backgroundColor = Color.yellow;
@@ -331,6 +331,7 @@ namespace SimpleGUI
             {
                 if (GUILayout.Button("City2 joins city1 kingdom") && selectedCity1Kingdom != null)
                 {
+                    //Kingdom city2 Kingdom = selectedCity2.city
                     selectedCity2.joinAnotherKingdom(selectedCity1Kingdom);
                 }
                 if (!cityMergeConfirmation)

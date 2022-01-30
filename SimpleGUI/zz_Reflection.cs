@@ -8,6 +8,7 @@ using UnityEngine;
 
 namespace SimpleGUI
 {
+    
     public static class Reflection
     {
         // found on https://stackoverflow.com/questions/135443/how-do-i-use-reflection-to-invoke-a-private-method
@@ -35,7 +36,7 @@ namespace SimpleGUI
         }
     }
 
-
+    
     // should be helpful for random tasks like saving actor data between map sessions using a text file
     public static class GetObjectProperties
     {
