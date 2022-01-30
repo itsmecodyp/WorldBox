@@ -70,9 +70,10 @@ namespace MapSizes
             }
             GUILayout.EndHorizontal();
             if(GUILayout.Button("Regenerate map")) {
-                MapBox.instance.setMapSize(mapSizeX, mapSizeY);
-                MapBox.instance.CallMethod("GenerateMap", new object[] { "custom" });
-                MapBox.instance.finishMakingWorld();
+                Debug.Log("MapSizes: regenerating map");
+                //MapBox.instance.setMapSize(mapSizeX, mapSizeY);
+                MapBox.instance.CallMethod("generateNewMap", new object[] { "clear" });
+                //MapBox.instance.finishMakingWorld();
             }
             if(GUILayout.Button("Resize current map")) {
                 ResizeCurrentMap();
@@ -115,7 +116,7 @@ namespace MapSizes
                 MapBox.instance.setMapSize(mapSizeX, mapSizeY);
                 imageToMap(filename); // why does this run twice?
                 startingPicture = true;
-                MapBox.instance.CallMethod("GenerateMap", new object[] { "earth" });
+                MapBox.instance.CallMethod("generateNewMap", new object[] { "earth" });
                 MapBox.instance.finishMakingWorld();
             }
             GUI.DragWindow();
@@ -174,6 +175,7 @@ namespace MapSizes
 
         public void PasteMap()
         {
+            // logs spam hard from the checks in wrong libraries..
             foreach(Vector2Int tilePos in tilesCache.Keys) {
                 WorldTile targetTile = MapBox.instance.GetTile(tilePos.x, tilePos.y);
                 if(targetTile != null) {
