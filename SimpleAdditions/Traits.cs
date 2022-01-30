@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using HarmonyLib;
 
 namespace SimpleAdditions {
 
@@ -64,5 +65,16 @@ namespace SimpleAdditions {
 			}
 		}
 
+	}
+
+	[HarmonyPatch(typeof(Actor))]
+	class Actor_takeItems {
+		[HarmonyPatch("takeItems", MethodType.Normal)]
+		public static void Postfix(Actor pActor, bool pIgnoreRangeWeapons, Actor __instance)
+		{
+			if(__instance.haveTrait("statAbsorb")) { 
+
+			}
+		}
 	}
 }

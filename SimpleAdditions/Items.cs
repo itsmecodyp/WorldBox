@@ -23,8 +23,8 @@ namespace SimpleAdditions {
 				attackType = WeaponType.Melee
 			};
 			AssetManager.items.add(blueSword1);
-			ActorAnimationLoader.addSprite("w_" + "sword" + "_" + blueSword1.id,
-				LoadSprite(Properties.Resources.bluesword1, 8, 8, 0.8f, 0.15f));
+			//ActorAnimationLoader.addSprite("w_" + "sword" + "_" + blueSword1.id,
+				//LoadSprite(Properties.Resources.bluesword1, 8, 8, 0.8f, 0.15f));
 			newWeaponsIcons.Add(blueSword1.materials[0], LoadSprite(Properties.Resources.bluesword1, 0, 0, 0f, 0f));
 
 			ItemAsset blueSword2 = new ItemAsset() {
@@ -35,8 +35,8 @@ namespace SimpleAdditions {
 				attackType = WeaponType.Melee
 			};
 			AssetManager.items.add(blueSword2);
-			ActorAnimationLoader.addSprite("w_" + "sword" + "_" + blueSword2.id,
-				LoadSprite(Properties.Resources.bluesword2, 8, 8, 0.8f, 0.15f));
+			//ActorAnimationLoader.addSprite("w_" + "sword" + "_" + blueSword2.id,
+				//LoadSprite(Properties.Resources.bluesword2, 8, 8, 0.8f, 0.15f));
 			newWeaponsIcons.Add(blueSword2.materials[0], LoadSprite(Properties.Resources.bluesword2, 16, 16, 0f, 0f));
 
 			ItemAsset blueSword3 = new ItemAsset() {
@@ -48,8 +48,8 @@ namespace SimpleAdditions {
 				//tech_needed = "weapon_axe"
 			};
 			AssetManager.items.add(blueSword3);
-			ActorAnimationLoader.addSprite("w_" + "sword" + "_" + blueSword3.id,
-				LoadSprite(Properties.Resources.bluesword3, 8, 8, 0.8f, 0.15f));
+			//ActorAnimationLoader.addSprite("w_" + "sword" + "_" + blueSword3.id,
+				//LoadSprite(Properties.Resources.bluesword3, 8, 8, 0.8f, 0.15f));
 			newWeaponsIcons.Add(blueSword3.materials[0], LoadSprite(Properties.Resources.bluesword3, 16, 16, 0f, 0f));
 
 		}
