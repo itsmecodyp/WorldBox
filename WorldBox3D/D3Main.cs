@@ -8,6 +8,8 @@ using HarmonyLib;
 using System.Reflection;
 using DG.Tweening;
 using UnityEngine.Tilemaps;
+using System;
+using System.Linq;
 //using TextureLoader;
 
 namespace WorldBox3D {
@@ -33,7 +35,7 @@ namespace WorldBox3D {
         public const string pluginName = "WorldBox3D";
         public const string pluginVersion = "0.0.0.3";
         public float rotationRate = 2f;
-        public float manipulationRate = 0.1f;
+        public float manipulationRate = 0.01f;
         public float cameraX => Camera.main.transform.rotation.x;
         public float cameraY => Camera.main.transform.rotation.y;
         public float cameraZ;
@@ -44,6 +46,7 @@ namespace WorldBox3D {
         public bool autoPlacement;
         public static bool _3dEnabled = false;
 
+       
         public Vector3 RandomCircle(Vector3 center, float radius, int a)
         {
             Debug.Log(a);
@@ -106,6 +109,179 @@ namespace WorldBox3D {
             else {
                 __instance.transform.Translate(-(1f * pElapsed), 0f, 0f);
             }
+        }
+
+        public bool tryMesh;
+        public List<Actor> meshdActors = new List<Actor>();
+        public List<Building> meshdBuildings = new List<Building>();
+
+        public List<meshT> meshes = new List<meshT>();
+        public class meshT {
+            public Mesh mesh;
+            public Material mat;
+            public Actor Actor;
+		}
+
+        public Mesh spriteToMesh(Sprite sprite, int depth)
+        {
+            Mesh mesh = new Mesh();
+            List<Vector3> inVertices = Array.ConvertAll(sprite.vertices, i => (Vector3)i).ToList();
+            List<Vector2> uvs = sprite.uv.ToList();
+            List<int> triangles = Array.ConvertAll(sprite.triangles, i => (int)i).ToList();
+            if(depth <= 0) {
+                mesh.SetVertices(inVertices);
+                mesh.SetUVs(0, uvs);
+                mesh.SetTriangles(triangles, 0);
+            }
+            else {
+                List<Vector3> depthVerticles = new List<Vector3>(inVertices);
+                List<Vector2> depthUvs = new List<Vector2>(uvs);
+                List<int> depthTriangles = new List<int>(triangles);
+                foreach(Vector3 vector in inVertices) {
+                    depthVerticles.Add(new Vector3(vector.x, vector.y, depth));
+                }
+                foreach(Vector2 vector in uvs) {
+                    depthUvs.Add(new Vector2(vector.x, vector.y));
+                }
+                //depthTriangles.Add(triangles[0] + inVertices.Count);
+                for(int i = triangles.Count - 1; i >= 0; i--) {
+                    depthTriangles.Add((triangles[i] + inVertices.Count));
+                }
+                List<int> depthTrianglesWithJoinFaces = new List<int>(depthTriangles);
+                for(int i = 0; i + 1 < triangles.Count; i++) {
+                    depthTrianglesWithJoinFaces.Add(triangles[i + 1]);
+                    depthTrianglesWithJoinFaces.Add(triangles[i]);
+                    depthTrianglesWithJoinFaces.Add(triangles[i + 1] + inVertices.Count);
+                    depthTrianglesWithJoinFaces.Add(triangles[i + 1] + inVertices.Count);
+                    depthTrianglesWithJoinFaces.Add(triangles[i]);
+                    depthTrianglesWithJoinFaces.Add(triangles[i] + inVertices.Count);
+                }
+                for(int i = 0; i + 2 + inVertices.Count < depthVerticles.Count; i++) {
+                    depthTrianglesWithJoinFaces.Add(i);
+                    depthTrianglesWithJoinFaces.Add(i + 2);
+                    depthTrianglesWithJoinFaces.Add(i + 2 + inVertices.Count);
+                    depthTrianglesWithJoinFaces.Add(i);
+                    depthTrianglesWithJoinFaces.Add(i + 2 + inVertices.Count);
+                    depthTrianglesWithJoinFaces.Add(i + inVertices.Count);
+                }
+                for(int i = 0; i + 1 + inVertices.Count < depthVerticles.Count; i++) {
+                    depthTrianglesWithJoinFaces.Add(i);
+                    depthTrianglesWithJoinFaces.Add(i + 1);
+                    depthTrianglesWithJoinFaces.Add(i + 1 + inVertices.Count);
+                    depthTrianglesWithJoinFaces.Add(i);
+                    depthTrianglesWithJoinFaces.Add(i + 1 + inVertices.Count);
+                    depthTrianglesWithJoinFaces.Add(i + inVertices.Count);
+                }
+                mesh.SetVertices(depthVerticles.ToList());
+                mesh.SetUVs(0, depthUvs);
+                mesh.SetTriangles(depthTrianglesWithJoinFaces, 0);
+                string values = "";
+                int j = 0;
+                foreach(int i in depthTrianglesWithJoinFaces) {
+                    if(j > 3) {
+                        j = 0;
+                        values += "\n";
+                    }
+                    values += ";" + i;
+                }
+            }
+            return mesh;
+        }
+
+
+        public void Update()
+		{
+            if(tryMesh) {
+                foreach(Actor actor in MapBox.instance.units) {
+                    if(actor != null && !this.meshdActors.Contains(actor)) {
+						SpriteRenderer spriteRenderer = Reflection.GetField(actor.GetType(), actor, "spriteRenderer") as SpriteRenderer;
+                        Shader oldShader = spriteRenderer.material.shader;
+                        Sprite sprite = spriteRenderer.sprite;
+                        int sortingLayerID = spriteRenderer.sortingLayerID;
+                        string sortingLayerName = spriteRenderer.sortingLayerName;
+                        Material material2 = spriteRenderer.material;
+                       
+                        GameObject gameObject1 = new GameObject("balls");
+                        gameObject1.transform.position = spriteRenderer.transform.position;
+
+                        Texture2D texture2D = Voxelizer.VoxelMenu.duplicateTexture(Voxelizer.VoxelMenu.ReadTexture(spriteRenderer.sprite.texture));
+                        Mesh mesh = Voxelizer.VoxelUtil.VoxelizeTexture2D(texture2D, false, 1f);
+                        Texture2D texture2D2 = Voxelizer.VoxelUtil.GenerateTextureMap(ref mesh, texture2D);
+                        gameObject1.AddComponent<MeshFilter>().sharedMesh = mesh;
+                        //gameObject1.transform.parent = actor.transform.parent;
+                        //gameObject1.transform.localPosition = actor.gameObject.transform.localPosition;
+                        MeshRenderer meshRenderer1 = gameObject1.AddComponent<MeshRenderer>();
+                        if(texture2D2 != null) {
+                            Material material = new Material(oldShader);
+                            material.SetTexture("_MainTex", texture2D2);
+                            meshRenderer1.sharedMaterial = material;
+                        }
+                        this.meshdActors.Add(actor);
+                    }
+                   
+                    if(true == false) { //meshdActors.Contains(actor) == false
+
+                        SpriteRenderer spriteRenderer = Reflection.GetField(actor.GetType(), actor, "spriteRenderer") as SpriteRenderer;
+                        Sprite actorSprite = spriteRenderer.sprite;
+
+                        int layer = spriteRenderer.sortingLayerID;
+                        string layerName = spriteRenderer.sortingLayerName;
+
+                            //spriteToMesh(actorSprite, 5);
+                        Material actorMaterial = new Material(Shader.Find("Standard"));
+                        actorMaterial.SetTexture("_MainTex", spriteRenderer.sprite.texture);
+
+                        //Texture2D actorTexture = spriteRenderer.sprite.texture;
+                        Texture2D actorTexture = Voxelizer.VoxelMenu.ReadTexture(spriteRenderer.sprite.texture);
+
+
+                        Mesh actorAsMesh = Voxelizer.VoxelUtil.VoxelizeTexture2D(actorTexture, false, 1f);
+                        Texture2D texture = Voxelizer.VoxelUtil.GenerateTextureMap(ref actorAsMesh, actorTexture);
+
+                        //meshes.Add(new meshT { Actor = actor, mat = actorMaterial, shader = actorShader, mesh = actorAsMesh });
+
+                        GameObject.DestroyImmediate(actor.GetComponent(typeof(SpriteRenderer)) as SpriteRenderer);
+
+                        MeshFilter filter = actor.gameObject.GetComponent(typeof(MeshFilter)) as MeshFilter;
+                        if(filter == null) {
+                            filter = actor.gameObject.AddComponent(typeof(MeshFilter)) as MeshFilter;
+                        }
+                        MeshRenderer render = actor.gameObject.GetComponent(typeof(MeshRenderer)) as MeshRenderer;
+                        if(render == null) {
+                            render = actor.gameObject.AddComponent(typeof(MeshRenderer)) as MeshRenderer;
+                        }
+                        
+                        actorAsMesh.RecalculateBounds();
+                        actorAsMesh.RecalculateNormals();
+                        filter.mesh = actorAsMesh;
+                        /*
+                        filter.sharedMesh = actorAsMesh;
+                        filter.sharedMesh.RecalculateBounds();
+                        filter.sharedMesh.RecalculateNormals();
+                        */
+                        render.sortingLayerID = layer;
+                        render.sortingLayerName = layerName;
+                        render.material = actorMaterial;
+                        render.sharedMaterial = actorMaterial;
+                        render.material.mainTexture = actorTexture;
+                        meshdActors.Add(actor);
+                    }
+                    if(meshdActors.Contains(actor) == true) {
+                        MeshRenderer meshRender = actor.gameObject.GetComponent(typeof(MeshRenderer)) as MeshRenderer;
+                        if(meshRender != null) {
+
+                        }
+                    }
+                    //render.material = 
+                    //newMaterial.
+                    //Material newMaterial = new Material(actorMaterial);
+                    foreach(meshT m in meshes) {
+                        Graphics.DrawMesh(m.mesh, position: actor.currentTile.posV3, rotation: Quaternion.Euler(-90, 0, 0), m.mat, 5000);
+                    }
+                }
+
+            }
+
         }
         public void Awake()
         {
@@ -205,7 +381,7 @@ namespace WorldBox3D {
 
         public int BuildingThickness(Building target)
         {
-            int thickness = 3;
+            int thickness = thickenCount;
             BuildingAsset stats = Reflection.GetField(target.GetType(), target, "stats") as BuildingAsset;
             if(buildingCustomThickness.ContainsKey(stats.id)) {
                 thickness = buildingCustomThickness[stats.id];
@@ -322,6 +498,9 @@ namespace WorldBox3D {
         public static List<LineRenderer> tileTypeLines;
         public void window3D(int windowID)
         {
+            if(GUILayout.Button("tryMesh: " + tryMesh.ToString())) {
+                tryMesh = !tryMesh;
+            }
             //cameraTransform.rotation = new Quaternion(cameraTransform.rotation.x, cameraTransform.rotation.y, 0f, cameraTransform.rotation.w);
             if(Input.GetKeyUp(KeyCode.R)) {
                 if(activeLines != null && activeLines.Count > 1) {
@@ -397,7 +576,8 @@ namespace WorldBox3D {
                     }
                     */
                 }
-                if(GUILayout.Button("Single line for all tiles")) {
+
+                    if(GUILayout.Button("Single line for all tiles")) {
                     int scaleFactor = 5;
                     Color color1 = new Color(UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f));
                     Color color2 = new Color(UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f));
@@ -540,9 +720,22 @@ namespace WorldBox3D {
         }
         public void thickenActorSprite(Actor targetActor)
         {
-            Actor newActor = Instantiate(targetActor) as Actor;
+            Actor newActor = Instantiate(targetActor) as Actor; // why dont i use the original?? check later
             newActor.transform.parent = targetActor.transform;
             SpriteRenderer spriteRenderer = Reflection.GetField(newActor.GetType(), newActor, "spriteRenderer") as SpriteRenderer;
+            /*
+            // new stuff
+            Sprite actorSprite = spriteRenderer.sprite;
+            Mesh actorAsMesh = SpriteToMesh(actorSprite);
+            MeshFilter filter = newActor.gameObject.AddComponent(typeof(MeshFilter)) as MeshFilter;
+            MeshRenderer render = newActor.gameObject.AddComponent(typeof(MeshRenderer)) as MeshRenderer;
+            filter.mesh = actorAsMesh;
+            //render.material = 
+            Material newMaterial = new Material(spriteRenderer.material);
+            //newMaterial.
+            Graphics.DrawMesh(actorAsMesh, position: newActor.currentTile.posV3, rotation: Quaternion.Euler(-90, 0, 0), newMaterial, 0);
+            // end new stuff
+            */
             int distanceScaling = 25;
             for(int i = 0; i <= 5; i++) {
                 SpriteRenderer newSprite = Instantiate(spriteRenderer) as SpriteRenderer;
@@ -590,7 +783,7 @@ namespace WorldBox3D {
             return returnBool;
         }
 
-        int thickenCount = 10;
+        int thickenCount = 3;
         int distanceScaling = 25;
         // upgradelevel assigned through assetloader, custom thickness for 3d (stats.upgradeLevel + 1) * 4; neat value
         public void thickenBuilding(Building targetBuilding)
@@ -818,6 +1011,7 @@ namespace WorldBox3D {
         public void CameraControls()
         {
             Camera.main.nearClipPlane = -500f; // makes world stop clipping when camera rotates
+            //Camera.main.useOcclusionCulling = false;
             if(_3dEnabled) {
                 if(Input.GetKey(KeyCode.LeftAlt)) {
                     float x = rotationRate * Input.GetAxis("Mouse Y");
