@@ -214,11 +214,22 @@ namespace SimpleGUI
 							itemGenerationWeaponType = "alien_blaster";
 							break;
 						case "alien_blaster":
+							itemGenerationWeaponType = "rocks";
+							break;
+						case "rocks":
+							itemGenerationWeaponType = "shotgun";
+							break;
+						case "shotgun":
+							itemGenerationWeaponType = "machinegun";
+							tempSavedString = itemGenerationMaterial;
+							itemGenerationMaterial = "base";
+							break;
+						case "machinegun":
 							itemGenerationWeaponType = "claws";
+							itemGenerationMaterial = "base";
 							break;
 						case "claws":
 							itemGenerationWeaponType = "snowball";
-							tempSavedString = itemGenerationMaterial;
 							itemGenerationMaterial = "base";
 							break;
 						case "snowball":
