@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-16"?>
-<DevTrackerData xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" SolutionTotalEditTime="P1DT4H18M10.6072631S" SolutionTotalViewTime="PT19H26M40.2100643S" SolutionTotalDebugTime="PT0S">
+<DevTrackerData xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" SolutionTotalEditTime="P1DT4H18M48.7319763S" SolutionTotalViewTime="PT19H38M27.8982444S" SolutionTotalDebugTime="PT0S">
   <FileVersion>
     <Major>1</Major>
     <Minor>0</Minor>
@@ -74,58 +74,55 @@
   </ProjectsCreatedDateList>
   <SessionTimeList />
   <LastSessionTimeList>
-    <DevTrackerDataItem ViewActiveTime="PT4M5.5944076S" EditActiveTime="PT53.3185083S">
-      <ModifiedDate>2022-01-27T22:14:45.9164166-05:00</ModifiedDate>
-      <ModifiedBy>ufear</ModifiedBy>
-      <EditedCount>1</EditedCount>
+    <DevTrackerDataItem ViewActiveTime="PT6.2648637S" EditActiveTime="PT0S">
+      <ModifiedDate>0001-01-01T00:00:00</ModifiedDate>
+      <EditedCount>0</EditedCount>
       <ViewedCount>1</ViewedCount>
       <Item>C:\games\BepinexProjects\WorldBox\189\SimpleGUI\SimpleGUI\Construction.cs</Item>
       <ItemType>ProjectItem</ItemType>
       <ProjectName>C:\games\BepinexProjects\WorldBox\189\SimpleGUI\SimpleGUI\SimpleGUI.csproj</ProjectName>
-      <CreatedDate>2022-01-27T21:51:23.2264624-05:00</CreatedDate>
+      <CreatedDate>2022-02-02T19:46:40.3562722-05:00</CreatedDate>
       <ViewedBy>ufear</ViewedBy>
     </DevTrackerDataItem>
-    <DevTrackerDataItem ViewActiveTime="PT16.2358173S" EditActiveTime="PT5.3238679S">
-      <ModifiedDate>2022-01-27T22:15:04.9444683-05:00</ModifiedDate>
-      <ModifiedBy>ufear</ModifiedBy>
-      <EditedCount>1</EditedCount>
+    <DevTrackerDataItem ViewActiveTime="PT55.9237431S" EditActiveTime="PT0S">
+      <ModifiedDate>0001-01-01T00:00:00</ModifiedDate>
+      <EditedCount>0</EditedCount>
       <ViewedCount>1</ViewedCount>
-      <Item>C:\games\BepinexProjects\WorldBox\189\SimpleGUI\SimpleGUI\Diplomacy.cs</Item>
+      <Item>c:\games\bepinexprojects\worldbox\189\simplegui\WorldBox3D\D3Main.cs</Item>
       <ItemType>ProjectItem</ItemType>
-      <ProjectName>C:\games\BepinexProjects\WorldBox\189\SimpleGUI\SimpleGUI\SimpleGUI.csproj</ProjectName>
-      <CreatedDate>2022-01-27T22:14:51.5571057-05:00</CreatedDate>
+      <ProjectName>C:\games\BepinexProjects\WorldBox\189\SimpleGUI\WorldBox3D\WorldBox3D.csproj</ProjectName>
+      <CreatedDate>2022-02-02T19:48:05.6763237-05:00</CreatedDate>
       <ViewedBy>ufear</ViewedBy>
     </DevTrackerDataItem>
-    <DevTrackerDataItem ViewActiveTime="PT2M0.6220958S" EditActiveTime="PT2M34.4060463S">
-      <ModifiedDate>2022-01-27T21:40:47.9008302-05:00</ModifiedDate>
-      <ModifiedBy>ufear</ModifiedBy>
-      <EditedCount>1</EditedCount>
-      <ViewedCount>1</ViewedCount>
-      <Item>C:\games\BepinexProjects\WorldBox\189\SimpleGUI\SimpleGUI\Main.cs</Item>
-      <ItemType>ProjectItem</ItemType>
-      <ProjectName>C:\games\BepinexProjects\WorldBox\189\SimpleGUI\SimpleGUI\SimpleGUI.csproj</ProjectName>
-      <CreatedDate>2022-01-27T21:36:27.042023-05:00</CreatedDate>
-      <ViewedBy>ufear</ViewedBy>
-    </DevTrackerDataItem>
-    <DevTrackerDataItem ViewActiveTime="PT8.4848964S" EditActiveTime="PT0S">
+    <DevTrackerDataItem ViewActiveTime="PT5M1.2381479S" EditActiveTime="PT0S">
       <ModifiedDate>0001-01-01T00:00:00</ModifiedDate>
       <EditedCount>0</EditedCount>
       <ViewedCount>1</ViewedCount>
       <Item>C:\games\BepinexProjects\WorldBox\189\SimpleGUI\MapSizes2\MapSizes.cs</Item>
       <ItemType>ProjectItem</ItemType>
       <ProjectName>C:\games\BepinexProjects\WorldBox\189\SimpleGUI\MapSizes2\MapSizes2.csproj</ProjectName>
-      <CreatedDate>2022-01-27T21:36:08.3343744-05:00</CreatedDate>
+      <CreatedDate>2022-02-02T18:45:17.4440865-05:00</CreatedDate>
       <ViewedBy>ufear</ViewedBy>
     </DevTrackerDataItem>
-    <DevTrackerDataItem ViewActiveTime="PT2M25.7807534S" EditActiveTime="PT13.5661424S">
-      <ModifiedDate>2022-01-27T22:15:16.0480148-05:00</ModifiedDate>
+    <DevTrackerDataItem ViewActiveTime="PT0.6015017S" EditActiveTime="PT0S">
+      <ModifiedDate>0001-01-01T00:00:00</ModifiedDate>
+      <EditedCount>0</EditedCount>
+      <ViewedCount>1</ViewedCount>
+      <Item>C:\games\BepinexProjects\WorldBox\189\SimpleGUI\CustomAssetLoader\TextureLoader.cs</Item>
+      <ItemType>ProjectItem</ItemType>
+      <ProjectName>C:\games\BepinexProjects\WorldBox\189\SimpleGUI\CustomAssetLoader\z_a_Loaders+3D.csproj</ProjectName>
+      <CreatedDate>2022-02-02T19:46:30.379766-05:00</CreatedDate>
+      <ViewedBy>ufear</ViewedBy>
+    </DevTrackerDataItem>
+    <DevTrackerDataItem ViewActiveTime="PT3M44.9722178S" EditActiveTime="PT38.1267088S">
+      <ModifiedDate>2022-02-02T23:41:59.1451049-05:00</ModifiedDate>
       <ModifiedBy>ufear</ModifiedBy>
       <EditedCount>1</EditedCount>
       <ViewedCount>1</ViewedCount>
-      <Item>C:\games\BepinexProjects\WorldBox\189\SimpleGUI\SimpleGUI\zz_Reflection.cs</Item>
+      <Item>C:\games\BepinexProjects\WorldBox\189\SimpleGUI\CustomAssetLoader\WorldBox3D.cs</Item>
       <ItemType>ProjectItem</ItemType>
-      <ProjectName>C:\games\BepinexProjects\WorldBox\189\SimpleGUI\SimpleGUI\SimpleGUI.csproj</ProjectName>
-      <CreatedDate>2022-01-27T21:36:16.8212654-05:00</CreatedDate>
+      <ProjectName>C:\games\BepinexProjects\WorldBox\189\SimpleGUI\CustomAssetLoader\z_a_Loaders+3D.csproj</ProjectName>
+      <CreatedDate>2022-02-02T19:46:30.9812677-05:00</CreatedDate>
       <ViewedBy>ufear</ViewedBy>
     </DevTrackerDataItem>
   </LastSessionTimeList>
@@ -317,22 +314,22 @@
       <CreatedDate>2021-08-24T21:21:41.6437772-04:00</CreatedDate>
       <ViewedBy>ufear</ViewedBy>
     </DevTrackerDataItem>
-    <DevTrackerDataItem ViewActiveTime="PT12M7.7413352S" EditActiveTime="PT1M37.0288854S">
+    <DevTrackerDataItem ViewActiveTime="PT12M14.0061989S" EditActiveTime="PT1M37.0288854S">
       <ModifiedDate>2022-01-27T22:14:45.9164166-05:00</ModifiedDate>
       <ModifiedBy>ufear</ModifiedBy>
       <EditedCount>3</EditedCount>
-      <ViewedCount>6</ViewedCount>
+      <ViewedCount>7</ViewedCount>
       <Item>C:\games\BepinexProjects\WorldBox\189\SimpleGUI\SimpleGUI\Construction.cs</Item>
       <ItemType>ProjectItem</ItemType>
       <ProjectName>C:\games\BepinexProjects\WorldBox\189\SimpleGUI\SimpleGUI\SimpleGUI.csproj</ProjectName>
       <CreatedDate>2021-09-21T04:17:28.3889828-04:00</CreatedDate>
       <ViewedBy>ufear</ViewedBy>
     </DevTrackerDataItem>
-    <DevTrackerDataItem ViewActiveTime="PT1H12M18.5741724S" EditActiveTime="PT1H27M22.8283981S">
+    <DevTrackerDataItem ViewActiveTime="PT1H13M14.4979155S" EditActiveTime="PT1H27M22.8283981S">
       <ModifiedDate>2022-01-21T20:12:10.1405391-05:00</ModifiedDate>
       <ModifiedBy>ufear</ModifiedBy>
       <EditedCount>8</EditedCount>
-      <ViewedCount>14</ViewedCount>
+      <ViewedCount>15</ViewedCount>
       <Item>c:\games\bepinexprojects\worldbox\189\simplegui\WorldBox3D\D3Main.cs</Item>
       <ItemType>ProjectItem</ItemType>
       <ProjectName>C:\games\BepinexProjects\WorldBox\189\SimpleGUI\WorldBox3D\WorldBox3D.csproj</ProjectName>
@@ -359,11 +356,11 @@
       <CreatedDate>2021-09-25T04:07:12.618686-04:00</CreatedDate>
       <ViewedBy>ufear</ViewedBy>
     </DevTrackerDataItem>
-    <DevTrackerDataItem ViewActiveTime="PT17M26.2752646S" EditActiveTime="PT9M31.3166447S">
+    <DevTrackerDataItem ViewActiveTime="PT17M39.1758503S" EditActiveTime="PT9M31.3166447S">
       <ModifiedDate>2022-01-27T22:15:04.9444683-05:00</ModifiedDate>
       <ModifiedBy>ufear</ModifiedBy>
       <EditedCount>5</EditedCount>
-      <ViewedCount>10</ViewedCount>
+      <ViewedCount>11</ViewedCount>
       <Item>C:\games\BepinexProjects\WorldBox\189\SimpleGUI\SimpleGUI\Diplomacy.cs</Item>
       <ItemType>ProjectItem</ItemType>
       <ProjectName>C:\games\BepinexProjects\WorldBox\189\SimpleGUI\SimpleGUI\SimpleGUI.csproj</ProjectName>
@@ -487,11 +484,11 @@
       <CreatedDate>2021-09-06T12:01:07.7505959-04:00</CreatedDate>
       <ViewedBy>ufear</ViewedBy>
     </DevTrackerDataItem>
-    <DevTrackerDataItem ViewActiveTime="PT17M7.7190729S" EditActiveTime="PT37M22.455729S">
+    <DevTrackerDataItem ViewActiveTime="PT23M54.0131343S" EditActiveTime="PT37M22.455729S">
       <ModifiedDate>2022-01-26T05:22:52.5600419-05:00</ModifiedDate>
       <ModifiedBy>ufear</ModifiedBy>
       <EditedCount>2</EditedCount>
-      <ViewedCount>3</ViewedCount>
+      <ViewedCount>5</ViewedCount>
       <Item>C:\games\BepinexProjects\WorldBox\189\SimpleGUI\MapSizes2\MapSizes.cs</Item>
       <ItemType>ProjectItem</ItemType>
       <ProjectName>C:\games\BepinexProjects\WorldBox\189\SimpleGUI\MapSizes2\MapSizes2.csproj</ProjectName>
@@ -721,11 +718,11 @@
       <CreatedDate>2021-09-18T10:55:31.8458949-04:00</CreatedDate>
       <ViewedBy>ufear</ViewedBy>
     </DevTrackerDataItem>
-    <DevTrackerDataItem ViewActiveTime="PT40M49.5089757S" EditActiveTime="PT52M1.1724596S">
+    <DevTrackerDataItem ViewActiveTime="PT40M50.1104774S" EditActiveTime="PT52M1.1724596S">
       <ModifiedDate>2021-09-27T12:44:11.15891-04:00</ModifiedDate>
       <ModifiedBy>ufear</ModifiedBy>
       <EditedCount>4</EditedCount>
-      <ViewedCount>6</ViewedCount>
+      <ViewedCount>7</ViewedCount>
       <Item>c:\games\bepinexprojects\worldbox\189\simplegui\CustomAssetLoader\TextureLoader.cs</Item>
       <ItemType>ProjectItem</ItemType>
       <ProjectName>C:\games\BepinexProjects\WorldBox\189\SimpleGUI\CustomAssetLoader\z_a_Loaders+3D.csproj</ProjectName>
@@ -851,11 +848,11 @@
       <CreatedDate>2021-09-12T15:29:23.8900841-04:00</CreatedDate>
       <ViewedBy>ufear</ViewedBy>
     </DevTrackerDataItem>
-    <DevTrackerDataItem ViewActiveTime="PT15M22.3227866S" EditActiveTime="PT21M27.9913621S">
-      <ModifiedDate>2021-09-25T04:49:12.544064-04:00</ModifiedDate>
+    <DevTrackerDataItem ViewActiveTime="PT19M7.283038S" EditActiveTime="PT22M6.1180709S">
+      <ModifiedDate>2022-02-02T23:41:59.1451049-05:00</ModifiedDate>
       <ModifiedBy>ufear</ModifiedBy>
-      <EditedCount>1</EditedCount>
-      <ViewedCount>1</ViewedCount>
+      <EditedCount>2</EditedCount>
+      <ViewedCount>2</ViewedCount>
       <Item>C:\games\BepinexProjects\WorldBox\189\SimpleGUI\CustomAssetLoader\WorldBox3D.cs</Item>
       <ItemType>ProjectItem</ItemType>
       <ProjectName>C:\games\BepinexProjects\WorldBox\189\SimpleGUI\CustomAssetLoader\z_a_Loaders+3D.csproj</ProjectName>
@@ -873,11 +870,11 @@
       <CreatedDate>2021-09-21T03:10:35.6296529-04:00</CreatedDate>
       <ViewedBy>ufear</ViewedBy>
     </DevTrackerDataItem>
-    <DevTrackerDataItem ViewActiveTime="PT2M44.7766739S" EditActiveTime="PT34.044802S">
+    <DevTrackerDataItem ViewActiveTime="PT2M45.518815S" EditActiveTime="PT34.044802S">
       <ModifiedDate>2022-01-27T22:15:16.0480148-05:00</ModifiedDate>
       <ModifiedBy>ufear</ModifiedBy>
       <EditedCount>2</EditedCount>
-      <ViewedCount>4</ViewedCount>
+      <ViewedCount>5</ViewedCount>
       <Item>C:\games\BepinexProjects\WorldBox\189\SimpleGUI\SimpleGUI\zz_Reflection.cs</Item>
       <ItemType>ProjectItem</ItemType>
       <ProjectName>C:\games\BepinexProjects\WorldBox\189\SimpleGUI\SimpleGUI\SimpleGUI.csproj</ProjectName>
@@ -886,6 +883,87 @@
     </DevTrackerDataItem>
   </TotalTimeList>
   <HistoryTimeList>
+    <DevTrackerDataItem ViewActiveTime="PT55.9237431S" EditActiveTime="PT0S">
+      <ModifiedDate>0001-01-01T00:00:00</ModifiedDate>
+      <EditedCount>0</EditedCount>
+      <ViewedCount>1</ViewedCount>
+      <Item>c:\games\bepinexprojects\worldbox\189\simplegui\WorldBox3D\D3Main.cs</Item>
+      <ItemType>ProjectItem</ItemType>
+      <ProjectName>C:\games\BepinexProjects\WorldBox\189\SimpleGUI\WorldBox3D\WorldBox3D.csproj</ProjectName>
+      <CreatedDate>2022-02-02T19:48:05.6763237-05:00</CreatedDate>
+      <ViewedBy>ufear</ViewedBy>
+    </DevTrackerDataItem>
+    <DevTrackerDataItem ViewActiveTime="PT6.2648637S" EditActiveTime="PT0S">
+      <ModifiedDate>0001-01-01T00:00:00</ModifiedDate>
+      <EditedCount>0</EditedCount>
+      <ViewedCount>1</ViewedCount>
+      <Item>C:\games\BepinexProjects\WorldBox\189\SimpleGUI\SimpleGUI\Construction.cs</Item>
+      <ItemType>ProjectItem</ItemType>
+      <ProjectName>C:\games\BepinexProjects\WorldBox\189\SimpleGUI\SimpleGUI\SimpleGUI.csproj</ProjectName>
+      <CreatedDate>2022-02-02T19:46:40.3562722-05:00</CreatedDate>
+      <ViewedBy>ufear</ViewedBy>
+    </DevTrackerDataItem>
+    <DevTrackerDataItem ViewActiveTime="PT3M44.9632427S" EditActiveTime="PT38.1267088S">
+      <ModifiedDate>2022-02-02T23:41:59.1451049-05:00</ModifiedDate>
+      <ModifiedBy>ufear</ModifiedBy>
+      <EditedCount>1</EditedCount>
+      <ViewedCount>1</ViewedCount>
+      <Item>C:\games\BepinexProjects\WorldBox\189\SimpleGUI\CustomAssetLoader\WorldBox3D.cs</Item>
+      <ItemType>ProjectItem</ItemType>
+      <ProjectName>C:\games\BepinexProjects\WorldBox\189\SimpleGUI\CustomAssetLoader\z_a_Loaders+3D.csproj</ProjectName>
+      <CreatedDate>2022-02-02T19:46:30.9812677-05:00</CreatedDate>
+      <ViewedBy>ufear</ViewedBy>
+    </DevTrackerDataItem>
+    <DevTrackerDataItem ViewActiveTime="PT0.6015017S" EditActiveTime="PT0S">
+      <ModifiedDate>0001-01-01T00:00:00</ModifiedDate>
+      <EditedCount>0</EditedCount>
+      <ViewedCount>1</ViewedCount>
+      <Item>C:\games\BepinexProjects\WorldBox\189\SimpleGUI\CustomAssetLoader\TextureLoader.cs</Item>
+      <ItemType>ProjectItem</ItemType>
+      <ProjectName>C:\games\BepinexProjects\WorldBox\189\SimpleGUI\CustomAssetLoader\z_a_Loaders+3D.csproj</ProjectName>
+      <CreatedDate>2022-02-02T19:46:30.379766-05:00</CreatedDate>
+      <ViewedBy>ufear</ViewedBy>
+    </DevTrackerDataItem>
+    <DevTrackerDataItem ViewActiveTime="PT5M1.2381479S" EditActiveTime="PT0S">
+      <ModifiedDate>0001-01-01T00:00:00</ModifiedDate>
+      <EditedCount>0</EditedCount>
+      <ViewedCount>1</ViewedCount>
+      <Item>C:\games\BepinexProjects\WorldBox\189\SimpleGUI\MapSizes2\MapSizes.cs</Item>
+      <ItemType>ProjectItem</ItemType>
+      <ProjectName>C:\games\BepinexProjects\WorldBox\189\SimpleGUI\MapSizes2\MapSizes2.csproj</ProjectName>
+      <CreatedDate>2022-02-02T18:45:17.4440865-05:00</CreatedDate>
+      <ViewedBy>ufear</ViewedBy>
+    </DevTrackerDataItem>
+    <DevTrackerDataItem ViewActiveTime="PT1M45.057912S" EditActiveTime="PT0S">
+      <ModifiedDate>0001-01-01T00:00:00</ModifiedDate>
+      <EditedCount>0</EditedCount>
+      <ViewedCount>1</ViewedCount>
+      <Item>c:\games\bepinexprojects\worldbox\189\simplegui\MapSizes2\MapSizes.cs</Item>
+      <ItemType>ProjectItem</ItemType>
+      <ProjectName>C:\games\BepinexProjects\WorldBox\189\SimpleGUI\MapSizes2\MapSizes2.csproj</ProjectName>
+      <CreatedDate>2022-01-31T00:24:06.7782614-05:00</CreatedDate>
+      <ViewedBy>ufear</ViewedBy>
+    </DevTrackerDataItem>
+    <DevTrackerDataItem ViewActiveTime="PT12.9005857S" EditActiveTime="PT0S">
+      <ModifiedDate>0001-01-01T00:00:00</ModifiedDate>
+      <EditedCount>0</EditedCount>
+      <ViewedCount>1</ViewedCount>
+      <Item>c:\games\bepinexprojects\worldbox\189\simplegui\simplegui\Diplomacy.cs</Item>
+      <ItemType>ProjectItem</ItemType>
+      <ProjectName>C:\games\BepinexProjects\WorldBox\189\SimpleGUI\SimpleGUI\SimpleGUI.csproj</ProjectName>
+      <CreatedDate>2022-01-31T00:23:53.876678-05:00</CreatedDate>
+      <ViewedBy>ufear</ViewedBy>
+    </DevTrackerDataItem>
+    <DevTrackerDataItem ViewActiveTime="PT0.7421411S" EditActiveTime="PT0S">
+      <ModifiedDate>0001-01-01T00:00:00</ModifiedDate>
+      <EditedCount>0</EditedCount>
+      <ViewedCount>1</ViewedCount>
+      <Item>C:\games\BepinexProjects\WorldBox\189\SimpleGUI\SimpleGUI\zz_Reflection.cs</Item>
+      <ItemType>ProjectItem</ItemType>
+      <ProjectName>C:\games\BepinexProjects\WorldBox\189\SimpleGUI\SimpleGUI\SimpleGUI.csproj</ProjectName>
+      <CreatedDate>2022-01-31T00:23:53.132577-05:00</CreatedDate>
+      <ViewedBy>ufear</ViewedBy>
+    </DevTrackerDataItem>
     <DevTrackerDataItem ViewActiveTime="PT16.2358173S" EditActiveTime="PT5.3238679S">
       <ModifiedDate>2022-01-27T22:15:04.9444683-05:00</ModifiedDate>
       <ModifiedBy>ufear</ModifiedBy>

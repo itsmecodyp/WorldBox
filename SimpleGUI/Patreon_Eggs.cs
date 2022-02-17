@@ -231,7 +231,7 @@ namespace SimpleGUI
             }
             if (num == 5)
             {
-                text = "Kosovo je srbija!";
+                // need replacement message
             }
             if (num == 6)
             {

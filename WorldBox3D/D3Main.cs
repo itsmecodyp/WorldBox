@@ -20,6 +20,7 @@ namespace WorldBox3D {
         public static Dictionary<string, int> buildingCustomThickness = new Dictionary<string, int>();
         public static Dictionary<string, int> buildingCustomAngle = new Dictionary<string, int>();
 
+        public static LightManager lightMan = new LightManager();
         public void SettingSetup()
         {
             regularThickeningScale = Config.AddSetting("3D - Scaling", "Regular Thickness", 7, "How many extra layers the buildings get");
@@ -46,7 +47,7 @@ namespace WorldBox3D {
         public bool autoPlacement;
         public static bool _3dEnabled = false;
 
-       
+
         public Vector3 RandomCircle(Vector3 center, float radius, int a)
         {
             Debug.Log(a);
@@ -120,7 +121,7 @@ namespace WorldBox3D {
             public Mesh mesh;
             public Material mat;
             public Actor Actor;
-		}
+        }
 
         public Mesh spriteToMesh(Sprite sprite, int depth)
         {
@@ -190,17 +191,20 @@ namespace WorldBox3D {
 
 
         public void Update()
-		{
+        {
+            if(!assets_initialised && showHide3D) {
+                init_assets();
+            }
             if(tryMesh) {
                 foreach(Actor actor in MapBox.instance.units) {
                     if(actor != null && !this.meshdActors.Contains(actor)) {
-						SpriteRenderer spriteRenderer = Reflection.GetField(actor.GetType(), actor, "spriteRenderer") as SpriteRenderer;
+                        SpriteRenderer spriteRenderer = Reflection.GetField(actor.GetType(), actor, "spriteRenderer") as SpriteRenderer;
                         Shader oldShader = spriteRenderer.material.shader;
                         Sprite sprite = spriteRenderer.sprite;
                         int sortingLayerID = spriteRenderer.sortingLayerID;
                         string sortingLayerName = spriteRenderer.sortingLayerName;
                         Material material2 = spriteRenderer.material;
-                       
+
                         GameObject gameObject1 = new GameObject("balls");
                         gameObject1.transform.position = spriteRenderer.transform.position;
 
@@ -218,7 +222,7 @@ namespace WorldBox3D {
                         }
                         this.meshdActors.Add(actor);
                     }
-                   
+
                     if(true == false) { //meshdActors.Contains(actor) == false
 
                         SpriteRenderer spriteRenderer = Reflection.GetField(actor.GetType(), actor, "spriteRenderer") as SpriteRenderer;
@@ -227,7 +231,7 @@ namespace WorldBox3D {
                         int layer = spriteRenderer.sortingLayerID;
                         string layerName = spriteRenderer.sortingLayerName;
 
-                            //spriteToMesh(actorSprite, 5);
+                        //spriteToMesh(actorSprite, 5);
                         Material actorMaterial = new Material(Shader.Find("Standard"));
                         actorMaterial.SetTexture("_MainTex", spriteRenderer.sprite.texture);
 
@@ -250,7 +254,7 @@ namespace WorldBox3D {
                         if(render == null) {
                             render = actor.gameObject.AddComponent(typeof(MeshRenderer)) as MeshRenderer;
                         }
-                        
+
                         actorAsMesh.RecalculateBounds();
                         actorAsMesh.RecalculateNormals();
                         filter.mesh = actorAsMesh;
@@ -359,7 +363,7 @@ namespace WorldBox3D {
             //Debug.Log("setTileDirty_Prefix");
 
 
-            
+
             Debug.Log("Post patch: Actor.updatePos");
             SettingSetup();
         }
@@ -577,7 +581,7 @@ namespace WorldBox3D {
                     */
                 }
 
-                    if(GUILayout.Button("Single line for all tiles")) {
+                if(GUILayout.Button("Single line for all tiles")) {
                     int scaleFactor = 5;
                     Color color1 = new Color(UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f));
                     Color color2 = new Color(UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f));
@@ -661,10 +665,218 @@ namespace WorldBox3D {
                         }
                     }
                 }
+
+                if(GUILayout.Button("Test light")) {
+
+                    // light 1
+                    GameObject newLightObject = new GameObject();
+                    newLightObject.AddComponent<Light>();
+                    Light objectsLight = newLightObject.GetComponent<Light>();
+                    objectsLight.type = LightType.Directional;
+                    newLightObject.transform.DOBlendableRotateBy(new Vector3(-40, 0, 0), 5f, RotateMode.Fast);
+                    // light 2
+                    /*
+                    GameObject newLightObject2 = new GameObject();
+                    newLightObject2.AddComponent<Light>();
+                    Light objectsLight2 = newLightObject2.GetComponent<Light>();
+                    objectsLight2.type = LightType.Directional;
+
+                       objectsLight2.intensity = 1;
+                    objectsLight2.range = 3f;
+                    objectsLight2.spotAngle = 60;
+                                        newLightObject2.transform.position = MapBox.instance.GetTile(MapBox.width / 2, MapBox.height / 2).posV3;
+
+                    */
+
+                    Shader newshader = loadedAssetBundle.LoadAsset<Shader>("CustomDiffuse");
+
+                    List<Material> shaders = Resources.FindObjectsOfTypeAll<Material>().ToList();
+                    shaders.Where(x => x.name.Contains("MatWorld") == true).ToList().First().shader = newshader;
+
+
+                    //?
+                    objectsLight.intensity = 1;
+                    objectsLight.range = 3f;
+                    objectsLight.spotAngle = 60;
+                    //?
+
+
+                    newLightObject.transform.position = MapBox.instance.GetTile(MapBox.width / 2, MapBox.height / 2).posV3;
+
+                }
+                if(GUILayout.Button("PL test 2")) {
+                    foreach(Building building in MapBox.instance.buildings) {
+                        lightMan.buildingLight(building);
+                    }
+                }
+                if(GUILayout.Button("Lights Intensity++")) {
+                    foreach(Light light in lightMan.allLights) {
+                        light.intensity = light.intensity + 0.1f;
+                    }
+                }
+                if(GUILayout.Button("Lights Intensity--")) {
+                    foreach(Light light in lightMan.allLights) {
+                        light.intensity = light.intensity - 0.1f;
+                    }
+                }
+                if(GUILayout.Button("Lights Range++")) {
+                    foreach(Light light in lightMan.allLights) {
+                        light.range = light.range + 0.1f;
+                    }
+                }
+                if(GUILayout.Button("Lights Range--")) {
+                    foreach(Light light in lightMan.allLights) {
+                        light.range = light.range - 0.1f;
+                    }
+                }
+                if(GUILayout.Button("White")) {
+                    foreach(Light light in lightMan.allLights) {
+                        light.color = Color.white;
+                    }
+                }
+                if(GUILayout.Button("red")) {
+                    foreach(Light light in lightMan.allLights) {
+                        light.color = Color.red;
+                    }
+                }
+                if(GUILayout.Button("Random")) {
+                    foreach(Light light in lightMan.allLights) {
+                        light.color = new Color(
+      UnityEngine.Random.Range(0f, 1f),
+      UnityEngine.Random.Range(0f, 1f),
+      UnityEngine.Random.Range(0f, 1f)
+  );
+                    }
+                }
+                if(GUILayout.Button("Spot")) {
+                    foreach(Light light in lightMan.allLights) {
+                        light.type = LightType.Spot;
+                    }
+                }
+                if(GUILayout.Button("Point")) {
+                    foreach(Light light in lightMan.allLights) {
+                        light.type = LightType.Point;
+                    }
+                }
+
+                if(GUILayout.Button("Up")) {
+                    foreach(Building building in MapBox.instance.buildings) {
+                        if(lightMan.lightDict.ContainsKey(building.data.objectID)) {
+                            GameObject buildingLight = lightMan.lightDict[building.data.objectID];
+                            buildingLight.transform.localPosition = buildingLight.transform.localPosition + new Vector3(0f, 0f, -1f);
+                        }
+                    }
+                }
+                if(GUILayout.Button("Down")) {
+                    foreach(Building building in MapBox.instance.buildings) {
+                        if(lightMan.lightDict.ContainsKey(building.data.objectID)) {
+                            GameObject buildingLight = lightMan.lightDict[building.data.objectID];
+                            buildingLight.transform.localPosition = buildingLight.transform.localPosition + new Vector3(0f, 0f, 1f);
+                        }
+                    }
+                }
+                if(GUILayout.Button("For")) {
+                    foreach(Building building in MapBox.instance.buildings) {
+                        if(lightMan.lightDict.ContainsKey(building.data.objectID)) {
+                            GameObject buildingLight = lightMan.lightDict[building.data.objectID];
+                            buildingLight.transform.localPosition = buildingLight.transform.localPosition + new Vector3(0f, 1f, 0f);
+                        }
+                    }
+                }
+                if(GUILayout.Button("Back")) {
+                    foreach(Building building in MapBox.instance.buildings) {
+                        if(lightMan.lightDict.ContainsKey(building.data.objectID)) {
+                            GameObject buildingLight = lightMan.lightDict[building.data.objectID];
+                            buildingLight.transform.localPosition = buildingLight.transform.localPosition + new Vector3(0f, -1f, 0);
+                        }
+                    }
+                }
+                if(GUILayout.Button("Left")) {
+                    foreach(Building building in MapBox.instance.buildings) {
+                        if(lightMan.lightDict.ContainsKey(building.data.objectID)) {
+                            GameObject buildingLight = lightMan.lightDict[building.data.objectID];
+                            buildingLight.transform.localPosition = buildingLight.transform.localPosition + new Vector3(-1f, 0f, 0);
+                        }
+                    }
+                }
+                if(GUILayout.Button("Right")) {
+                    foreach(Building building in MapBox.instance.buildings) {
+                        if(lightMan.lightDict.ContainsKey(building.data.objectID)) {
+                            GameObject buildingLight = lightMan.lightDict[building.data.objectID];
+                            buildingLight.transform.localPosition = buildingLight.transform.localPosition + new Vector3(1f, 0f, 0);
+                        }
+                    }
+                }
+
             }
 
             GUI.DragWindow();
         }
+
+        public class LightManager {
+            public Dictionary<string, GameObject> lightDict = new Dictionary<string, GameObject>();
+            public List<Light> allLights = new List<Light>();
+            public Light buildingLight(Building pBuilding)
+			{
+                if(lightDict.ContainsKey(pBuilding.data.objectID)) {
+                    return lightDict[pBuilding.data.objectID].GetComponent<Light>();
+                }
+				else {
+                    // light 1
+                    GameObject newLightObject = new GameObject();
+                    newLightObject.AddComponent<Light>();
+                    Light objectsLight = newLightObject.GetComponent<Light>();
+                    objectsLight.type = LightType.Point;
+                    allLights.Add(objectsLight);
+                    newLightObject.transform.position = pBuilding.currentTile.posV3 + new Vector3(0f, 0, -1);
+                    lightDict.Add(pBuilding.data.objectID, newLightObject);
+                    return objectsLight;
+                }
+
+            }
+        }
+
+        public GameObject Light(Building pParent)
+		{
+            // light 2
+            GameObject newLightObject2 = pParent.gameObject;
+            Light objectsLight2;
+            if(pParent.TryGetComponent<Light>(out Light potentialLight)) {
+                objectsLight2 = potentialLight;
+            }
+			else {
+                newLightObject2.AddComponent<Light>();
+                objectsLight2 = newLightObject2.GetComponent<Light>();
+                newLightObject2.transform.SetParent(pParent.transform);
+            }
+            return newLightObject2;
+        }
+
+
+
+        static AssetBundle loadedAssetBundle;
+
+        void init_assets()
+        {
+            LoadAssetBundle();
+        }
+
+
+        public void LoadAssetBundle()
+        {
+            string bundlename = "unleashed";
+            loadedAssetBundle = AssetBundle.LoadFromFile(Path.Combine(Application.streamingAssetsPath, "AssetBundle", bundlename));
+            if(loadedAssetBundle == null) {
+                Debug.Log("Failed to load AssetBundle");
+                assets_initialised = false;
+                return;
+            }
+
+            assets_initialised = true;
+        }
+
+        static bool assets_initialised;
+
         public bool showLineButtons = true;
 
         public bool showHide3D;
@@ -1018,7 +1230,7 @@ namespace WorldBox3D {
                     float y = rotationRate * -Input.GetAxis("Mouse X");
                     Camera.main.transform.Rotate(x, y, 0);
                 }
-                if(Input.GetKey(KeyCode.LeftControl)) {
+                if(Input.GetKey(KeyCode.LeftControl) && Input.GetKey(KeyCode.LeftAlt)) {
                     float x = rotationRate * Input.GetAxis("Mouse X");
                     float y = rotationRate * -Input.GetAxis("Mouse Y");
                     // MapBox.instance.GetTile(MapBox.width / 2, MapBox.height / 2); // CENTER TILE
@@ -1030,6 +1242,6 @@ namespace WorldBox3D {
         }
     }
 
-
+    
 }
 

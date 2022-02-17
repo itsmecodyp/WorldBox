@@ -64,15 +64,11 @@ namespace TextureLoader
             harmony.Patch(original, null, new HarmonyMethod(patch));
             Debug.Log("Post patch: Building.setSpriteMain");
 
-            original = AccessTools.Method(typeof(Building), "checkSpriteRenderer");
-            patch = AccessTools.Method(typeof(TextureLoader_Main), "checkSpriteRenderer_Prefix");
+            original = AccessTools.Method(typeof(Building), "checkSpriteConstructor");
+            patch = AccessTools.Method(typeof(TextureLoader_Main), "checkSpriteConstructor_Prefix");
             harmony.Patch(original, new HarmonyMethod(patch));
             Debug.Log("Pre patch: Building.checkShadow");
 
-            original = AccessTools.Method(typeof(Building), "checkRoof");
-            patch = AccessTools.Method(typeof(TextureLoader_Main), "checkRoof_Prefix");
-            harmony.Patch(original, new HarmonyMethod(patch));
-            Debug.Log("Pre patch: Building.checkRoof");
 
             original = AccessTools.Method(typeof(LocalizedTextManager), "loadLocalizedText");
             patch = AccessTools.Method(typeof(TextureLoader_Main), "loadLocalizedText_Postfix");
@@ -87,14 +83,14 @@ namespace TextureLoader
             harmony = new Harmony(pluginGuid);
             original = AccessTools.Method(typeof(TilemapExtended), "setTile");
             patch = AccessTools.Method(typeof(TextureLoader_Main), "setTile_Prefix");
-            harmony.Patch(original, new HarmonyMethod(patch));
+            //harmony.Patch(original, new HarmonyMethod(patch));
             Debug.Log("setTile_Prefix");
 
             harmony = new Harmony(pluginGuid);
-            original = AccessTools.Method(typeof(PowerButton), "Start");
-            patch = AccessTools.Method(typeof(TextureLoader_Main), "Start_Postfix");
+            original = AccessTools.Method(typeof(PowerButton), "OnEnable");
+            patch = AccessTools.Method(typeof(TextureLoader_Main), "OnEnable_Postfix");
             harmony.Patch(original, null, new HarmonyMethod(patch));
-            Debug.Log("Start_Postfix");
+            Debug.Log("OnEnable_Postfix");
 
             harmony = new Harmony(pluginGuid);
             original = AccessTools.Method(typeof(LoadingScreen), "setupBg");
@@ -116,10 +112,10 @@ namespace TextureLoader
 
 
             harmony = new Harmony(pluginGuid);
-            original = AccessTools.Method(typeof(Actor), "newUnitRender");
-            patch = AccessTools.Method(typeof(TextureLoader_Main), "newUnitRender_Postfix");
+            original = AccessTools.Method(typeof(Actor), "checkSpriteRenderer");
+            patch = AccessTools.Method(typeof(TextureLoader_Main), "checkSpriteRenderer_Postfix");
             harmony.Patch(original, null, new HarmonyMethod(patch));
-            Debug.Log("newUnitRender_Postfix");
+            Debug.Log("checkSpriteRenderer_Postfix");
 
             harmony = new Harmony(pluginGuid);
             original = AccessTools.Method(typeof(Actor), "forceAnimation");
@@ -229,11 +225,11 @@ namespace TextureLoader
                 customTextures.TryGetValue(newBar, out Sprite replacement);
                 __instance.bar.sprite = replacement;
             }
-            Camera.main.backgroundColor = TileType.get("deep_ocean").color;
+            //Camera.main.backgroundColor = TileType.get("deep_ocean").color;
 
         }
 
-        public static void Start_Postfix(PowerButton __instance)
+        public static void OnEnable_Postfix(PowerButton __instance)
         {
             // Debug.Log(__instance.gameObject.name);
             //Debug.Log("CTCount: " + customTextures.Count);
@@ -253,7 +249,7 @@ namespace TextureLoader
         {
             if (tileSkinsEnabled)
             {
-                string tiletype = pWorldTile.Type.name;
+                string tiletype = pWorldTile.Type.id;
                 pVec.z = 0;
                 //Debug.Log("tile type: " + tiletype);
                 List<string> tileVariationsAvailable = variationsOfCustomTexture(tiletype);
@@ -372,9 +368,9 @@ namespace TextureLoader
                     {
                         if (MapBox.instance.getMouseTilePos().zone.tileTypes.ContainsKey(selectedCustomType) == false)
                         {
-                            MapBox.instance.getMouseTilePos().zone.tileTypes.Add(selectedCustomType, new List<WorldTile>());
+                            MapBox.instance.getMouseTilePos().zone.tileTypes.Add(selectedCustomType, new HashSet<WorldTile>() as HashSetWorldTile);
                         }
-                        MapBox.instance.terraformTile2(MapBox.instance.getMouseTilePos(), selectedCustomType, AssetManager.terraform.get("flash"));
+                        MapAction.terraformMain(MapBox.instance.getMouseTilePos(), selectedCustomType, AssetManager.terraform.get("flash"));
 
                     }
                 }
@@ -480,7 +476,7 @@ namespace TextureLoader
         public static Dictionary<Actor, Sprite> bodyReplacedActorsAndSprite = new Dictionary<Actor, Sprite>();
 
         
-        public static void newUnitRender_Postfix(Actor __instance)
+        public static void checkSpriteRenderer_Postfix(Actor __instance)
         {
             detectCustomActorTexture(__instance);
         }
@@ -493,8 +489,8 @@ namespace TextureLoader
 
         public static void detectCustomActorTexture(Actor target)
         {
-            ActorStatus data = Reflection.GetField(target.GetType(), target, "data") as ActorStatus;
-            if (data.alive)
+            ActorStatus data = target.data;
+            if (target.data.alive)
             {
                 SpriteRenderer spriteRendererBody = Reflection.GetField(target.GetType(), target, "spriteRenderer") as SpriteRenderer;
 
@@ -639,7 +635,7 @@ namespace TextureLoader
             detectCustomBuildingTexture(__instance);
         }
         // used to be checkShadow
-        public static bool checkSpriteRenderer_Prefix(Building __instance)
+        public static bool checkSpriteConstructor_Prefix(Building __instance)
         {
             BuildingData data = Reflection.GetField(__instance.GetType(), __instance, "data") as BuildingData;
 
@@ -658,14 +654,6 @@ namespace TextureLoader
         }
 
         // error fix, need to detect which buildings are actually sprite replaced
-        public static bool checkRoof_Prefix(Building __instance)
-        {
-            if (spriteReplacedBuildings.Contains(__instance))
-            {
-                return false;
-            }
-            return true;
-        }
 
         public static bool setSpriteRuin_Prefix(Building __instance)
         {
@@ -934,7 +922,6 @@ namespace TextureLoader
 
         public static void readTileColorFile()
         {
-            TileType.Init();
             string path = Directory.GetCurrentDirectory() + "\\WorldBox_Data//images//tiles.txt";
             bool flag = File.Exists(path);
             if (flag)
@@ -954,7 +941,7 @@ namespace TextureLoader
                     {
                     ":"[0]
                     })[1];
-                    TileType tileType = TileType.get(pID);
+                    TopTileType tileType = AssetManager.topTiles.get(pID);
                     bool flag2 = tileType != null;
                     if (flag2)
                     {

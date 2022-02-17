@@ -44,7 +44,7 @@ namespace CustomAssetLoader
             MapBox.instance.stackEffects.CallMethod("spawnFireworks", new object[] { pTile, 0.05f });
             return false;
         }
-      
+
         #region setTemplatePatch
         /* 
         public static bool setTemplate_Prefix(BuildingAsset pTemplate, Building __instance)
@@ -71,18 +71,57 @@ namespace CustomAssetLoader
         }
         */
         #endregion
+        private static void GetPropertyValues(System.Object obj, string stringToSave)
+        {
+            Type t = obj.GetType();
+            Console.WriteLine("Type is: {0}", t.Name);
+            PropertyInfo[] props = t.GetProperties();
+            Console.WriteLine("Properties (N = {0}):", props.Length);
+            foreach(var prop in props)
+                if(prop.GetIndexParameters().Length == 0)
+
+                    Console.WriteLine("   {0} ({1}): {2}", prop.Name,prop.PropertyType.Name, prop.GetValue(obj));
+                else
+                    Console.WriteLine("   {0} ({1}): <Indexed>", prop.Name, prop.PropertyType.Name);
+        }
+        private static void GetFieldValues(System.Object obj, string assetPath, string stringToSave)
+        {
+            Type t = obj.GetType();
+            FieldInfo[] fields = t.GetFields();
+            foreach(var field in fields) {
+                string output = string.Format("{0} ({1}): {2}", field.Name, field.FieldType.Name, field.GetValue(obj));
+                stringToSave += "\n" + output;
+            }
+
+            StreamWriter writer = new StreamWriter(assetPath, false);
+            writer.WriteLine(stringToSave, false);
+            writer.Close();
+        }
+
         public void ExportVanillaAssets()
         {
+            string pathAssets= Directory.GetCurrentDirectory() + "\\WorldBox_Data//assets//original//";
+            if(!Directory.Exists(pathAssets)) {
+                Directory.CreateDirectory(pathAssets);
+            }
+            string pathOriginal = Directory.GetCurrentDirectory() + "\\WorldBox_Data//assets//original//";
+            if(!Directory.Exists(pathOriginal)) {
+                Directory.CreateDirectory(pathOriginal);
+            }
             string path = Directory.GetCurrentDirectory() + "\\WorldBox_Data//assets//original//" + "buildings" + "//";
             if (!Directory.Exists(path))
             {
-                return;
+                Directory.CreateDirectory(path);
             }
-            foreach (BuildingAsset building in AssetManager.buildings.list)
+            PropertyInfo[] properties = typeof(BuildingAsset).GetType().GetProperties();
+
+            foreach(BuildingAsset building in AssetManager.buildings.list)
             {
                 string buildingPath = path + "//" + building.id + ".txt";
                 string stringToSave = "id: " + building.id;
+                GetFieldValues(building, buildingPath, stringToSave);
 
+                /*
                 stringToSave += "\n" + "affectedByAcid: " + building.affectedByAcid.ToString().ToLower();
                 stringToSave += "\n" + "affectedByLava: " + building.affectedByLava.ToString().ToLower();
                 stringToSave += "\n" + "autoRemoveRuin: " + building.auto_remove_ruin.ToString().ToLower();
@@ -154,15 +193,13 @@ namespace CustomAssetLoader
                 stringToSave += "\n" + "type: " + building.type.ToString().ToLower();
                 stringToSave += "\n" + "upgradeLevel: " + building.upgradeLevel.ToString().ToLower();
                 stringToSave += "\n" + "upgradeTo: " + building.upgradeTo.ToString().ToLower();
-                StreamWriter writer = new StreamWriter(buildingPath, false);
-                writer.WriteLine(stringToSave, false);
-                writer.Close();
+                */
             }
 
             path = Directory.GetCurrentDirectory() + "\\WorldBox_Data//assets//original//" + "traits" + "//";
             if (!Directory.Exists(path))
             {
-                return;
+                Directory.CreateDirectory(path);
             }
             foreach (ActorTrait trait in AssetManager.traits.list)
             {
@@ -254,7 +291,7 @@ namespace CustomAssetLoader
             path = Directory.GetCurrentDirectory() + "\\WorldBox_Data//assets//original//" + "resources" + "//";
             if (!Directory.Exists(path))
             {
-                return;
+                Directory.CreateDirectory(path);
             }
             foreach (ResourceAsset resource in AssetManager.resources.list)
             {
@@ -364,7 +401,7 @@ namespace CustomAssetLoader
             path = Directory.GetCurrentDirectory() + "\\WorldBox_Data//assets//original//" + "prefixes" + "//";
             if (!Directory.Exists(path))
             {
-                return;
+                Directory.CreateDirectory(path);
             }
             foreach (ItemAsset item in AssetManager.items_prefix.list)
             {
@@ -431,7 +468,7 @@ namespace CustomAssetLoader
             path = Directory.GetCurrentDirectory() + "\\WorldBox_Data//assets//original//" + "suffixes" + "//";
             if (!Directory.Exists(path))
             {
-                return;
+                Directory.CreateDirectory(path);
             }
             foreach (ItemAsset item in AssetManager.items_suffix.list)
             {
@@ -498,12 +535,24 @@ namespace CustomAssetLoader
             path = Directory.GetCurrentDirectory() + "\\WorldBox_Data//assets//original//" + "units" + "//";
             if (!Directory.Exists(path))
             {
-                return;
+                Directory.CreateDirectory(path);
             }
-            foreach (ActorStats unit in AssetManager.unitStats.list)
+            PropertyInfo[] propertiesActorStats = typeof(ActorStats).GetType().GetProperties();
+
+            foreach(ActorStats unit in AssetManager.unitStats.list)
             {
+
+
+                
                 string itemPath = path + "//" + unit.id + ".txt";
                 string itemToSave = "id: " + unit.id;
+
+                foreach(PropertyInfo property in propertiesActorStats) {
+                    if(property.GetValue(unit).ToString() != null)
+                    itemToSave += "\n" + property.Name + ": " + property.GetValue(unit).ToString();
+                }
+
+                /*
                 //itemToSave += "\n" + "actorSize: " + unit.actorSize
                 itemToSave += "\n" + "aggression: " + unit.aggression.ToString().ToLower();
                 itemToSave += "\n" + "animal: " + unit.animal.ToString().ToLower();
@@ -573,7 +622,7 @@ namespace CustomAssetLoader
                 itemToSave += "\n" + "ignoreJobs: " + unit.ignoreJobs.ToString().ToLower();
                 itemToSave += "\n" + "ignoreTileSpeedMod: " + unit.ignoreTileSpeedMod.ToString().ToLower();
                 itemToSave += "\n" + "immune_to_injures: " + unit.immune_to_injures.ToString().ToLower();
-
+                */
                 StreamWriter writer = new StreamWriter(itemPath, false);
                 writer.WriteLine(itemToSave);
                 writer.Close();
@@ -584,14 +633,24 @@ namespace CustomAssetLoader
             path = Directory.GetCurrentDirectory() + "\\WorldBox_Data//assets//original//" + "tiletype" + "//";
             if (!Directory.Exists(path))
             {
-                return;
+                Directory.CreateDirectory(path);
             }
-            foreach (TileType tiletype in TileType.list)
+            PropertyInfo[] propertiesTiles = typeof(ActorStats).GetType().GetProperties();
+
+            foreach(TopTileType tiletype in AssetManager.topTiles.list)
             {
-                string itemPath = path + "//" + tiletype.name + ".txt";
-                string itemToSave = "name: " + tiletype.name.ToString().ToLower();
+                string itemPath = path + "//" + tiletype.id + ".txt";
+                string itemToSave = "name: " + tiletype.id.ToString().ToLower();
                 //itemToSave += "\n" + "additional_height: " + tiletype.additional_height.ToString().ToLower();
                 itemToSave += "\n" + "id: " + tiletype.id.ToString().ToLower();
+
+
+                foreach(PropertyInfo property in propertiesTiles) {
+                    if(property.GetValue(tiletype).ToString() != null)
+                        itemToSave += "\n" + property.Name + ": " + property.GetValue(tiletype).ToString();
+                }
+
+                /*
                 itemToSave += "\n" + "autoGrowPlants: " + tiletype.autoGrowPlants.ToString().ToLower();
                 itemToSave += "\n" + "block: " + tiletype.block.ToString().ToLower();
                 itemToSave += "\n" + "burnable: " + tiletype.burnable.ToString().ToLower();
@@ -669,7 +728,7 @@ namespace CustomAssetLoader
                 itemToSave += "\n" + "walkMod: " + tiletype.walkMod.ToString().ToLower();
                 itemToSave += "\n" + "water: " + tiletype.water.ToString().ToLower();
                 itemToSave += "\n" + "z: " + tiletype.z.ToString().ToLower();
-                
+                */
                 StreamWriter writer = new StreamWriter(itemPath, false);
                 writer.WriteLine(itemToSave);
                 writer.Close();
@@ -689,7 +748,7 @@ namespace CustomAssetLoader
         {
             string path = "";
             path = Directory.GetCurrentDirectory() + "\\WorldBox_Data//assets//custom//" + "buildings" + "//";
-            LoadBuildings(path);
+            //LoadBuildings(path);
             path = Directory.GetCurrentDirectory() + "\\WorldBox_Data//assets//custom//" + "traits" + "//";
             LoadTraits(path);
             path = Directory.GetCurrentDirectory() + "\\WorldBox_Data//assets//custom//" + "sounds" + "//";
@@ -801,6 +860,7 @@ namespace CustomAssetLoader
 
         public static Dictionary<string, TileType> addedTileTypes = new Dictionary<string, TileType>();
         public bool hasLoadedTiles;
+        /*
         public void LoadTiles(string path)
         {
             if (Directory.Exists(path) && !hasLoadedTiles)
@@ -1100,12 +1160,7 @@ namespace CustomAssetLoader
                 }
             }
         }
-
-        public static void addVariation_Prefix(string pSpriteName, TileLib __instance)
-        {
-        
-        }
-
+        */
 
         public bool hasLoadedSounds;
         async Task LoadSounds(string path)
@@ -1244,6 +1299,7 @@ namespace CustomAssetLoader
             return char.ToUpper(targetstring[0]) + targetstring.Substring(1);
         }
 
+        /*
         private void LoadBuildings(string path)
         {
             if (Directory.Exists(path) && !hasLoadedBuildings)
@@ -1571,6 +1627,7 @@ namespace CustomAssetLoader
                 }
             }
         }
+        */
 
         private void LoadTraits(string path)
         {
@@ -1894,7 +1951,7 @@ namespace CustomAssetLoader
             {
                 if (AssetManager.tester_tasks != null)
                 {
-                   // ExportVanillaAssets(); only for me for now, needs fixed after 10.0 update
+                    ExportVanillaAssets(); //only for me for now, needs fixed after 10.0 update
                     ImportCustomAssets();
                     hasLoadedBuildings = true;
                     hasLoadedTraits = true;

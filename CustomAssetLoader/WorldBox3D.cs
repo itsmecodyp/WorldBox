@@ -33,8 +33,8 @@ namespace WorldBox3D
         {
             get; set;
         }
-        public const string pluginGuid = "cody.worldbox.3d";
-        public const string pluginName = "WorldBox3D";
+        public const string pluginGuid = "cody.worldbox.assetloader.3d";
+        public const string pluginName = "WorldBox3D - Asset Loader";
         public const string pluginVersion = "0.0.0.3";
         public float rotationRate = 2f;
         public float manipulationRate = 0.1f;
@@ -402,7 +402,7 @@ namespace WorldBox3D
 
                     }
                     int currentVertexCount = 0;
-                    foreach (TileType tileType in TileType.list)
+                    foreach (TopTileType tileType in AssetManager.topTiles.list)
                     {
                         List<WorldTile> tilesOfType = new List<WorldTile>();
                         foreach (WorldTile tile in MapBox.instance.tilesList)
@@ -469,7 +469,7 @@ namespace WorldBox3D
                     lineRenderer.material.color = Color.green;
                     for (int i = 2; i < MapBox.instance.tilesList.Count; i++)
                     {
-                        if (!MapBox.instance.tilesList[i].Type.water)
+                        if (!MapBox.instance.tilesList[i].Type.ocean)
                         {
                             WorldTile tile = MapBox.instance.tilesList[i];
                             lineRenderer.SetPosition(i - 2, new Vector3(tile.posV3.x, tile.posV3.y, (-(float)tile.Height / scaleFactor) - 150f));
@@ -507,7 +507,7 @@ namespace WorldBox3D
                     int scaleFactor = 5;
                     foreach (WorldTile tile in MapBox.instance.tilesList)
                     {
-                        if (!tile.Type.water)
+                        if (!tile.Type.ocean)
                         {
                             Color tileColor = tile.getColor();
                             LineRenderer lineRenderer = new GameObject("Line").AddComponent<LineRenderer>();
@@ -537,10 +537,7 @@ namespace WorldBox3D
         public void OnGUI()
         {
             GUILayout.BeginArea(new Rect(Screen.width - 120, 50, 120, 30));
-            if (GUILayout.Button("WorldBox3D")) // "WorldBox3D"
-            {
-                showHide3D = !showHide3D;
-            }
+            //if (GUILayout.Button("WorldBox3D")) showHide3D = !showHide3D;
             GUILayout.EndArea();
             if (showHide3D)
             {

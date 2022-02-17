@@ -4,6 +4,7 @@ using HarmonyLib;
 using UnityEngine;
 using BepInEx;
 using System.Collections.Generic;
+using System.Collections;
 
 namespace MapSizes
 {
@@ -12,8 +13,8 @@ namespace MapSizes
         public const string pluginGuid = "cody.worldbox.map.sizes";
         public const string pluginName = "MapSizes";
         public const string pluginVersion = "0.0.0.3";
-        public int mapSizeX = 4;
-        public int mapSizeY = 4;
+        public static int mapSizeX = 4;
+        public static int mapSizeY = 4;
         public bool showHideMapSizeWindow;
         public Rect mapSizeWindowRect;
         public static string filename = "picture";
@@ -25,6 +26,17 @@ namespace MapSizes
             MethodInfo patch = AccessTools.Method(typeof(Main), "applyTemplate_Prefix");
             harmony.Patch(original, new HarmonyMethod(patch));
             Debug.Log("Pre patch: GeneratorTool.applyTemplate");
+
+            original = AccessTools.Method(typeof(MapBox), "setMapSize");
+            patch = AccessTools.Method(typeof(Main), "setMapSize_Prefix");
+            harmony.Patch(original, new HarmonyMethod(patch));
+            Debug.Log("Pre patch: MapBox.setMapSize");
+
+            original = AccessTools.Method(typeof(MapBox), "finishMakingWorld");
+            patch = AccessTools.Method(typeof(Main), "finishMakingWorld_Postfix");
+            harmony.Patch(original, null, new HarmonyMethod(patch));
+            Debug.Log("Post patch: MapBox.finishMakingWorld");
+
             Debug.Log("MapSizes loaded");
         }
         public void OnGUI()
@@ -72,21 +84,13 @@ namespace MapSizes
             if(GUILayout.Button("Regenerate map")) {
                 Debug.Log("MapSizes: regenerating map");
                 //MapBox.instance.setMapSize(mapSizeX, mapSizeY);
-                MapBox.instance.CallMethod("generateNewMap", new object[] { "clear" });
+                MapBox.instance.clickGenerateNewMap("islands");
                 //MapBox.instance.finishMakingWorld();
             }
-            if(GUILayout.Button("Resize current map")) {
-                ResizeCurrentMap();
-            }
-            if(GUILayout.Button("copy map")) {
-                CopyMap();
-            }
-            if(GUILayout.Button("clear map")) {
-                ClearMap();
-            }
-            if(GUILayout.Button("paste map")) {
-                PasteMap();
-            }
+            if(GUILayout.Button("Resize current map")) ResizeCurrentMap();
+            if(GUILayout.Button("copy map")) CopyMap();
+            if(GUILayout.Button("clear map")) ClearMap();
+            if(GUILayout.Button("paste map")) PasteMap();
             GUILayout.BeginHorizontal();
             GUILayout.Button("PicSizeX");
             pictureSizeX = (int)GUILayout.HorizontalSlider((float)pictureSizeX, 1f, 2000f);
@@ -172,18 +176,32 @@ namespace MapSizes
            
         }
 
+        public List<string> tiles;
+        public List<string> tilesTop;
+
 
         public void PasteMap()
         {
+            if(tiles == null) {
+                tilesTop = new List<string>();
+                tiles = new List<string>();
+                foreach(TileType tiletype1 in AssetManager.tiles.list) {
+                    tiles.Add(tiletype1.id);
+				}
+                foreach(TopTileType tiletype2 in AssetManager.topTiles.list) {
+                    tilesTop.Add(tiletype2.id);
+                }
+            }
+
             // logs spam hard from the checks in wrong libraries..
             foreach(Vector2Int tilePos in tilesCache.Keys) {
                 WorldTile targetTile = MapBox.instance.GetTile(tilePos.x, tilePos.y);
                 if(targetTile != null) {
-                    if(AssetManager.tiles.get(tilesCache[tilePos]) != null) {
+                    if(tiles.Contains(tilesCache[tilePos])) {
                         MapAction.terraformMain(targetTile, AssetManager.tiles.get(tilesCache[tilePos]), AssetManager.terraform.get("flash"));
                     }
                     else {
-                        if(AssetManager.topTiles.get(tilesCache[tilePos]) != null) {
+                        if(tilesTop.Contains(tilesCache[tilePos])) {
                             MapAction.terraformTop(targetTile, AssetManager.topTiles.get(tilesCache[tilePos]), AssetManager.terraform.get("flash"));
                         }
                         else {
@@ -207,15 +225,26 @@ namespace MapSizes
         public List<WorldTile> tileList;
         public void ResizeCurrentMap()
 		{
-            tileList = MapBox.instance.tilesList;
-            MapBox.instance.setMapSize(mapSizeX, mapSizeY);
-            MapBox.instance.CallMethod("GenerateMap", new object[] { "custom" });
-            MapBox.instance.finishMakingWorld();
-            MapBox.instance.tilesList.Clear();
-            
-			for(int i = 0; i < tileList.Count; i++) {
-                MapBox.instance.tilesList[i] = tileList[i];
-            }
+            CopyMap();
+            hasFinishedLoading = false;
+            MapBox.instance.clickGenerateNewMap("islands");
+            waitingForLoading = true;
+        }
+        public static bool waitingForLoading = false;
+        public void Update()
+		{
+            if(waitingForLoading) {
+                if(hasFinishedLoading) {
+                    ResizeFinish();
+                    hasFinishedLoading = false;
+                }
+			}
+		}
+
+        public void ResizeFinish()
+        {
+            ClearMap();
+            PasteMap();
         }
 
         public static string imagePath => Directory.GetCurrentDirectory() + "\\WorldBox_Data//images//" + filename + ".png";
@@ -231,6 +260,18 @@ namespace MapSizes
             return true;
         }
 
+        public static bool setMapSize_Prefix(ref int pWidth, ref int pHeight)
+        {
+            pWidth = mapSizeX;
+            pHeight = mapSizeY;
+            return true;
+        }
+
+        public static void finishMakingWorld_Postfix()
+        {
+            hasFinishedLoading = true;
+        }
+        public static bool hasFinishedLoading = false;
         // for later: public static Dictionary<WorldTile, Color> customTileColors = new Dictionary<WorldTile, Color>();
         public static int pictureSizeX = 100;
         public static int pictureSizeY = 100;
