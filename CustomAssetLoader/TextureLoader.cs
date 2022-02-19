@@ -66,7 +66,7 @@ namespace TextureLoader
 
             original = AccessTools.Method(typeof(Building), "checkSpriteConstructor");
             patch = AccessTools.Method(typeof(TextureLoader_Main), "checkSpriteConstructor_Prefix");
-            harmony.Patch(original, new HarmonyMethod(patch));
+            //harmony.Patch(original, new HarmonyMethod(patch));
             Debug.Log("Pre patch: Building.checkShadow");
 
 

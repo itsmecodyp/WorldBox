@@ -9,7 +9,7 @@ using UnityEngine.UI;
 using DG.Tweening;
 
 namespace SimpleAdditions {
-	class Items {
+	class aItems {
 
 		public static Dictionary<string, Sprite> newWeaponsIcons = new Dictionary<string, Sprite>();
 		// each item needs added in simplegui.itemGeneration.simpleAdditionWeapons and the switch statement there
@@ -75,8 +75,8 @@ namespace SimpleAdditions {
 		[HarmonyPatch("load", MethodType.Normal)]
 		public static bool Prefix(ActorEquipmentSlot pSlot, EquipmentButton __instance)
 		{
-			if(pSlot != null && Items.newWeaponsIcons.ContainsKey(pSlot.data.material)) {
-				__instance.GetComponent<Image>().sprite = Items.newWeaponsIcons[pSlot.data.material];
+			if(pSlot != null && aItems.newWeaponsIcons.ContainsKey(pSlot.data.material)) {
+				__instance.GetComponent<Image>().sprite = aItems.newWeaponsIcons[pSlot.data.material];
 				return false;
 			}
 			else {

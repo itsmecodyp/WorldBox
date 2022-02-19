@@ -748,7 +748,7 @@ namespace CustomAssetLoader
         {
             string path = "";
             path = Directory.GetCurrentDirectory() + "\\WorldBox_Data//assets//custom//" + "buildings" + "//";
-            //LoadBuildings(path);
+            LoadBuildings(path);
             path = Directory.GetCurrentDirectory() + "\\WorldBox_Data//assets//custom//" + "traits" + "//";
             LoadTraits(path);
             path = Directory.GetCurrentDirectory() + "\\WorldBox_Data//assets//custom//" + "sounds" + "//";
@@ -1299,7 +1299,7 @@ namespace CustomAssetLoader
             return char.ToUpper(targetstring[0]) + targetstring.Substring(1);
         }
 
-        /*
+        
         private void LoadBuildings(string path)
         {
             if (Directory.Exists(path) && !hasLoadedBuildings)
@@ -1310,7 +1310,7 @@ namespace CustomAssetLoader
                     CityBuildOrderElement element = new CityBuildOrderElement();
                     BuildingAsset test2 = new BuildingAsset();
                     test2.ruins = "tree_dead";
-                    test2.mapIconId = "tree";
+                    //test2.mapIconId = "tree";
                     test2.id = files[i].Name; // .Replace(".txt", "")
                     if (AssetManager.buildings.dict.ContainsKey(test2.id) == true)
                     {
@@ -1335,7 +1335,7 @@ namespace CustomAssetLoader
                         }
                         if (splitLine[0] == "mapiconid")
                         {
-                            test2.mapIconId = splitLine[1];
+                            //test2.mapIconId = splitLine[1];
                         }
                         if (splitLine[0] == "ruins")
                         {
@@ -1411,7 +1411,7 @@ namespace CustomAssetLoader
                         }
                         if (splitLine[0] == "canbeplacedonwater")
                         {
-                            test2.canBePlacedOnWater = bool.Parse(splitLine[1]);
+                           // test2.canBePlacedOnWater = bool.Parse(splitLine[1]);
                         }
                         if (splitLine[0] == "canbeplacedonblocks")
                         {
@@ -1487,7 +1487,7 @@ namespace CustomAssetLoader
                         }
                         if (splitLine[0] == "destroyonwater")
                         {
-                            test2.destroyOnWater = bool.Parse(splitLine[1]);
+                            //test2.destroyOnWater = bool.Parse(splitLine[1]);
                         }
                         if (splitLine[0] == "fauna")
                         {
@@ -1495,11 +1495,11 @@ namespace CustomAssetLoader
                         }
                         if (splitLine[0] == "treerandomchance")
                         {
-                            test2.treeRandomChance = float.Parse(splitLine[1]);
+                           // test2.treeRandomChance = float.Parse(splitLine[1]);
                         }
                         if (splitLine[0] == "constructionsitetexture")
                         {
-                            test2.construction_site_texture = splitLine[1];
+                           // test2.construction_site_texture = splitLine[1];
                         }
                         if (splitLine[0] == "resourceid")
                         {
@@ -1627,7 +1627,7 @@ namespace CustomAssetLoader
                 }
             }
         }
-        */
+        
 
         private void LoadTraits(string path)
         {
@@ -1951,7 +1951,7 @@ namespace CustomAssetLoader
             {
                 if (AssetManager.tester_tasks != null)
                 {
-                    ExportVanillaAssets(); //only for me for now, needs fixed after 10.0 update
+                    //ExportVanillaAssets(); //only for me for now, needs fixed after 10.0 update
                     ImportCustomAssets();
                     hasLoadedBuildings = true;
                     hasLoadedTraits = true;

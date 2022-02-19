@@ -179,7 +179,7 @@ namespace SimpleGUI {
         // minimap zoom patch
         public static bool update_Prefix(QualityChanger __instance)
         {
-            if(GuiMain.disableMinimap.Value && !Config.worldLoading && Config.gameLoaded) {
+            if(GuiMain.disableMinimap.Value && !SmoothLoader.isLoading() && Config.gameLoaded) {
                 return false;
             }
             else {

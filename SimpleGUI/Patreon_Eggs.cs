@@ -211,7 +211,7 @@ namespace SimpleGUI
 
         public static void getTipID_Postfix(LoadingScreen __instance)
         {
-            int num = Toolbox.randomInt(1, 11); // highest number == null string, the rest are valid rolls
+            int num = Toolbox.randomInt(1, 13); // highest number == null string, the rest are valid rolls
             string text = "null";
             if (num == 1)
             {
@@ -231,7 +231,19 @@ namespace SimpleGUI
             }
             if (num == 5)
             {
-                // need replacement message
+                string platform = Application.platform.ToString().ToLower();
+                if(platform.Contains("window")) {
+                    text = "When was your last blue screen of death?";
+                }
+                else if(platform.Contains("osx")) {
+                    text = "Too good for Windows or something?";
+                }
+                else if(platform.Contains("linux")) {
+                    text = "What distro you running? Have you heard of-";
+                }
+                else {
+                    text = "What kind of system are you running here?!";
+                }
             }
             if (num == 6)
             {
@@ -247,7 +259,7 @@ namespace SimpleGUI
             }
             if (num == 9)
             {
-                text = "Now with raytracing!";
+                text = "Now with raytracing! And 3d!";
             }
             if (num == 10)
             {
@@ -255,6 +267,12 @@ namespace SimpleGUI
             }
             if (num == 11)
             {
+                text = "Have you heard the legend of Greg?";
+            }
+            if(num == 12) {
+                text = "Have you heard the legend of Greg?";
+            }
+            if(num == 13) {
                 text = "null";
             }
             __instance.topText.key = text;

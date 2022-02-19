@@ -7,7 +7,7 @@ using HarmonyLib;
 
 namespace SimpleAdditions {
 
-	class Traits {
+	class aTraits {
 		public static void AddTraits()
 		{
 			ActorTrait testTrait = new ActorTrait() {

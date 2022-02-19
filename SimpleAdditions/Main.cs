@@ -28,19 +28,26 @@ namespace SimpleAdditions
         public void Update()
 		{
             if(hasAddedTraits == false && AssetManager.traits != null) {
-                Traits.AddTraits();
+                aTraits.AddTraits();
                 UnityEngine.Debug.LogError("Added traits");
                 hasAddedTraits = true;
 			}
             if(hasAddedItems == false && AssetManager.items != null) {
-                Items.AddItems();
+                aItems.AddItems();
                 UnityEngine.Debug.LogError("Added items");
                 hasAddedItems = true;
+            }
+            if(hasAddedBuildings == false && AssetManager.buildings != null) {
+                aBuildings.AddBuildings();
+                UnityEngine.Debug.LogError("Added buildings");
+                hasAddedBuildings = true;
             }
 
         }
         public bool hasAddedTraits;
         public bool hasAddedItems;
+        public bool hasAddedBuildings;
+
 
     }
 }

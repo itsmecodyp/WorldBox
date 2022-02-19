@@ -34,7 +34,7 @@ namespace WorldBox3D {
         }
         public const string pluginGuid = "cody.worldbox.3d";
         public const string pluginName = "WorldBox3D";
-        public const string pluginVersion = "0.0.0.3";
+        public const string pluginVersion = "0.0.0.4";
         public float rotationRate = 2f;
         public float manipulationRate = 0.01f;
         public float cameraX => Camera.main.transform.rotation.x;
@@ -74,6 +74,8 @@ namespace WorldBox3D {
             }
         }
 
+
+
         public static int dividerAmount = 10;
 
         // tile3d setup
@@ -97,12 +99,17 @@ namespace WorldBox3D {
             return true;
         }
 
+        public static void Awake_Postfix(GlowParticles __instance)
+        {
+            __instance.particles.startSpeed = -5;
+        }
+
         public static bool tile3Denabled;
         public static List<Cloud> hurricaneList = new List<Cloud>();
         public static void update_CloudPostfix(float pElapsed, Cloud __instance)
         {
             if(_3dEnabled) {
-                __instance.transform.position = new Vector3(__instance.transform.position.x, __instance.transform.position.y, -20f);
+                __instance.transform.position = new Vector3(__instance.transform.position.x, __instance.transform.position.y, -40f); // cloud height
             }
             if(hurricaneList.Contains(__instance)) {
                 __instance.transform.RotateAround(__instance.tile.posV3, Vector3.forward, 20 * Time.deltaTime * Toolbox.randomFloat(0f, 5f));
@@ -189,11 +196,23 @@ namespace WorldBox3D {
             return mesh;
         }
 
-
+        public bool hasBeenEnabled;
         public void Update()
         {
             if(!assets_initialised && showHide3D) {
                 init_assets();
+            }
+            if(_3dEnabled) {
+                if(MapBox.instance.mapBorder.gameObject.active) {
+                    MapBox.instance.mapBorder.gameObject.SetActive(false);
+                }
+                PositionAndRotateUnits();
+                PositionAndRotateBuildings();
+            }
+			else {
+                if(MapBox.instance != null && MapBox.instance.mapBorder != null && MapBox.instance.mapBorder.gameObject.active == false) {
+                    MapBox.instance.mapBorder.gameObject.SetActive(true);
+                }
             }
             if(tryMesh) {
                 foreach(Actor actor in MapBox.instance.units) {
@@ -358,6 +377,13 @@ namespace WorldBox3D {
             Debug.Log("setTileDirty_Prefix");
 
             harmony = new Harmony(pluginGuid);
+            original = AccessTools.Method(typeof(GlowParticles), "Awake");
+            patch = AccessTools.Method(typeof(_3D_Main), "Awake_Postfix");
+            harmony.Patch(original, null, new HarmonyMethod(patch));
+            Debug.Log("GlowParticles");
+
+
+            harmony = new Harmony(pluginGuid);
             original = AccessTools.Method(typeof(GroupSpriteObject), "setRotation");
             //patch = AccessTools.Method(typeof(_3D_Main), "setRotation_Postfix");
             //harmony.Patch(original, new HarmonyMethod(patch));
@@ -440,6 +466,9 @@ namespace WorldBox3D {
                 __instance.transform.localPosition = new Vector3(__instance.transform.localPosition.x, __instance.transform.localPosition.y, height);
                 __instance.transform.rotation = Quaternion.Euler(-90, 0, 0); // Quaternion.Euler(-90, 0, 0);
             }
+            else {
+                __instance.transform.rotation = Quaternion.Euler(0, 0, 0); // Quaternion.Euler(-90, 0, 0);
+            }
         }
         public static bool updateFlipRotation_Prefix(float pElapsed, ActorBase __instance)
         {
@@ -477,7 +506,9 @@ namespace WorldBox3D {
         {
             if(_3dEnabled) {
                 __instance.transform.rotation = Quaternion.Euler(-90, 0, 0); // Quaternion.Euler(-90, 0, 0);
-                return true;
+            }
+            else {
+                __instance.transform.rotation = Quaternion.Euler(0, 0, 0); // Quaternion.Euler(-90, 0, 0);
             }
             return true;
         }
@@ -486,6 +517,9 @@ namespace WorldBox3D {
             if(_3dEnabled) {
                 __instance.transform.localPosition = new Vector3(__instance.currentPosition.x, __instance.currentPosition.y, -__instance.zPosition.z);
                 return false;
+            }
+            else {
+                __instance.transform.rotation = Quaternion.Euler(0, 0, 0); // Quaternion.Euler(-90, 0, 0);
             }
             return true;
         }
@@ -511,6 +545,15 @@ namespace WorldBox3D {
             if(GUILayout.Button("Enable 3D: " + autoPlacement)) {
                 autoPlacement = !autoPlacement;
                 _3dEnabled = !_3dEnabled;
+                if(autoPlacement == true) {
+                    hasBeenEnabled = true;
+                }
+                if(autoPlacement == false) {
+                    ResetRotations();
+                    Camera.main.transform.rotation = Quaternion.Euler(0, 0, 0); // why wont
+                    Camera.main.transform.rotation = Quaternion.Euler(0, 0, 0); // you actually
+                    Camera.main.transform.rotation = Quaternion.Euler(0, 0, 0); // reset
+                } 
             }
             GUI.backgroundColor = Color.red;
             if(lockCameraControl == true) {
@@ -518,14 +561,14 @@ namespace WorldBox3D {
             }
             if(GUILayout.Button("Lock camera: " + lockCameraControl)) {
                 lockCameraControl = !lockCameraControl;
-                Camera.main.transform.rotation = Quaternion.Euler(cameraX, cameraY, cameraZ);
+                Camera.main.transform.rotation = Quaternion.Euler(0, 0, 0);
             }
             GUI.backgroundColor = temp;
             if(GUILayout.Button("Reset camera")) {
-                Camera.main.transform.rotation = Quaternion.Euler(cameraX, cameraY, cameraZ);
+                Camera.main.transform.rotation = Quaternion.Euler(0, 0, 0);
             }
 
-
+            
             try {
                 ObjectPositioningButtons();
             }
@@ -539,7 +582,7 @@ namespace WorldBox3D {
                     tryMesh = !tryMesh;
                 }
                 if(GUILayout.Button("Spawn 100 cloud hurricane (C)") || Input.GetKeyDown(KeyCode.C)) {
-                    SpawnCloudsInCircle(MapBox.instance.getMouseTilePos(), 100); // hurricane spin is bugged, so this is disabled
+                    SpawnCloudsInCircle(MapBox.instance.getMouseTilePos(), 33); // hurricane spin is bugged, so this is disabled
                 }
                 if(GUILayout.Button("tile3d: " + tile3Denabled.ToString())) {
                     tile3Denabled = !tile3Denabled;
@@ -558,7 +601,6 @@ namespace WorldBox3D {
                     singleLine.SetVertexCount(0);
                     deleteAllExtraLayers(); // sprite thickening reset
                 }
-
                 if(GUILayout.Button("Single line per tile type")) {
                     /*
                     int scaleFactor = 5;
@@ -828,11 +870,11 @@ namespace WorldBox3D {
             public Dictionary<string, GameObject> lightDict = new Dictionary<string, GameObject>();
             public List<Light> allLights = new List<Light>();
             public Light buildingLight(Building pBuilding)
-			{
+            {
                 if(lightDict.ContainsKey(pBuilding.data.objectID)) {
                     return lightDict[pBuilding.data.objectID].GetComponent<Light>();
                 }
-				else {
+                else {
                     // light 1
                     GameObject newLightObject = new GameObject();
                     newLightObject.AddComponent<Light>();
@@ -848,14 +890,14 @@ namespace WorldBox3D {
         }
 
         public GameObject Light(Building pParent)
-		{
+        {
             // light 2
             GameObject newLightObject2 = pParent.gameObject;
             Light objectsLight2;
             if(pParent.TryGetComponent<Light>(out Light potentialLight)) {
                 objectsLight2 = potentialLight;
             }
-			else {
+            else {
                 newLightObject2.AddComponent<Light>();
                 objectsLight2 = newLightObject2.GetComponent<Light>();
                 newLightObject2.transform.SetParent(pParent.transform);
@@ -1064,8 +1106,6 @@ namespace WorldBox3D {
         }
         public void ObjectPositioningButtons()
         {
-            PositionAndRotateUnits();
-            PositionAndRotateBuildings();
             if(GUILayout.Button("Thickened Sprite - Buildings - Normal")) {
                 foreach(Building building in MapBox.instance.buildings) {
                     thickenBuilding(building);
@@ -1141,6 +1181,16 @@ namespace WorldBox3D {
             }
         }
 
+        public void ResetRotations()
+        {
+            foreach(Actor actor in MapBox.instance.units) {
+                actor.transform.rotation = Quaternion.Euler(0, 0, 0);
+            }
+            foreach(Building building in MapBox.instance.buildings) {
+                building.transform.rotation = Quaternion.Euler(0, 0, 0);
+            }
+        }
+
         private void PositionAndRotateUnits()
         {
             if(autoPlacement && Toolbox.randomChance(manipulationRate)) {
@@ -1154,7 +1204,7 @@ namespace WorldBox3D {
                         actor.transform.position = new Vector3(actor.transform.position.x, actor.transform.position.y, height);
                         SpriteRenderer spriteRenderer = Reflection.GetField(actor.GetType(), actor, "spriteRenderer") as SpriteRenderer;
                         spriteRenderer.transform.rotation = Quaternion.Euler(-90, 0, 0);
-						//actor.transform.rotation = Quaternion.Euler(-90, 0, 0);
+                        //actor.transform.rotation = Quaternion.Euler(-90, 0, 0);
 
                         //Vector3 curAngle = (Vector3)Reflection.GetField(actor.GetType(), actor, "curAngle");
                         //curAngle.(actor.transform.rotation);
@@ -1162,6 +1212,21 @@ namespace WorldBox3D {
                         //s_item_sprite..rotation = Quaternion.Euler(-90, 0, 0);
 
 
+                    }
+                }
+            }
+        }
+        private void OnlyPositionUnits()
+        {
+            if(Toolbox.randomChance(manipulationRate)) {
+                foreach(Actor actor in MapBox.instance.units) {
+                    float height = 0f;
+
+                    if(actor.currentTile != null) {
+                        if(tile3Denabled) {
+                            height = (-actor.currentTile.Height) / dividerAmount;
+                        }
+                        actor.transform.position = new Vector3(actor.transform.position.x, actor.transform.position.y, height);
                     }
                 }
             }
@@ -1245,7 +1310,7 @@ namespace WorldBox3D {
                     float y = rotationRate * -Input.GetAxis("Mouse X");
                     if(lockCameraControl) y = 0;
                     Camera.main.transform.Rotate(x, y, 0);
-                   
+
                 }
                 if(lockCameraControl) {
                     if(Camera.main.transform.eulerAngles.x > 330) {

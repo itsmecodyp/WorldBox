@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace SimpleGUI
 {
@@ -41,6 +42,7 @@ namespace SimpleGUI
 		public static void ItemGenerationWindow(int windowID)
 		{
 			GuiMain.SetWindowInUse(windowID);
+
 			bool flag = lastSelectedActor == null;
 			if (flag)
 			{
@@ -190,106 +192,26 @@ namespace SimpleGUI
 					}
 				}
 				GUILayout.EndHorizontal();
-				bool flag18 = itemGenerationSlot == "weapon" && GUILayout.Button("Weapon type: " + itemGenerationWeaponType, new GUILayoutOption[0]);
-				if (flag18)
+				string currentWeapon = GuiMain.ItemGen.allWeapons[weaponIDPos];
+				if(GUILayout.Button("Weapon type: " + currentWeapon) && itemGenerationSlot == "weapon" && GuiMain.ItemGen.allWeapons.Count > 1)
 				{
-					switch (itemGenerationWeaponType)
-					{
-						case "sword":
-							itemGenerationWeaponType = "bow";
-							break;
-						case "bow":
-							itemGenerationWeaponType = "hammer";
-							break;
-						case "hammer":
-							itemGenerationWeaponType = "spear";
-							break;
-						case "spear":
-							itemGenerationWeaponType = "axe";
-							break;
-						case "axe":
-							itemGenerationWeaponType = "jaws";
-							break;
-						case "jaws":
-							itemGenerationWeaponType = "alien_blaster";
-							break;
-						case "alien_blaster":
-							itemGenerationWeaponType = "rocks";
-							break;
-						case "rocks":
-							itemGenerationWeaponType = "shotgun";
-							break;
-						case "shotgun":
-							itemGenerationWeaponType = "machinegun";
-							tempSavedString = itemGenerationMaterial;
-							itemGenerationMaterial = "base";
-							break;
-						case "machinegun":
-							itemGenerationWeaponType = "claws";
-							itemGenerationMaterial = "base";
-							break;
-						case "claws":
-							itemGenerationWeaponType = "snowball";
-							itemGenerationMaterial = "base";
-							break;
-						case "snowball":
-							itemGenerationWeaponType = "flame_sword";
-							itemGenerationMaterial = "base";
-							break;
-						case "flame_sword":
-							itemGenerationWeaponType = "evil_staff";
-							itemGenerationMaterial = "base";
-							break;
-						case "evil_staff":
-							itemGenerationWeaponType = "white_staff";
-							itemGenerationMaterial = "base";
-							break;
-						case "white_staff":
-							itemGenerationWeaponType = "necromancer_staff";
-							itemGenerationMaterial = "base";
-							break;
-						case "necromancer_staff":
-							//SimpleAdditions compat
-							if(AssetManager.items.get("blueSword1") != null) {
-								itemGenerationWeaponType = "blueSword1";
-								itemGenerationMaterial = itemGenerationWeaponType;
-							}
-							else {
-								itemGenerationWeaponType = "sword";
-								itemGenerationMaterial = tempSavedString;
-								tempSavedString = "";
-							}
-							break;
-						case "blueSword1":
-							itemGenerationWeaponType = "blueSword2";
-							itemGenerationMaterial = itemGenerationWeaponType;
-							break;
-						case "blueSword2":
-							itemGenerationWeaponType = "blueSword3";
-							itemGenerationMaterial = itemGenerationWeaponType;
-							break;
-						case "blueSword3":
-							itemGenerationWeaponType = "sword"; // last valid case
-							itemGenerationMaterial = tempSavedString;
-							tempSavedString = "";
-							break;
-						default:
-							itemGenerationWeaponType = "sword";
-							tempSavedString = "";
-							break;
+					if(weaponIDPos == GuiMain.ItemGen.allWeapons.Count - 1) {
+						weaponIDPos = 0;
 					}
-
+					else {
+						weaponIDPos++;
+					}
 				}
 				if(lastSelectedActor != null && GUILayout.Button("single item", new GUILayoutOption[0]))
 				{
-					if (itemGenerationSlot == "weapon")
+					if (itemGenerationSlot == "weapon" && GuiMain.ItemGen.allWeapons.Count > 1)
 					{
 						ItemAsset weapon;
 						if(simpleAdditionItems.Contains(itemGenerationWeaponType)) {
 							weapon = AssetManager.items.get("sword");
 						}
 						else {
-							weapon = AssetManager.items.get(itemGenerationWeaponType);
+							weapon = AssetManager.items.get(currentWeapon);
 						}
 						weapon.quality = itemGenerationQuality;
 						bool flag26 = useRandomBaseStats;
@@ -298,7 +220,15 @@ namespace SimpleGUI
 							weapon.baseStats = randomBaseStats(randomStatsMax);
 						}
 						manualGeneration = true;
-						ItemGenerator.generateItem(weapon, itemGenerationMaterial, lastSelectedActor.equipment.weapon, MapBox.instance.mapStats.year, lastSelectedActor.kingdom.name, "a mod", 1);
+						if(currentWeapon == "stick") { // stick only has wood material
+							ItemGenerator.generateItem(weapon, "wood", lastSelectedActor.equipment.weapon, MapBox.instance.mapStats.year, lastSelectedActor.kingdom.name, "a mod", 1);
+						}
+						else if(currentWeapon.Contains("_")) { // only these _ spaced weapons use "base" material, modded weapons could mess up
+							ItemGenerator.generateItem(weapon, "base", lastSelectedActor.equipment.weapon, MapBox.instance.mapStats.year, lastSelectedActor.kingdom.name, "a mod", 1);
+						}
+						else { // everything else uses normal material
+							ItemGenerator.generateItem(weapon, itemGenerationMaterial, lastSelectedActor.equipment.weapon, MapBox.instance.mapStats.year, lastSelectedActor.kingdom.name, "a mod", 1);
+						}
 					}
 					if (itemGenerationSlot == "amulet")
 					{
@@ -524,6 +454,10 @@ namespace SimpleGUI
 			}
 			return true;
 		}
+		public List<string> allOtherEquipment = new List<string>() { "armor", "boots", "helmet", "ring", "amulet", "base"};
+
+		public List<string> allWeapons = new List<string>();
+		public static int weaponIDPos = 0;
 
 		public static bool manualGeneration; public static string itemGenerationWeaponType = "sword";
 		public static string itemGenerationPrefix = "perfect";
@@ -544,5 +478,6 @@ namespace SimpleGUI
 		public Rect itemGenerationWindowRect; public static string tempSavedString;
 
 		public static List<string> simpleAdditionItems = new List<string>() { "blueSword1", "blueSword2", "blueSword3" };
+		
 	}
 }

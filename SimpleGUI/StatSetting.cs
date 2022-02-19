@@ -35,7 +35,9 @@ namespace SimpleGUI
                 });
             }
         }
-	
+
+		public static Vector2 scrollPosition;
+
 		public void StatSettingWindow(int windowID)
         {
 			GuiMain.SetWindowInUse(windowID);
@@ -44,13 +46,15 @@ namespace SimpleGUI
 				lastSelected = Config.selectedUnit;
 			}
 			GUI.backgroundColor = Color.grey;
+			scrollPosition = GUILayout.BeginScrollView(
+		  scrollPosition, GUILayout.Width(225), GUILayout.Height(250));
 			if (Config.selectedUnit != null)
 			{
 				ActorStatus data = Reflection.GetField(lastSelected.GetType(), lastSelected, "data") as ActorStatus;
 				ActorStats stats = Reflection.GetField(lastSelected.GetType(), lastSelected, "stats") as ActorStats;
 				BaseStats curStats = Reflection.GetField(lastSelected.GetType(), lastSelected, "curStats") as BaseStats;
 
-				GUILayout.Button(data.firstName);
+				GUILayout.Button(data.firstName, GUILayout.Width(200));
 				bool flag2 = false; //GUILayout.Button("Set to current stats");
 				if (flag2)
 				{
@@ -66,7 +70,7 @@ namespace SimpleGUI
 					targetDodge = curStats.dodge;
 					targetAccuracy = curStats.accuracy;
 				}
-				GUILayout.BeginHorizontal();
+				GUILayout.BeginHorizontal(GUILayout.Width(200));
 				bool flag3 = GUILayout.Button("Health: ");
 				if (flag3)
 				{
@@ -74,138 +78,138 @@ namespace SimpleGUI
 				}
 				targetHealth = Convert.ToInt32(GUILayout.TextField(targetHealth.ToString()));
 				GUILayout.EndHorizontal();
-				GUILayout.BeginHorizontal();
+				GUILayout.BeginHorizontal(GUILayout.Width(200));
 				GUILayout.Button("attackDamage: ");
 				targetAttackDamage = Convert.ToInt32(GUILayout.TextField(targetAttackDamage.ToString()));
 				GUILayout.EndHorizontal();
-				GUILayout.BeginHorizontal();
+				GUILayout.BeginHorizontal(GUILayout.Width(200));
 				GUILayout.Button("attackRate: ");
 				targetAttackRate = float.Parse(GUILayout.TextField(targetAttackRate.ToString()));
 				GUILayout.EndHorizontal();
-				GUILayout.BeginHorizontal();
+				GUILayout.BeginHorizontal(GUILayout.Width(200));
 				GUILayout.Button("speed: ");
 				targetSpeed = float.Parse(GUILayout.TextField(targetSpeed.ToString()));
 				GUILayout.EndHorizontal();
-				GUILayout.BeginHorizontal();
+				GUILayout.BeginHorizontal(GUILayout.Width(200));
 				GUILayout.Button("armor: ");
 				targetArmor = float.Parse(GUILayout.TextField(targetArmor.ToString()));
 				GUILayout.EndHorizontal();
-				GUILayout.BeginHorizontal();
+				GUILayout.BeginHorizontal(GUILayout.Width(200));
 				GUILayout.Button("range: ");
 				targetRange = float.Parse(GUILayout.TextField(targetRange.ToString()));
 				GUILayout.EndHorizontal();
-				GUILayout.BeginHorizontal();
+				GUILayout.BeginHorizontal(GUILayout.Width(200));
 				GUILayout.Button("AreaOfEffect: ");
 				targetAreaOfEffect = float.Parse(GUILayout.TextField(targetAreaOfEffect.ToString()));
 				GUILayout.EndHorizontal();
-				GUILayout.BeginHorizontal();
+				GUILayout.BeginHorizontal(GUILayout.Width(200));
 				GUILayout.Button("Accuracy: ");
 				targetAccuracy = float.Parse(GUILayout.TextField(targetAccuracy.ToString()));
 				GUILayout.EndHorizontal();
-				GUILayout.BeginHorizontal();
+				GUILayout.BeginHorizontal(GUILayout.Width(200));
 				GUILayout.Button("Dodge: ");
 				targetDodge = float.Parse(GUILayout.TextField(targetDodge.ToString()));
 				GUILayout.EndHorizontal();
-				GUILayout.BeginHorizontal();
-				GUILayout.Button("Personality_aggression: ");
+				GUILayout.BeginHorizontal(GUILayout.Width(200));
+				GUILayout.Button("pAggression: ");
 				targetPersonality_aggression = float.Parse(GUILayout.TextField(targetPersonality_aggression.ToString()));
 				GUILayout.EndHorizontal();
 
-				GUILayout.BeginHorizontal();
-				GUILayout.Button("targetPersonality_administration: ");
+				GUILayout.BeginHorizontal(GUILayout.Width(200));
+				GUILayout.Button("pAdministration: ");
 				targetPersonality_administration = float.Parse(GUILayout.TextField(targetPersonality_administration.ToString()));
 				GUILayout.EndHorizontal();
-				GUILayout.BeginHorizontal();
-				GUILayout.Button("Personality_diplomatic: ");
+				GUILayout.BeginHorizontal(GUILayout.Width(200));
+				GUILayout.Button("pDiplomatic: ");
 				targetPersonality_diplomatic = float.Parse(GUILayout.TextField(targetPersonality_diplomatic.ToString()));
 				GUILayout.EndHorizontal();
-				GUILayout.BeginHorizontal();
-				GUILayout.Button("Personality_rationality: ");
+				GUILayout.BeginHorizontal(GUILayout.Width(200));
+				GUILayout.Button("pRationality: ");
 				targetPersonality_rationality = float.Parse(GUILayout.TextField(targetPersonality_rationality.ToString()));
 				GUILayout.EndHorizontal();
-				GUILayout.BeginHorizontal();
+				GUILayout.BeginHorizontal(GUILayout.Width(200));
 				GUILayout.Button("Diplomacy: ");
 				targetDiplomacy = Convert.ToInt32(GUILayout.TextField(targetDiplomacy.ToString()));
 				GUILayout.EndHorizontal();
-				GUILayout.BeginHorizontal();
-				GUILayout.Button("Warfare : ");
+				GUILayout.BeginHorizontal(GUILayout.Width(200));
+				GUILayout.Button("Warfare: ");
 				targetWarfare = Convert.ToInt32(GUILayout.TextField(targetWarfare.ToString()));
 				GUILayout.EndHorizontal();
-				GUILayout.BeginHorizontal();
+				GUILayout.BeginHorizontal(GUILayout.Width(200));
 				GUILayout.Button("Stewardship: ");
 				targetStewardship = Convert.ToInt32(GUILayout.TextField(targetStewardship.ToString()));
 				GUILayout.EndHorizontal();
-				GUILayout.BeginHorizontal();
+				GUILayout.BeginHorizontal(GUILayout.Width(200));
 				GUILayout.Button("Intelligence: ");
 				targetIntelligence = Convert.ToInt32(GUILayout.TextField(targetIntelligence.ToString()));
 				GUILayout.EndHorizontal();
-				GUILayout.BeginHorizontal();
+				GUILayout.BeginHorizontal(GUILayout.Width(200));
 				GUILayout.Button("Army: ");
 				targetArmy = Convert.ToInt32(GUILayout.TextField(targetArmy.ToString()));
 				GUILayout.EndHorizontal();
-				GUILayout.BeginHorizontal();
+				GUILayout.BeginHorizontal(GUILayout.Width(200));
 				GUILayout.Button("Cities: ");
 				targetCities = Convert.ToInt32(GUILayout.TextField(targetCities.ToString()));
 				GUILayout.EndHorizontal();
-				GUILayout.BeginHorizontal();
+				GUILayout.BeginHorizontal(GUILayout.Width(200));
 				GUILayout.Button("Zones: ");
 				targetZones = Convert.ToInt32(GUILayout.TextField(targetZones.ToString()));
 				GUILayout.EndHorizontal();
-				GUILayout.BeginHorizontal();
+				GUILayout.BeginHorizontal(GUILayout.Width(200));
 				GUILayout.Button("Bonus_towers: ");
 				targetBonus_towers = Convert.ToInt32(GUILayout.TextField(targetBonus_towers.ToString()));
 				GUILayout.EndHorizontal();
-				GUILayout.BeginHorizontal();
+				GUILayout.BeginHorizontal(GUILayout.Width(200));
 				GUILayout.Button("s_crit_chance: ");
 				targetS_crit_chance = float.Parse(GUILayout.TextField(targetS_crit_chance.ToString()));
 				GUILayout.EndHorizontal();
-				GUILayout.BeginHorizontal();
+				GUILayout.BeginHorizontal(GUILayout.Width(200));
 				GUILayout.Button("Projectiles: ");
 				targetProjectiles = Convert.ToInt32(GUILayout.TextField(targetProjectiles.ToString()));
 				GUILayout.EndHorizontal();
-				GUILayout.BeginHorizontal();
+				GUILayout.BeginHorizontal(GUILayout.Width(200));
 				GUILayout.Button("Crit: ");
 				targetCrit = float.Parse(GUILayout.TextField(targetCrit.ToString()));
 				GUILayout.EndHorizontal();
-				GUILayout.BeginHorizontal();
+				GUILayout.BeginHorizontal(GUILayout.Width(200));
 				GUILayout.Button("DamageCritMod: ");
 				targetDamageCritMod = float.Parse(GUILayout.TextField(targetDamageCritMod.ToString()));
 				GUILayout.EndHorizontal();
-				GUILayout.BeginHorizontal();
+				GUILayout.BeginHorizontal(GUILayout.Width(200));
 				GUILayout.Button("Size: ");
 				targetSize = Convert.ToInt32(GUILayout.TextField(targetSize.ToString()));
 				GUILayout.EndHorizontal();
-				GUILayout.BeginHorizontal();
+				GUILayout.BeginHorizontal(GUILayout.Width(200));
 				GUILayout.Button("Knockback: ");
 				targetKnockback = Convert.ToInt32(GUILayout.TextField(targetKnockback.ToString()));
 				GUILayout.EndHorizontal();
-				GUILayout.BeginHorizontal();
+				GUILayout.BeginHorizontal(GUILayout.Width(200));
 				GUILayout.Button("Loyalty_traits: ");
 				targetLoyalty_traits = Convert.ToInt32(GUILayout.TextField(targetLoyalty_traits.ToString()));
 				GUILayout.EndHorizontal();
-				GUILayout.BeginHorizontal();
+				GUILayout.BeginHorizontal(GUILayout.Width(200));
 				GUILayout.Button("Loyalty_mood: ");
 				targetLoyalty_mood = Convert.ToInt32(GUILayout.TextField(targetLoyalty_mood.ToString()));
 				GUILayout.EndHorizontal();
-				GUILayout.BeginHorizontal();
+				GUILayout.BeginHorizontal(GUILayout.Width(200));
 				GUILayout.Button("Opinion: ");
 				targetOpinion = Convert.ToInt32(GUILayout.TextField(targetOpinion.ToString()));
 				GUILayout.EndHorizontal();
-				GUILayout.BeginHorizontal();
+				GUILayout.BeginHorizontal(GUILayout.Width(200));
 				GUILayout.Button("KnockbackReduction: ");
 				targetKnockbackReduction = float.Parse(GUILayout.TextField(targetKnockbackReduction.ToString()));
 				GUILayout.EndHorizontal();
-				GUILayout.BeginHorizontal();
+				GUILayout.BeginHorizontal(GUILayout.Width(200));
 				GUILayout.Button("Scale: ");
 				targetScale = float.Parse(GUILayout.TextField(targetScale.ToString()));
 				GUILayout.EndHorizontal();
-				GUILayout.BeginHorizontal();
+				GUILayout.BeginHorizontal(GUILayout.Width(200));
 				GUILayout.Button("Mod_supply_timer: ");
 				targetMod_supply_timer = float.Parse(GUILayout.TextField(targetMod_supply_timer.ToString()));
 				GUILayout.EndHorizontal();
 
 
-				GUILayout.BeginHorizontal();
+				GUILayout.BeginHorizontal(GUILayout.Width(200));
 				GUILayout.Button("Inherit: ");
 				targetInherit = (float)Convert.ToInt32(GUILayout.TextField(targetInherit.ToString()));
 				GUILayout.EndHorizontal();
@@ -217,7 +221,7 @@ namespace SimpleGUI
 				{
 					GUI.backgroundColor = Color.green;
 				}
-				if (GUILayout.Button("Add stats to target"))
+				if (GUILayout.Button("Add stats to target", GUILayout.Width(200)))
 				{
 					ActorTrait actorTrait = new ActorTrait();
 					actorTrait.id = "stats" + data.firstName;
@@ -278,7 +282,7 @@ namespace SimpleGUI
 					statsDirty = true;
 				}
 				GUI.backgroundColor = Color.grey;
-				GUILayout.BeginHorizontal();
+				GUILayout.BeginHorizontal(GUILayout.Width(200));
 				bool flag6 = GUILayout.Button("Add stats to trait: ");
 				if (flag6)
 				{
@@ -299,17 +303,17 @@ namespace SimpleGUI
 				}
 				traitReplacing = GUILayout.TextField(traitReplacing);
 				GUILayout.EndHorizontal();
-				bool flag7 = GUILayout.Button("Make leader");
+				bool flag7 = GUILayout.Button("Make leader", GUILayout.Width(200));
 				if (flag7)
 				{
 					lastSelected.city.leader = lastSelected;
 				}
-				bool flag8 = GUILayout.Button("Make king");
+				bool flag8 = GUILayout.Button("Make king", GUILayout.Width(200));
 				if (flag8)
 				{
 					lastSelected.kingdom.king = lastSelected;
 				}
-				bool flag9 = GUILayout.Button("Set city to stats");
+				bool flag9 = GUILayout.Button("Set city to stats", GUILayout.Width(200));
 				if (flag9)
 				{
 					ActorTrait actorTrait3 = new ActorTrait();
@@ -330,7 +334,7 @@ namespace SimpleGUI
 						actor.addTrait(actorTrait3.id);
 					}
 				}
-				GUILayout.BeginHorizontal();
+				GUILayout.BeginHorizontal(GUILayout.Width(200));
 				/*
 				bool flag10 = GUILayout.Button("head size-");
 				if (flag10)
@@ -344,7 +348,7 @@ namespace SimpleGUI
 				}
 				*/
 				GUILayout.EndHorizontal();
-				GUILayout.BeginHorizontal();
+				GUILayout.BeginHorizontal(GUILayout.Width(200));
 				// unnecessary when traits have size now
 				/*
 				bool flag12 = GUILayout.Button("body size-");
@@ -362,10 +366,11 @@ namespace SimpleGUI
 			}
 			else
 			{
-				GUILayout.Button("Need inspected unit");
+				GUILayout.Button("Need inspected unit", GUILayout.Width(200));
 				
 			}
-            GUI.DragWindow();
+			GUILayout.EndScrollView();
+			GUI.DragWindow();
         }
 
 		public Rect StatSettingWindowRect;

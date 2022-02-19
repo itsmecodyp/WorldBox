@@ -24,6 +24,7 @@ namespace SimpleGUI
        
         public void constructionControl()
         {
+            if(GuiMain.windowInUse == 1007) return;
             if(Input.GetMouseButton(0))
             {
                 if (placingToggleEnabled && !placedOnce)
@@ -144,16 +145,20 @@ namespace SimpleGUI
            
         }
 
+        public Vector2 scrollPosition;
+
         public void constructionWindow(int windowID)
         {
-            if (Config.gameLoaded && !Config.worldLoading)
+            if(Config.gameLoaded && !SmoothLoader.isLoading())
             {
                 GuiMain.SetWindowInUse(windowID);
                 Color defaultColor = GUI.backgroundColor;
                 GUILayout.BeginHorizontal();
                 GUILayout.Button("Selected:");
                 GUILayout.Button(selectedBuildingAssetName);
-                if (filterEnabled)
+                GUILayout.EndHorizontal();
+                GUILayout.BeginHorizontal();
+                if(filterEnabled)
                 {
                     GUI.backgroundColor = Color.green;
                 }
@@ -163,7 +168,8 @@ namespace SimpleGUI
                 }
                 GUI.backgroundColor = defaultColor;
                 filterString = GUILayout.TextField(filterString);
-                if (placingToggleEnabled)
+                GUILayout.EndHorizontal();
+                if(placingToggleEnabled)
                 {
                     GUI.backgroundColor = Color.green;
                 }
@@ -171,8 +177,9 @@ namespace SimpleGUI
                 {
                     placingToggleEnabled = !placingToggleEnabled;
                 }
+                scrollPosition = GUILayout.BeginScrollView(
+          scrollPosition, GUILayout.Width(225), GUILayout.Height(275));
                 GUI.backgroundColor = defaultColor;
-                GUILayout.EndHorizontal();
                 GUILayout.BeginHorizontal();
                 int Position = 2;
                 GUILayout.BeginVertical();
@@ -218,7 +225,7 @@ namespace SimpleGUI
                 GUILayout.EndVertical();
                 GUILayout.EndHorizontal();
             }
-            
+            GUILayout.EndScrollView();
             GUI.DragWindow();
         }
 

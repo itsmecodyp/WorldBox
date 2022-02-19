@@ -259,7 +259,7 @@ namespace SimpleGUI
 
 		public void worldUpdate()
 		{
-			if (Config.gameLoaded && !Config.worldLoading)
+			if (Config.gameLoaded && !SmoothLoader.isLoading())
 			{
 				if(hasRun == false) {
 					firstRunT();

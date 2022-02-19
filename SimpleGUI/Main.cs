@@ -27,7 +27,7 @@ namespace SimpleGUI {
     class GuiMain : BaseUnityPlugin {
         public const string pluginGuid = "cody.worldbox.simple.gui";
         public const string pluginName = "SimpleGUI";
-        public const string pluginVersion = "0.1.4.7";
+        public const string pluginVersion = "0.1.4.9";
 
         public static BepInEx.Logging.ManualLogSource logger;
 
@@ -287,7 +287,38 @@ namespace SimpleGUI {
             harmony.Patch(original, new HarmonyMethod(patch));
             UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
 
+            harmony = new Harmony(pluginName);
+            original = AccessTools.Method(typeof(ActorAnimationLoader), "getItem");
+            patch = AccessTools.Method(typeof(GuiMain), "getItem_Prefix");
+            harmony.Patch(original, new HarmonyMethod(patch));
+            UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
+
+            harmony = new Harmony(pluginName);
+            original = AccessTools.Method(typeof(LocalizedTextManager), "getText");
+            patch = AccessTools.Method(typeof(GuiMain), "getText_Prefix");
+            harmony.Patch(original, new HarmonyMethod(patch));
+            UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
+
             harmony.PatchAll();
+        }
+
+        public static bool getItem_Prefix(string pID)
+        {
+            ActorAnimationLoader.dictItems.TryGetValue(pID, out Sprite sprite);
+            if(sprite == null) {
+                return false; // prevent error from item gen with null textures
+            }
+            else return true;
+        }
+
+        public static bool getText_Prefix(string pKey, Text text = null)
+        {
+            if(LocalizedTextManager.instance.localizedText.ContainsKey(pKey)) {
+                return true;
+            }
+            else {
+                return false; // prevent error from random localized texts
+            }
         }
 
         public static bool addTrait_Prefix(string pTrait, ActorBase __instance)
@@ -329,6 +360,8 @@ namespace SimpleGUI {
             Diplomacy.diplomacyWindowRect.height = 0f;
             ItemGen.itemGenerationWindowRect.height = 0f;
             StatSetting.StatSettingWindowRect.height = 0f;
+            Construction.ConstructionWindowRect.height = 0f;
+
             if(!loadMenuSettingsOnStartup.Value) {
                 return;
             }
@@ -430,6 +463,14 @@ namespace SimpleGUI {
                 showHideFastCitiesConfig.Value = !showHideFastCitiesConfig.Value;
             }
             if(GUILayout.Button("Items")) {
+                if(AssetManager.items.list != null) {
+                    ItemGen.allWeapons = new List<string>();
+                    foreach(ItemAsset item in AssetManager.items.list) {
+                        if(ItemGen.allOtherEquipment.Contains(item.id) == false && item.id.StartsWith("_") == false && item.id != "base") {
+                            ItemGen.allWeapons.Add(item.id);
+                        }
+                    }
+                }
                 showHideItemGenerationConfig.Value = !showHideItemGenerationConfig.Value;
             }
             if(GUILayout.Button("Traits")) {
