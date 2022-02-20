@@ -93,7 +93,7 @@ namespace SimpleAI {
 		public bool firstOpen;
 		public void OnGUI()
 		{
-			GUILayout.BeginArea(new Rect(Screen.width - 120, 100, 120, 30));
+			GUILayout.BeginArea(new Rect(Screen.width - 120, 125, 120, 30));
 			if(GUILayout.Button("SimpleAI")) {
 				if(firstOpen == false) {
 					GenerateNewAI();

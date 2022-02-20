@@ -27,7 +27,7 @@ namespace SimpleGUI {
     class GuiMain : BaseUnityPlugin {
         public const string pluginGuid = "cody.worldbox.simple.gui";
         public const string pluginName = "SimpleGUI";
-        public const string pluginVersion = "0.1.4.9";
+        public const string pluginVersion = "0.1.5.0";
 
         public static BepInEx.Logging.ManualLogSource logger;
 

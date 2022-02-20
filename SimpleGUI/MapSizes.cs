@@ -1,13 +1,13 @@
-using System.IO;
+﻿using System.IO;
 using System.Reflection;
 using HarmonyLib;
 using UnityEngine;
 using BepInEx;
 using System.Collections.Generic;
 using System.Collections;
+using SimpleGUI;
 
-namespace MapSizes
-{
+namespace MapSizes {
     [BepInPlugin(pluginGuid, pluginName, pluginVersion)]
     class MapSizes : BaseUnityPlugin {
         public const string pluginGuid = "cody.worldbox.map.sizes";
@@ -140,40 +140,35 @@ namespace MapSizes
             buildingCache.Clear();
             foreach(WorldTile tile in MapBox.instance.tilesList) {
                 tilesCache.Add(tile.pos, tile.Type.id);
-			}
+            }
             foreach(Building building in MapBox.instance.buildings) {
                 buildingCache.Add(building.currentTile.pos, building);
-			}
+            }
+          
 
         }
 
         public void CreateBuilding(Building fromBuilding)
         {
-            BuildingAsset fromStats = Reflection.GetField(fromBuilding.GetType(), fromBuilding, "stats") as BuildingAsset;
-            BuildingData fromData = Reflection.GetField(fromBuilding.GetType(), fromBuilding, "data") as BuildingData;
-            if(fromStats.type == "trees") {
-                MapBox.instance.CallMethod("tryGrowVegetationRandom", new object[] { fromBuilding.currentTile, VegetationType.Trees, false, false });
+            BuildingAsset fromStats = fromBuilding.stats;
+            Building building = MapBox.instance.addBuilding(fromStats.id, fromBuilding.currentTile);
+            building.CallMethod("updateBuild", new object[] { 100 });
+            WorldTile currentTile = Reflection.GetField(building.GetType(), building, "currentTile") as WorldTile;
+            if(currentTile.zone.city != null) {
+                building.CallMethod("setCity", new object[] { currentTile.zone.city, false });
             }
-			else {
-                Building building = MapBox.instance.CallMethod("addBuilding", new object[] { fromStats.id, fromBuilding.currentTile, fromData, false, false, BuildPlacingType.New }) as Building;
-                building.CallMethod("updateBuild", new object[] { 100 });
-                WorldTile currentTile = Reflection.GetField(building.GetType(), building, "currentTile") as WorldTile;
-                if(currentTile.zone.city != null) {
-                    building.CallMethod("setCity", new object[] { currentTile.zone.city, false });
+            if(building.city != null) {
+                building.city.addBuilding(building);
+                building.city.status.homesTotal += fromStats.housing * (fromStats.upgradeLevel + 1);
+                if(building.city.status.population > building.city.status.homesTotal) {
+                    building.city.status.homesOccupied = building.city.status.homesTotal;
                 }
-                if(building.city != null) {
-                    building.city.addBuilding(building);
-                    building.city.status.homesTotal += fromStats.housing * (fromStats.upgradeLevel + 1);
-                    if(building.city.status.population > building.city.status.homesTotal) {
-                        building.city.status.homesOccupied = building.city.status.homesTotal;
-                    }
-                    else {
-                        building.city.status.homesOccupied = building.city.status.population;
-                    }
-                    building.city.status.homesFree = building.city.status.homesTotal - building.city.status.homesOccupied;
+                else {
+                    building.city.status.homesOccupied = building.city.status.population;
                 }
+                building.city.status.homesFree = building.city.status.homesTotal - building.city.status.homesOccupied;
             }
-           
+
         }
 
         public List<string> tiles;
@@ -187,7 +182,7 @@ namespace MapSizes
                 tiles = new List<string>();
                 foreach(TileType tiletype1 in AssetManager.tiles.list) {
                     tiles.Add(tiletype1.id);
-				}
+                }
                 foreach(TopTileType tiletype2 in AssetManager.topTiles.list) {
                     tilesTop.Add(tiletype2.id);
                 }
@@ -208,7 +203,7 @@ namespace MapSizes
                             // tile type not found
                         }
                     }
-				}
+                }
             }
             foreach(Vector2Int tilePos2 in buildingCache.Keys) {
                 WorldTile targetTile = MapBox.instance.GetTile(tilePos2.x, tilePos2.y);
@@ -219,12 +214,12 @@ namespace MapSizes
         }
 
 
-        public Dictionary<Vector2Int, string> tilesCache= new Dictionary<Vector2Int, string>(); // tilePos, tileType
+        public Dictionary<Vector2Int, string> tilesCache = new Dictionary<Vector2Int, string>(); // tilePos, tileType
         public Dictionary<Vector2Int, Building> buildingCache = new Dictionary<Vector2Int, Building>(); // tilePos, building
 
         public List<WorldTile> tileList;
         public void ResizeCurrentMap()
-		{
+        {
             CopyMap();
             hasFinishedLoading = false;
             MapBox.instance.clickGenerateNewMap("islands");
@@ -232,14 +227,14 @@ namespace MapSizes
         }
         public static bool waitingForLoading = false;
         public void Update()
-		{
+        {
             if(waitingForLoading) {
                 if(hasFinishedLoading) {
                     ResizeFinish();
                     hasFinishedLoading = false;
                 }
-			}
-		}
+            }
+        }
 
         public void ResizeFinish()
         {
@@ -251,8 +246,7 @@ namespace MapSizes
         public static bool startingPicture;
         public static bool applyTemplate_Prefix(string pTexture, float pMod = 1f)
         {
-            if (startingPicture && File.Exists(imagePath))
-            {
+            if(startingPicture && File.Exists(imagePath)) {
                 imageToMap(filename);
                 startingPicture = false;
                 return false;
@@ -284,14 +278,11 @@ namespace MapSizes
             byte[] data = File.ReadAllBytes(path);
             texture2D2 = new Texture2D(2, 2);
             texture2D2.LoadImage(data);
-            TextureScale.Bilinear(texture2D2, pictureSizeX, pictureSizeY); 
-            for (int i = 0; i < texture2D2.width; i++)
-            {
-                for (int j = 0; j < texture2D2.height; j++)
-                {
+            TextureScale.Bilinear(texture2D2, pictureSizeX, pictureSizeY);
+            for(int i = 0; i < texture2D2.width; i++) {
+                for(int j = 0; j < texture2D2.height; j++) {
                     WorldTile tile = MapBox.instance.GetTile(i, j);
-                    if (tile != null)
-                    {
+                    if(tile != null) {
                         int num2 = (int)((1f - texture2D2.GetPixel(i, j).g) * 255f); // change tile according to pixel color
                         tile.Height += num2;
                     }

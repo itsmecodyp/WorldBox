@@ -29,7 +29,7 @@ namespace SimpleAdditions {
 			};
 
 			ActorTrait wolfTrainer = new ActorTrait() {
-				id = "wolfTrainer",
+				id = "wolfTrainer", // use city bones to create squad of wolves
 				icon = "iconVermin",
 				group = TraitGroup.Other,
 				type = TraitType.Positive
