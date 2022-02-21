@@ -12,7 +12,7 @@ namespace MapSizes {
     class MapSizes : BaseUnityPlugin {
         public const string pluginGuid = "cody.worldbox.map.sizes";
         public const string pluginName = "MapSizes";
-        public const string pluginVersion = "0.0.0.3";
+        public const string pluginVersion = "0.0.0.4";
         public static int mapSizeX = 4;
         public static int mapSizeY = 4;
         public bool showHideMapSizeWindow;
@@ -82,10 +82,8 @@ namespace MapSizes {
             }
             GUILayout.EndHorizontal();
             if(GUILayout.Button("Regenerate map")) {
-                Debug.Log("MapSizes: regenerating map");
-                //MapBox.instance.setMapSize(mapSizeX, mapSizeY);
+                hasFinishedLoading = false;
                 MapBox.instance.clickGenerateNewMap("islands");
-                //MapBox.instance.finishMakingWorld();
             }
             if(GUILayout.Button("Resize current map")) ResizeCurrentMap();
             if(GUILayout.Button("copy map")) CopyMap();
@@ -117,11 +115,13 @@ namespace MapSizes {
 
             }
             if(GUILayout.Button("Regenerate " + filename + ".png")) {
+                hasFinishedLoading = false;
                 MapBox.instance.setMapSize(mapSizeX, mapSizeY);
                 imageToMap(filename); // why does this run twice?
                 startingPicture = true;
                 MapBox.instance.CallMethod("generateNewMap", new object[] { "earth" });
                 MapBox.instance.finishMakingWorld();
+                hasFinishedLoading = true;
             }
             GUI.DragWindow();
         }
@@ -256,8 +256,11 @@ namespace MapSizes {
 
         public static bool setMapSize_Prefix(ref int pWidth, ref int pHeight)
         {
-            pWidth = mapSizeX;
-            pHeight = mapSizeY;
+            if(hasFinishedLoading == false) {
+                pWidth = mapSizeX;
+                pHeight = mapSizeY;
+            }
+
             return true;
         }
 
