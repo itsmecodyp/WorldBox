@@ -34,6 +34,7 @@ namespace UnitClipboard {
             if(Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.T)) {
                 showHideMainWindow = !showHideMainWindow;
             }
+            mainWindowRect.height = 0f;
         }
 
         public static void PasteUnit(WorldTile targetTile, UnitData unitData)
@@ -47,11 +48,37 @@ namespace UnitClipboard {
                     pastedUnit.equipment = unitData.equipment;
                 }
                 if(unitData.status != null) {
-                    pastedUnit.data = unitData.status;
+                    //pastedUnit.data = unitData.status;
+                    pastedUnit.data.traits = unitData.status.traits;
+                    pastedUnit.data.age = unitData.status.age;
+                    pastedUnit.data.bornTime = unitData.status.bornTime;
+                    pastedUnit.data.culture = unitData.status.culture;
+                    pastedUnit.data.children = unitData.status.children;
+                    pastedUnit.data.diplomacy = unitData.status.diplomacy;
+                    pastedUnit.data.experience = unitData.status.experience;
+                    // pastedUnit.data.favorite = unitData.status.favorite;
+                    pastedUnit.data.favoriteFood = unitData.status.favoriteFood;
+                    pastedUnit.data.firstName = unitData.status.firstName + " " + "Pasted";
+                    pastedUnit.data.gender = unitData.status.gender;
+                    pastedUnit.data.head = unitData.status.head;
+                    pastedUnit.data.homeBuildingID = unitData.status.homeBuildingID;
+                    pastedUnit.data.hunger = unitData.status.hunger;
+                    pastedUnit.data.intelligence = unitData.status.intelligence;
+                    pastedUnit.data.kills = unitData.status.kills;
+                    pastedUnit.data.level = unitData.status.level;
+                    pastedUnit.data.mood = unitData.status.mood;
+                    pastedUnit.data.profession = unitData.status.profession;
+                    pastedUnit.data.skin_set = unitData.status.skin_set;
+                    pastedUnit.data.skin = unitData.status.skin;
+                    pastedUnit.data.special_graphics = unitData.status.special_graphics;
+                    pastedUnit.data.statsID = unitData.status.statsID;
+                    pastedUnit.data.special_graphics = unitData.status.special_graphics;
+                    pastedUnit.data.stewardship = unitData.status.stewardship;
+                    pastedUnit.data.warfare = unitData.status.warfare;
                 }
                 ActorTrait pasted = new ActorTrait();
                 
-                pasted.id = "pasted " + unitData.dataFirstName.Replace("pasted ", ""); // might need to change to be unique
+                pasted.id = "pasted " + unitData.status.firstName; // might need to change to be unique
                 if(addedTraits.Contains(pasted.id)) {
                     pastedUnit.addTrait(pasted.id); // refresh stats
                     pastedUnit.removeTrait(pasted.id); // remove because unnecessary
@@ -66,7 +93,7 @@ namespace UnitClipboard {
                     pastedUnit.addTrait(trait);
                 }
                 pastedUnit.restoreHealth(10 ^ 9); //lazy
-                Debug.Log("Pasted " + unitData.dataFirstName);
+                Debug.Log("Pasted " + unitData.status.firstName);
             }
         }
         public static List<string> addedTraits = new List<string>(); // lazy
@@ -106,12 +133,17 @@ namespace UnitClipboard {
         {
             if(unitClipboardDict.Count >= 1) {
                 for(int i = 0; i < unitClipboardDict.Count(); i++) {
-                    GUILayout.BeginHorizontal();
-                    if(GUILayout.Button(unitClipboardDict[i.ToString()].dataFirstName)) {
-                        selectedUnitToPaste = unitClipboardDict[i.ToString()];
+					if(unitClipboardDict.ContainsKey(i.ToString())){
+                        GUILayout.BeginHorizontal();
+                        if(GUILayout.Button(unitClipboardDict[i.ToString()].status.firstName)) {
+                            selectedUnitToPaste = unitClipboardDict[i.ToString()];
+                        }
+                        GUILayout.EndHorizontal();
                     }
-
-                    GUILayout.EndHorizontal();
+                }
+                if(GUILayout.Button("Clear clipboard")) {
+                    unitClipboardDict.Clear();
+                    unitClipboardDictNum = 0;
                 }
             }
             GUI.DragWindow();
@@ -120,23 +152,49 @@ namespace UnitClipboard {
         private void CopyUnit(Actor targetActor)
         {
             if(targetActor != null) {
-                ActorStatus data = Reflection.GetField(targetActor.GetType(), targetActor, "data") as ActorStatus;
+                ActorStatus data = targetActor.data;
                 BaseStats curStats = Reflection.GetField(targetActor.GetType(), targetActor, "curStats") as BaseStats;
 
                 UnitData newSavedUnit = new UnitData();
                 foreach(string trait in data.traits) {
                     newSavedUnit.traits.Add(trait);
                 }
-                newSavedUnit.dataFirstName = data.firstName;
                 newSavedUnit.statsID = data.statsID;
                 newSavedUnit.equipment = targetActor.equipment;
-                newSavedUnit.status = targetActor.data;
-                newSavedUnit.level = data.level;
-                newSavedUnit.exp = data.experience;
+
+                ActorStatus data0 = new ActorStatus();
+                data0.traits = data.traits;
+                data0.age = data.age;
+                data0.bornTime = data.bornTime;
+                data0.culture = data.culture;
+                data0.children = data.children;
+                data0.diplomacy = data.diplomacy;
+                data0.experience = data.experience;
+                // data0.favorite = data.favorite;
+                data0.favoriteFood = data.favoriteFood;
+                data0.firstName = data.firstName;
+                data0.gender = data.gender;
+                data0.head = data.head;
+                data0.homeBuildingID = data.homeBuildingID;
+                data0.hunger = data.hunger;
+                data0.intelligence = data.intelligence;
+                data0.kills = data.kills;
+                data0.level = data.level;
+                data0.mood = data.mood;
+                data0.profession = data.profession;
+                data0.skin_set = data.skin_set;
+                data0.skin = data.skin;
+                data0.special_graphics = data.special_graphics;
+                data0.statsID = data.statsID;
+                data0.special_graphics = data.special_graphics;
+                data0.stewardship = data.stewardship;
+                data0.warfare = data.warfare;
+
+                newSavedUnit.status = data0;
                 unitClipboardDict.Add(unitClipboardDictNum.ToString(), newSavedUnit);
                 unitClipboardDictNum++;
                 selectedUnitToPaste = newSavedUnit;
-                Debug.Log("Copied " + newSavedUnit.dataFirstName);
+                Debug.Log("Copied " + targetActor.data.firstName);
             }
 
         }
@@ -146,9 +204,6 @@ namespace UnitClipboard {
         public static UnitData selectedUnitToPaste;
 
         public class UnitData {
-            public string dataFirstName = "";
-            public int level;
-            public int exp;
             public string statsID = "";
             public List<string> traits = new List<string>();
             public ActorEquipment equipment;

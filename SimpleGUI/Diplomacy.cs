@@ -477,15 +477,12 @@ namespace SimpleGUI
             {
                 if (Input.GetMouseButton(0) && MapBox.instance.getMouseTilePos() != null && MapBox.instance.getMouseTilePos().zone != null && MapBox.instance.getMouseTilePos().zone.city != null &&  MapBox.instance.getMouseTilePos().zone.city != selectedCity1)
                 {
-                    foreach (City city in MapBox.instance.citiesList)
-                    {
-                        Reflection.CallMethod(city, "removeZone", new object[] { MapBox.instance.getMouseTilePos().zone });
-                    }
-                    Reflection.CallMethod(selectedCity1, "addZone", new object[] { MapBox.instance.getMouseTilePos().zone });
+                    MapBox.instance.getMouseTilePos().zone.city.removeZone(MapBox.instance.getMouseTilePos().zone);
+                    selectedCity1.addZone(MapBox.instance.getMouseTilePos().zone);
                 }
                 if (Input.GetMouseButton(1) && MapBox.instance.getMouseTilePos() != null && MapBox.instance.getMouseTilePos().zone != null && MapBox.instance.getMouseTilePos().zone.city != null && MapBox.instance.getMouseTilePos().zone.city == selectedCity1)
                 {
-                    Reflection.CallMethod(selectedCity1, "removeZone", new object[] { MapBox.instance.getMouseTilePos().zone });
+                    selectedCity1.removeZone(MapBox.instance.getMouseTilePos().zone);
                 }
             }
             if (city2PaintZone && selectedCity2 != null)

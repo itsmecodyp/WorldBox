@@ -11,11 +11,9 @@ using UnityEngine;
 using UnityEngine.UIElements;
 using static UnityEngine.GraphicsBuffer;
 
-namespace TWrecks_RPG
-{
+namespace TWrecks_RPG {
     [BepInPlugin(pluginGuid, pluginName, pluginVersion)]
-    public class TWrecks_Main : BaseUnityPlugin
-    {
+    public class TWrecks_Main : BaseUnityPlugin {
         public const string pluginGuid = "cody.worldbox.rpg.twrecks";
         public const string pluginName = "RPG";
         public const string pluginVersion = "0.0.0.2";
@@ -30,41 +28,32 @@ namespace TWrecks_RPG
         {
             UpdateControls();
             UpdateSquadBehaviour();
-            if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.H))
-            {
-                if (controlledActor != null)
-                {
+            if(Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.H)) {
+                if(controlledActor != null) {
                     AddActorToSquad(currentlySelectedFormation, (ClosestActorToTile(MouseTile, 3f)));
                     //rpgWindow.OpenControlledWindow();
                 }
                 //TWrecks_RPG
                 //hiredActorList.Add(ClosestActorToTile(MouseTile, controlledActor, 30f));
             }
-            if (Input.GetKeyDown(KeyCode.X))
-            {
-                if (currentlySelectedFormation != null && MapBox.instance.getMouseTilePos() != null)
-                {
-                    if (listOfSquadsWithLeaders.Contains(currentlySelectedFormation.squadID))
-                    {
+            if(Input.GetKeyDown(KeyCode.X)) {
+                if(currentlySelectedFormation != null && MapBox.instance.getMouseTilePos() != null) {
+                    if(listOfSquadsWithLeaders.Contains(currentlySelectedFormation.squadID)) {
                         currentlySelectedFormation.movementPos = MapBox.instance.getMouseTilePos().posV3;
                         currentlySelectedFormation.offsetPos = currentlySelectedFormation.movementPos - leaderDict[currentlySelectedFormation.squadID].squadLeaderActor.currentTile.posV3;
                     }
-                    else
-                    {
+                    else {
                         currentlySelectedFormation.movementPos = MapBox.instance.getMouseTilePos().posV3;
                         currentlySelectedFormation.offsetPos = currentlySelectedFormation.movementPos - lastTile.posV3;
                     }
                     //Debug.Log("offset saved: " + currentlySelectedFormation.offsetPos.ToString());
                 }
             }
-            if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.M))
-            {
-                for (int i = 0; i < 5; i++)
-                {
+            if(Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.M)) {
+                for(int i = 0; i < 5; i++) {
                     SquadFormation newSquad = new SquadFormation();
                     newSquad.movementPos = MapBox.instance.getMouseTilePos().posV3;
-                    for (int j = 0; j < 10; j++)
-                    {
+                    for(int j = 0; j < 10; j++) {
                         Actor newActor = MapBox.instance.createNewUnit("unit_human", MapBox.instance.getMouseTilePos(), null, 10f, null);
                         AddActorToSquad(newSquad, newActor);
                     }
@@ -110,8 +99,7 @@ namespace TWrecks_RPG
             GUILayout.Button("KingAgeExp");
             kingExpInput = GUILayout.TextField(kingExpInput);
             int newKingExp;
-            if (int.TryParse(kingExpInput, out newKingExp))
-            {
+            if(int.TryParse(kingExpInput, out newKingExp)) {
                 kingAgeExp.Value = newKingExp;
             }
             GUILayout.EndHorizontal();
@@ -119,8 +107,7 @@ namespace TWrecks_RPG
             GUILayout.Button("LeaderAgeExp");
             leaderExpInput = GUILayout.TextField(leaderExpInput);
             int newLeaderExp;
-            if (int.TryParse(leaderExpInput, out newLeaderExp))
-            {
+            if(int.TryParse(leaderExpInput, out newLeaderExp)) {
                 leaderAgeExp.Value = newLeaderExp;
             }
             GUILayout.EndHorizontal();
@@ -128,8 +115,7 @@ namespace TWrecks_RPG
             GUILayout.Button("OtherAgeExp");
             otherExpInput = GUILayout.TextField(otherExpInput);
             int newOtherExp;
-            if (int.TryParse(otherExpInput, out newOtherExp))
-            {
+            if(int.TryParse(otherExpInput, out newOtherExp)) {
                 otherAgeExp.Value = newOtherExp;
             }
             GUILayout.EndHorizontal();
@@ -137,8 +123,7 @@ namespace TWrecks_RPG
             GUILayout.Button("BaseExpToLevel");
             expToLevel = GUILayout.TextField(expToLevel);
             int newExpToLevel;
-            if (int.TryParse(expToLevel, out newExpToLevel))
-            {
+            if(int.TryParse(expToLevel, out newExpToLevel)) {
                 baseExpToLevelup.Value = newExpToLevel;
             }
             GUILayout.EndHorizontal();
@@ -146,8 +131,7 @@ namespace TWrecks_RPG
             GUILayout.Button("ExpGainOnKill");
             expGainedOnKill = GUILayout.TextField(expGainedOnKill);
             int newExpGainOnKill;
-            if (int.TryParse(expGainedOnKill, out newExpGainOnKill))
-            {
+            if(int.TryParse(expGainedOnKill, out newExpGainOnKill)) {
                 expGainOnKill.Value = newExpGainOnKill;
             }
             GUILayout.EndHorizontal();
@@ -155,14 +139,12 @@ namespace TWrecks_RPG
             GUILayout.Button("LevelExpScale");
             expScale = GUILayout.TextField(expScale);
             int newExpScale;
-            if (int.TryParse(expScale, out newExpScale))
-            {
- 
+            if(int.TryParse(expScale, out newExpScale)) {
+
                 expToLevelUpScale.Value = newExpScale;
             }
             GUILayout.EndHorizontal();
-            if (GUILayout.Button("Reset"))
-            {
+            if(GUILayout.Button("Reset")) {
                 expGainedOnKill = "10";
                 kingExpInput = "20";
                 leaderExpInput = "10";
@@ -180,16 +162,14 @@ namespace TWrecks_RPG
                 showHideMainWindow = !showHideMainWindow;
             }
             GUILayout.EndArea();
-           
-            if (showHideMainWindow)
-            {
+
+            if(showHideMainWindow) {
                 mainWindowRect = GUILayout.Window(79001, mainWindowRect, new GUI.WindowFunction(mainWindow), "Main", new GUILayoutOption[] { GUILayout.MaxWidth(300f), GUILayout.MinWidth(200f) });
             }
-            if (leaderDict.Count >= 1)
-            {
+            if(leaderDict.Count >= 1) {
                 leadersWindowRect = GUILayout.Window(79003, leadersWindowRect, new GUI.WindowFunction(SquadLeadersWindow), "Leaders", new GUILayoutOption[] { GUILayout.MaxWidth(300f), GUILayout.MinWidth(200f) });
             }
-            if (lastInteractionActor != null) // showActorInteract && 
+            if(lastInteractionActor != null) // showActorInteract && 
             {
                 actorInteractWindowRect = GUILayout.Window(79002, actorInteractWindowRect, new GUI.WindowFunction(ActorInteractWindow), "Actor interact", new GUILayoutOption[] { GUILayout.MaxWidth(300f), GUILayout.MinWidth(200f) });
             }
@@ -199,36 +179,28 @@ namespace TWrecks_RPG
 
         public void SquadLeadersWindow(int windowID)
         {
-            if (leaderDict.Count >= 1)
-            {
-                for (int i = 0; i < leaderDict.Count; i++)
-                {
+            if(leaderDict.Count >= 1) {
+                for(int i = 0; i < leaderDict.Count; i++) {
                     SquadFormation formation = leaderDict.Values.ToList()[i].squad;
                     Actor leaderActor = leaderDict.Values.ToList()[i].squadLeaderActor;
-                    if (leaderActor != null)
-                    {
+                    if(leaderActor != null) {
                         ActorStatus data = Reflection.GetField(leaderActor.GetType(), leaderActor, "data") as ActorStatus;
-                        if (data.alive)
-                        {
+                        if(data.alive) {
                             GUILayout.BeginHorizontal();
-                            if (GUILayout.Button("Leader: " + data.firstName))
-                            {
+                            if(GUILayout.Button("Leader: " + data.firstName)) {
                                 lastInteractionActor = leaderActor;
                             }
-                            if (GUILayout.Button("Squad: " + formation.squadName))
-                            {
+                            if(GUILayout.Button("Squad: " + formation.squadName)) {
                                 currentlySelectedFormation = formation;
 
                             }
                             GUILayout.EndHorizontal();
                         }
-                        else
-                        {
+                        else {
                         }
                     }
-                    else
-                    {
-                    
+                    else {
+
                     }
                 }
             }
@@ -239,35 +211,26 @@ namespace TWrecks_RPG
         {
             SetWindowInUse(windowID);
             ActorStatus currentActorData = Reflection.GetField(lastInteractionActor.GetType(), lastInteractionActor, "data") as ActorStatus;
-            if (controlledActor == null && lastInteractionActor != null)
-            {
-                if (GUILayout.Button("Take control of " + currentActorData.firstName))
-                {
+            if(controlledActor == null && lastInteractionActor != null) {
+                if(GUILayout.Button("Take control of " + currentActorData.firstName)) {
                     controlledActor = lastInteractionActor;
                 }
             }
-            if (controlledActor != null)
-            {
-                if (controlledActor == lastInteractionActor)
-                {
-                    if (GUILayout.Button("Stop control"))
-                    {
+            if(controlledActor != null) {
+                if(controlledActor == lastInteractionActor) {
+                    if(GUILayout.Button("Stop control")) {
                         controlledActor = null;
                     }
                 }
-                if (controlledActor != null)
-                {
+                if(controlledActor != null) {
                     ActorStatus controlledActorData = Reflection.GetField(controlledActor.GetType(), controlledActor, "data") as ActorStatus;
 
                     GUILayout.Button(controlledActorData.firstName);
                 }
             }
-            if (lastInteractionActor == controlledActor)
-            {
-                if (GUILayout.Button("Berries:" + foodCount.ToString()))
-                {
-                    if (foodCount > 0)
-                    {
+            if(lastInteractionActor == controlledActor) {
+                if(GUILayout.Button("Berries:" + foodCount.ToString())) {
+                    if(foodCount > 0) {
                         BaseStats curStats = Reflection.GetField(controlledActor.GetType(), controlledActor, "curStats") as BaseStats;
                         foodCount--;
                         controlledActor.restoreStatsFromEating(20, 0.1f, true);
@@ -275,159 +238,127 @@ namespace TWrecks_RPG
                 }
             }
 
-            if (currentlySelectedFormation != null)
-            {
+            if(currentlySelectedFormation != null) {
                 GUILayout.Button("SquadName: " + currentlySelectedFormation.squadName);
                 GUILayout.BeginHorizontal();
                 nextSquadName = GUILayout.TextField(nextSquadName);
-                if (GUILayout.Button("Set name"))
-                {
+                if(GUILayout.Button("Set name")) {
                     currentlySelectedFormation.squadName = nextSquadName;
                 }
                 GUILayout.EndHorizontal();
-                if (listOfSquadsWithLeaders.Contains(currentlySelectedFormation.squadID))
-                {
+                if(listOfSquadsWithLeaders.Contains(currentlySelectedFormation.squadID)) {
                     ActorStatus data = Reflection.GetField(leaderDict[currentlySelectedFormation.squadID].squadLeaderActor.GetType(), leaderDict[currentlySelectedFormation.squadID].squadLeaderActor, "data") as ActorStatus;
                     GUILayout.Button("Leader: " + data.firstName);
                 }
-                else
-                {
+                else {
                     GUILayout.Button("Leader: " + "none");
                 }
-                if (lastInteractionActor != null && GUILayout.Button("Assign inspected to squad leader"))
-                {
+                if(lastInteractionActor != null && GUILayout.Button("Assign inspected to squad leader")) {
                     SquadLeader newLeader = new SquadLeader(lastInteractionActor);
                     newLeader.squad = currentlySelectedFormation;
-                    if (listOfSquadsWithLeaders.Contains(currentlySelectedFormation.squadID))
-                    {
+                    if(listOfSquadsWithLeaders.Contains(currentlySelectedFormation.squadID)) {
                         leaderDict[currentlySelectedFormation.squadID] = newLeader;
                     }
-                    else
-                    {
+                    else {
                         listOfSquadsWithLeaders.Add(currentlySelectedFormation.squadID);
                         leaderDict.Add(currentlySelectedFormation.squadID, newLeader);
                     }
 
-                   
+
 
                 }
                 GUILayout.Button("Unit count: " + currentlySelectedFormation.actorList.Count.ToString());
-                if (GUILayout.Button("Formation shape: " + currentlySelectedFormation.formationType))
-                {
+                if(GUILayout.Button("Formation shape: " + currentlySelectedFormation.formationType)) {
                     CycleFormation(currentlySelectedFormation);
                 }
                 GUILayout.BeginHorizontal();
-                if (GUILayout.Button("-"))
-                {
+                if(GUILayout.Button("-")) {
                     currentlySelectedFormation.radius--;
-                    if (currentlySelectedFormation.radius < 0)
-                    {
+                    if(currentlySelectedFormation.radius < 0) {
                         currentlySelectedFormation.radius = 0;
                     }
                 }
-                if (GUILayout.Button("Radius: " + currentlySelectedFormation.radius.ToString()))
-                {
+                if(GUILayout.Button("Radius: " + currentlySelectedFormation.radius.ToString())) {
                     currentlySelectedFormation.radius = 3;
                 }
-                if (GUILayout.Button("+"))
-                {
+                if(GUILayout.Button("+")) {
                     currentlySelectedFormation.radius++;
                 }
                 GUILayout.EndHorizontal();
                 GUILayout.BeginHorizontal();
-                if (GUILayout.Button("-"))
-                {
+                if(GUILayout.Button("-")) {
                     currentlySelectedFormation.lineX--;
-                    if (currentlySelectedFormation.lineX < 0)
-                    {
+                    if(currentlySelectedFormation.lineX < 0) {
                         currentlySelectedFormation.lineX = 0;
                     }
                 }
-                if (GUILayout.Button("LineX: " + currentlySelectedFormation.lineX.ToString()))
-                {
+                if(GUILayout.Button("LineX: " + currentlySelectedFormation.lineX.ToString())) {
                     currentlySelectedFormation.lineX = 5;
                 }
-                if (GUILayout.Button("+"))
-                {
+                if(GUILayout.Button("+")) {
                     currentlySelectedFormation.lineX++;
                 }
                 GUILayout.EndHorizontal();
                 GUILayout.BeginHorizontal();
-                if (GUILayout.Button("-"))
-                {
+                if(GUILayout.Button("-")) {
                     currentlySelectedFormation.lineY--;
-                    if (currentlySelectedFormation.lineY < 0)
-                    {
+                    if(currentlySelectedFormation.lineY < 0) {
                         currentlySelectedFormation.lineY = 0;
                     }
                 }
-                if (GUILayout.Button("LineY: " + currentlySelectedFormation.lineY.ToString()))
-                {
+                if(GUILayout.Button("LineY: " + currentlySelectedFormation.lineY.ToString())) {
                     currentlySelectedFormation.lineY = 5;
                 }
-                if (GUILayout.Button("+"))
-                {
+                if(GUILayout.Button("+")) {
                     currentlySelectedFormation.lineY++;
                 }
                 GUILayout.EndHorizontal();
                 Color og = GUI.backgroundColor;
-                if (currentlySelectedFormation.followsControlledPos)
-                {
+                if(currentlySelectedFormation.followsControlledPos) {
                     GUI.backgroundColor = Color.green;
                 }
-                else
-                {
+                else {
                     GUI.backgroundColor = Color.red;
                 }
-                if (GUILayout.Button("Toggle formation follows you"))
-                {
+                if(GUILayout.Button("Toggle formation follows you")) {
                     currentlySelectedFormation.followsControlledPos = !currentlySelectedFormation.followsControlledPos;
                 }
-                if (currentlySelectedFormation.followsOffset)
-                {
+                if(currentlySelectedFormation.followsOffset) {
                     GUI.backgroundColor = Color.green;
                 }
-                else
-                {
+                else {
                     GUI.backgroundColor = Color.red;
                 }
-                if (GUILayout.Button("Toggle formation follows offset"))
-                {
+                if(GUILayout.Button("Toggle formation follows offset")) {
                     currentlySelectedFormation.followsOffset = !currentlySelectedFormation.followsOffset;
                 }
                 GUI.backgroundColor = og;
                 GUI.backgroundColor = Color.red;
-                if (GUILayout.Button("Reset hired list"))
-                {
+                if(GUILayout.Button("Reset hired list")) {
                     currentlySelectedFormation.actorList.RemoveRange(0, currentlySelectedFormation.actorList.Count);
                 }
                 GUI.backgroundColor = og;
             }
-          
+
             GUILayout.BeginHorizontal();
-            if (GUILayout.Button("<-"))
-            {
+            if(GUILayout.Button("<-")) {
                 squadDictPos--;
-                if (squadDictPos <= 0)
-                {
+                if(squadDictPos <= 0) {
                     squadDictPos = 0;
                 }
-                if (squadsInUse.ContainsKey(squadDictPos.ToString()))
+                if(squadsInUse.ContainsKey(squadDictPos.ToString()))
                     currentlySelectedFormation = squadsInUse[squadDictPos.ToString()];
             }
-            if (GUILayout.Button("New squad") && lastTile != null)
-            {
+            if(GUILayout.Button("New squad") && lastTile != null) {
                 SquadFormation newSquad = new SquadFormation();
                 newSquad.movementPos = lastTile.posV3;
                 squadsInUse.Add(newSquad.squadID, newSquad);
                 currentlySelectedFormation = squadsInUse[newSquad.squadID];
             }
-            if (GUILayout.Button("->"))
-            {
+            if(GUILayout.Button("->")) {
 
 
-                if (squadsInUse.ContainsKey(squadDictPos + 1.ToString()))
-                {
+                if(squadsInUse.ContainsKey(squadDictPos + 1.ToString())) {
                     squadDictPos++;
                     currentlySelectedFormation = squadsInUse[squadDictPos.ToString()];
                 }
@@ -435,24 +366,19 @@ namespace TWrecks_RPG
             GUILayout.EndHorizontal();
 
             // hiring/firing squad stuff
-            if (lastInteractionActor != controlledActor)
-            {
-                if (totalSquadActorList.Contains(lastInteractionActor))
-                {
-                    if (GUILayout.Button("Fire " + currentActorData.firstName))
-                    {
+            if(lastInteractionActor != controlledActor) {
+                if(totalSquadActorList.Contains(lastInteractionActor)) {
+                    if(GUILayout.Button("Fire " + currentActorData.firstName)) {
                         RemoveActorFromSquad(lastInteractionActor);
                     }
                 }
-                else
-                {
-                    if (GUILayout.Button("Hire " + currentActorData.firstName) && currentlySelectedFormation != null)
-                    {
+                else {
+                    if(GUILayout.Button("Hire " + currentActorData.firstName) && currentlySelectedFormation != null) {
                         AddActorToSquad(currentlySelectedFormation, lastInteractionActor);
                     }
                 }
             }
-          
+
 
 
             /*
@@ -564,10 +490,8 @@ namespace TWrecks_RPG
         }
         public static bool updateZoom_Prefix()
         {
-            if (controlledActor != null)
-            {
-                if (Input.GetKey(KeyCode.Q) || Input.GetKey(KeyCode.E))
-                {
+            if(controlledActor != null) {
+                if(Input.GetKey(KeyCode.Q) || Input.GetKey(KeyCode.E)) {
                     return false;
                 }
             }
@@ -576,108 +500,62 @@ namespace TWrecks_RPG
 
         public void UpdateControls()
         {
-            if (MapBox.instance != null)
-            {
+            if(MapBox.instance != null) {
                 Camera camera = Reflection.GetField(MapBox.instance.GetType(), MapBox.instance, "camera") as Camera;
-                if (camera != null)
-                {
-                    if (controlledActor != null)
-                    {
-                        if (Input.GetKey(KeyCode.KeypadMinus) || Input.GetKey(KeyCode.KeypadPlus))
-                        {
+                if(camera != null) {
+                    if(controlledActor != null) {
+                        if(Input.GetKey(KeyCode.KeypadMinus) || Input.GetKey(KeyCode.KeypadPlus)) {
                             camera.GetComponent<MoveCamera>().cameraZoomSpeed = 5f;
                         }
-                        else
-                        {
+                        else {
                             camera.GetComponent<MoveCamera>().cameraZoomSpeed = 0f;
                             camera.GetComponent<MoveCamera>().cameraMoveSpeed = 0f;
                         }
                     }
-                    else
-                    {
+                    else {
                         camera.GetComponent<MoveCamera>().cameraMoveSpeed = 0.01f;
                         camera.GetComponent<MoveCamera>().cameraZoomSpeed = 5f;
                     }
                 }
 
-                if (MouseTile != null && Input.GetKeyDown(KeyCode.F))
-                {
+                if(MouseTile != null && Input.GetKeyDown(KeyCode.F)) {
                     lastInteractionActor = ClosestActorToTile(MouseTile, 3f);
                 }
 
-                if (controlledActor != null)
-                {
+                if(controlledActor != null) {
                     followActor(controlledActor, 10f); // camera
                     movementStuff(); // movement controls
 
                     // click interaction (harvest resources, build structures)
                     WorldTile clickedTile = null;
-                    if (Input.GetMouseButtonDown(0) && MapBox.instance.getMouseTilePos() != null)
-                    {
+                    if(Input.GetMouseButtonDown(0) && MapBox.instance.getMouseTilePos() != null) {
                         clickedTile = MapBox.instance.getMouseTilePos();
                         // building interactions
-                        if (clickedTile.building != null)
-                        {
+                        if(clickedTile.building != null) {
                             // Check building for resources
-                            bool haveResources = (bool)Reflection.GetField(clickedTile.building.GetType(), clickedTile.building, "haveResources");
-                            BuildingAsset stats = Reflection.GetField(clickedTile.building.GetType(), clickedTile.building, "stats") as BuildingAsset;
-                            BuildingData data = Reflection.GetField(clickedTile.building.GetType(), clickedTile.building, "data") as BuildingData;
-							CityData citydata = Reflection.GetField(controlledActor.city.GetType(), controlledActor.city, "data") as CityData;
-                            /*
-                            if (haveResources && stats.resourceType != ResourceType.None)
-                            {
-                                // If controlled unit is part of a city, add the resources to it's inventory
-                                if (controlledActor.city != null)
-                                {
-                                    
-                                    if (stats.resourceType == ResourceType.Gold)
-                                    {
-                                        string pRes = "gold";
-                                        citydata.storage.change(pRes, 2);
-                                    }
-                                    else if (stats.resourceType == ResourceType.Stone)
-                                    {
-                                        string pRes2 = "stone";
-                                        citydata.storage.change(pRes2, 3);
-                                    }
-                                    else if (stats.resourceType == ResourceType.Ore)
-                                    {
-                                        string pRes3 = "ore";
-                                        citydata.storage.change(pRes3, 3);
-                                    }
-                                    if (stats.resourceType == ResourceType.Fruits)
-                                    {
-                                        foodCount++;
-                                        clickedTile.building.CallMethod("extractResources", new object[] { controlledActor, 0});
-                                    }
-                                    if (stats.id.Contains("tree") || stats.id.Contains("palm"))
-                                    {
-                                        Sfx.play("chopping", true, clickedTile.building.transform.localPosition.x, clickedTile.building.transform.localPosition.y);
-                                        clickedTile.building.startShake(0.5f);
-                                        clickedTile.building.CallMethod("chopTree");
-                                        citydata.storage.change("wood", 3);
-                                    }
-                                    else
-                                    {
-                                        Sfx.play("mining", true, clickedTile.building.transform.localPosition.x, clickedTile.building.transform.localPosition.y);
-                                    }
-                            
-                        }
+                            bool haveResources = clickedTile.building.haveResources;
+                            BuildingAsset stats = clickedTile.building.stats; //Reflection.GetField(clickedTile.building.GetType(), clickedTile.building, "stats") as BuildingAsset;
+                            BuildingData data = clickedTile.building.data; //Reflection.GetField(clickedTile.building.GetType(), clickedTile.building, "data") as BuildingData;
+                            CityData citydata = controlledActor.city.data; //Reflection.GetField(controlledActor.city.GetType(), controlledActor.city, "data") as CityData;
 
-                        //controlledActor.timer_action = 1f; // delay after interact
-                    }
-                             */
+                            if(haveResources && stats.resource_id == "berries") {
+                                // If controlled unit is part of a city, add the resources to it's inventory
+                                if(controlledActor.city != null) {
+									foodCount++;
+                                    clickedTile.building.extractResources(controlledActor, clickedTile.building.stats.resources_given);
+                                }
+                                //controlledActor.timer_action = 1f; // delay after interact
+                            }
+
                             // add progress to unfinished building
-                            if(clickedTile.building.city != null && controlledActor.city != null && clickedTile.building.city == controlledActor.city && data.underConstruction)
-                            {
+                            if(clickedTile.building.city != null && controlledActor.city != null && clickedTile.building.city == controlledActor.city && data.underConstruction) {
                                 clickedTile.building.CallMethod("updateBuild", new object[] { 3 });
                                 //controlledActor.timer_action = 1f;
                                 Sfx.play("hammer1", false, clickedTile.building.transform.localPosition.x, clickedTile.building.transform.localPosition.y);
                             }
                         }
                         // Non-building interactions (click)
-                        else
-                        {
+                        else {
 
                         }
 
@@ -694,23 +572,18 @@ namespace TWrecks_RPG
                         }
                     }
                     */
-                    if (Input.GetKey(KeyCode.E))
-                    {
+                    if(Input.GetKey(KeyCode.E)) {
                         Actor target = ClosestActorToTile(MouseTile, 3f);
-                        if (target != null)
-                        {
-                            try
-                            {
-                                if ((bool)controlledActor.CallMethod("tryToAttack", new object[] { target }))
-                                {
+                        if(target != null) {
+                            try {
+                                if((bool)controlledActor.CallMethod("tryToAttack", new object[] { target })) {
                                     // Debug.Log("Attack success")
                                 }
                             }
-                            catch (Exception e)
-                            {
+                            catch(Exception e) {
                                 Debug.Log("exception caught");
                             }
-                           
+
                         }
                     }
                 }
@@ -721,8 +594,7 @@ namespace TWrecks_RPG
 
         public static void canAttackTarget_Postfix(BaseSimObject pTarget, ActorBase __instance, ref bool __result)
         {
-            if (controlledActor == __instance)
-            {
+            if(controlledActor == __instance) {
                 __result = true;
             }
         }
@@ -730,18 +602,14 @@ namespace TWrecks_RPG
         public void UpdateSquadBehaviour()
         {
             // for group behaviour, individual behaviours are applied through traits and updateSpecialTraitEffects_Postfix
-            if (squadsInUse != null && squadsInUse.Count >= 1)
-            {
+            if(squadsInUse != null && squadsInUse.Count >= 1) {
                 UpdateSquadList();
                 //MoveSquad(hiredActorList, lastTile.posV3, formationInUse, formationRadius); // single squad/old movement
-                foreach (SquadFormation activeSquad in squadsInUse.Values)
-                {
-                    if (listOfSquadsWithLeaders.Contains(activeSquad.squadID) == false)
-                    {
+                foreach(SquadFormation activeSquad in squadsInUse.Values) {
+                    if(listOfSquadsWithLeaders.Contains(activeSquad.squadID) == false) {
                         MoveSquad(activeSquad);
                     }
-                    else
-                    {
+                    else {
                         MoveSquad(leaderDict[activeSquad.squadID]);
                     }
                     // need to update the list somewhere and clear dead/nulls
@@ -772,16 +640,13 @@ namespace TWrecks_RPG
         public void MoveSquad(SquadFormation targetFormation)
         {
             Vector3 targetPos = lastTile.posV3;
-            if (targetFormation.followsControlledPos == false)
-            {
+            if(targetFormation.followsControlledPos == false) {
                 targetPos = targetFormation.movementPos;
             }
-            if (targetFormation.offsetPos != null && targetFormation.followsOffset && targetFormation.offsetPos != Vector3.one)
-            {
+            if(targetFormation.offsetPos != null && targetFormation.followsOffset && targetFormation.offsetPos != Vector3.one) {
                 targetPos = lastTile.posV3 + targetFormation.offsetPos;
             }
-            switch (targetFormation.formationType)
-            {
+            switch(targetFormation.formationType) {
                 case "circle":
                     moveFormationCircle(targetFormation.actorList, targetPos, targetFormation.radius);
                     break;
@@ -810,26 +675,21 @@ namespace TWrecks_RPG
 
         public void MoveSquad(SquadLeader leaderAndHisFormation)
         {
-            if (leaderAndHisFormation.squad != null)
-            {
-                if (leaderAndHisFormation.squadLeaderActor == null && leaderAndHisFormation.squad.actorList.Count >= 2)
-                {
+            if(leaderAndHisFormation.squad != null) {
+                if(leaderAndHisFormation.squadLeaderActor == null && leaderAndHisFormation.squad.actorList.Count >= 2) {
                     Debug.Log("Squad leader likely dead/null, replacing (removes 1 actor from the list)");
                     leaderAndHisFormation.squadLeaderActor = leaderAndHisFormation.squad.actorList.GetRandom();
                     leaderAndHisFormation.squad.actorList.Remove(leaderAndHisFormation.squadLeaderActor);
                 }
                 SquadFormation targetFormation = leaderAndHisFormation.squad;
                 Vector3 targetPos = leaderAndHisFormation.squadLeaderActor.currentTile.posV3;
-                if (targetFormation.followsControlledPos == false)
-                {
+                if(targetFormation.followsControlledPos == false) {
                     targetPos = targetFormation.movementPos;
                 }
-                if (targetFormation.offsetPos != null && targetFormation.followsOffset && targetFormation.offsetPos != Vector3.one)
-                {
+                if(targetFormation.offsetPos != null && targetFormation.followsOffset && targetFormation.offsetPos != Vector3.one) {
                     targetPos = leaderAndHisFormation.squadLeaderActor.currentTile.posV3 + targetFormation.offsetPos;
                 }
-                switch (targetFormation.formationType)
-                {
+                switch(targetFormation.formationType) {
                     case "circle":
                         moveFormationCircle(targetFormation.actorList, targetPos, targetFormation.radius);
                         break;
@@ -855,15 +715,14 @@ namespace TWrecks_RPG
                         break;
                 }
             }
-          
+
         }
 
         public List<string> formationType = new List<string>();
         public string formationInUse = "circle";
         public void CycleFormation(SquadFormation targetSquad)
         {
-            switch (targetSquad.formationType)
-            {
+            switch(targetSquad.formationType) {
                 case "circle":
                     targetSquad.formationType = "wedge1"; // wedge
                     break;
@@ -891,27 +750,20 @@ namespace TWrecks_RPG
         }
 
         public static List<ActorTrait> positiveTraitsForLevels => AssetManager.traits.list.OrderBy(x => x.type == TraitType.Positive).ToList();
-         
+
         public void UpdateSquadList()
         {
-            if (squadsInUse != null && squadsInUse.Count >= 1)
-            {
-                for (int i = 0; i < squadsInUse.Count; i++)
-                {
+            if(squadsInUse != null && squadsInUse.Count >= 1) {
+                for(int i = 0; i < squadsInUse.Count; i++) {
                     List<Actor> workingList = squadsInUse.Values.ToList()[i].actorList;
-                    if (workingList != null && workingList.Count >= 1)
-                    {
-                        for (int j = 0; j < workingList.Count; j++)
-                        {
-                            if (workingList[j] == null)
-                            {
+                    if(workingList != null && workingList.Count >= 1) {
+                        for(int j = 0; j < workingList.Count; j++) {
+                            if(workingList[j] == null) {
                                 workingList.Remove(workingList[j]);
                             }
-                            else
-                            {
+                            else {
                                 ActorStatus data = Reflection.GetField(workingList[j].GetType(), workingList[j], "data") as ActorStatus;
-                                if (data.alive == false)
-                                {
+                                if(data.alive == false) {
                                     workingList.Remove(workingList[j]);
                                 }
                             }
@@ -919,9 +771,9 @@ namespace TWrecks_RPG
                     }
                 }
             }
-            
+
             // check if anyone is dead or null and make sure theyre not in the list
-           
+
         }
 
         public Actor lastInteractionActor;
@@ -943,17 +795,12 @@ namespace TWrecks_RPG
         }
         public void RemoveActorFromSquad(Actor targetActor)
         {
-            if (squadsInUse != null && squadsInUse.Count >= 1)
-            {
-                for (int i = 0; i < squadsInUse.Count; i++)
-                {
+            if(squadsInUse != null && squadsInUse.Count >= 1) {
+                for(int i = 0; i < squadsInUse.Count; i++) {
                     List<Actor> workingList = squadsInUse.Values.ToList()[i].actorList;
-                    if (workingList != null && workingList.Count >= 1)
-                    {
-                        for (int j = 0; j < workingList.Count; j++)
-                        {
-                            if (workingList[j] == targetActor)
-                            {
+                    if(workingList != null && workingList.Count >= 1) {
+                        for(int j = 0; j < workingList.Count; j++) {
+                            if(workingList[j] == targetActor) {
                                 workingList.Remove(workingList[j]);
                                 return;
                             }
@@ -963,14 +810,13 @@ namespace TWrecks_RPG
             }
             if(totalSquadActorList.Contains(targetActor)) {
                 totalSquadActorList.Remove(targetActor);
-			}
+            }
         }
 
         public static Actor ClosestActorToTile(WorldTile pTarget, float range)
         {
             Actor returnActor = null;
-            foreach (Actor actorToCheck in MapBox.instance.units)
-            {
+            foreach(Actor actorToCheck in MapBox.instance.units) {
                 if(controlledActor != null && actorToCheck != controlledActor) // exclude hired actors if they exist
                 {
                     if(totalSquadActorList != null && totalSquadActorList.Count >= 1) {
@@ -1004,23 +850,20 @@ namespace TWrecks_RPG
 
         public static void moveFormationDot(List<Actor> formation, Vector3 position)
         {
-            if (formation != null)
-            {
+            if(formation != null) {
                 float num = 6.28318548f / (float)formation.Count;
-                for (int i = 0; i < formation.Count; i++)
-                {
+                for(int i = 0; i < formation.Count; i++) {
                     float f = (float)i * num;
                     Vector3 vector = position; // the radius * count/10f makes the radius grow slightly the more people are used0
                     WorldTile tileFromVector = MapBox.instance.GetTile((int)vector.x, (int)vector.y);
-                    if (tileFromVector == null)
-                    {
+                    if(tileFromVector == null) {
                         Debug.Log("Movement tile not inside world, breaking");
                         return;
                     }
                     BasicMoveAndWait(formation[i], tileFromVector);
                     if(useFlashOnMove)
-                    flashEffects.flashPixel(tileFromVector, 10, ColorType.White);
-                    if (formation[i].GetComponent<Boat>() != null) // boat movement
+                        flashEffects.flashPixel(tileFromVector, 10, ColorType.White);
+                    if(formation[i].GetComponent<Boat>() != null) // boat movement
                     {
                         formation[i].nextStepPosition = vector;
                     }
@@ -1032,23 +875,20 @@ namespace TWrecks_RPG
         public static bool useFlashOnMove = false;
         public static void moveFormationCircle(List<Actor> formation, Vector3 position, int radius)
         {
-            if (formation != null)
-            {
+            if(formation != null) {
                 float num = 6.28318548f / (float)formation.Count;
-                for (int i = 0; i < formation.Count; i++)
-                {
+                for(int i = 0; i < formation.Count; i++) {
                     float f = (float)i * num;
                     Vector3 vector = position + new Vector3(Mathf.Cos(f), Mathf.Sin(f), 0f) * ((float)radius + ((float)formation.Count / 10f)); // the radius * count/10f makes the radius grow slightly the more people are used
                     WorldTile tileFromVector = MapBox.instance.GetTile((int)vector.x, (int)vector.y);
-                    if (tileFromVector == null)
-                    {
+                    if(tileFromVector == null) {
                         Debug.Log("Movement tile not inside world, breaking");
                         return;
                     }
                     BasicMoveAndWait(formation[i], tileFromVector);
-                    if (useFlashOnMove)
+                    if(useFlashOnMove)
                         flashEffects.flashPixel(tileFromVector, 10, ColorType.White);
-                    if (formation[i].GetComponent<Boat>() != null) // boat movement
+                    if(formation[i].GetComponent<Boat>() != null) // boat movement
                     {
                         formation[i].nextStepPosition = vector;
                     }
@@ -1062,17 +902,14 @@ namespace TWrecks_RPG
             Vector3 posV = position;
             int x = -(formation.Count / 2);
             int y = -(formation.Count / 2);
-            foreach (Actor actor in formation)
-            {
+            foreach(Actor actor in formation) {
                 WorldTile tileFromVector = MapBox.instance.GetTile((int)position.x + x, (int)position.y + y);
                 BasicMoveAndWait(actor, tileFromVector);
 
-                if (y != x)
-                {
+                if(y != x) {
                     y++;
                 }
-                else
-                {
+                else {
                     x++;
                 }
             }
@@ -1082,17 +919,14 @@ namespace TWrecks_RPG
             Vector3 posV = position;
             int num = formation.Count / 2;
             int num2 = formation.Count / 2;
-            foreach (Actor actor in formation)
-            {
+            foreach(Actor actor in formation) {
                 WorldTile tileFromVector = MapBox.instance.GetTile((int)position.x - num, (int)position.y + num2);
                 BasicMoveAndWait(actor, tileFromVector);
 
-                if (num2 != num)
-                {
+                if(num2 != num) {
                     num2--;
                 }
-                else
-                {
+                else {
                     num--;
                 }
             }
@@ -1100,12 +934,10 @@ namespace TWrecks_RPG
         public static bool lineFormationCentered = true;
         public void lineFormation(List<Actor> formation, Vector3 position, int xLimit, int yLimit) // lines, squares, rectangles
         {
-            if (lineFormationCentered)
-            {
+            if(lineFormationCentered) {
                 moveFormationLineNonCentered(formation, position, xLimit, yLimit);
             }
-            else
-            {
+            else {
 
             }
         }
@@ -1113,38 +945,32 @@ namespace TWrecks_RPG
         {
             int positionX = 0;
             int positionY = 0;
-            if (yLimit == 1)
-            {
+            if(yLimit == 1) {
                 positionX = 1;
             }
-            if (xLimit == 1)
-            {
+            if(xLimit == 1) {
                 positionY = 1;
             }
 
-            for (int i = 0; i < formation.Count; i++)
-            {
-                if (positionX == xLimit)
-                {
+            for(int i = 0; i < formation.Count; i++) {
+                if(positionX == xLimit) {
                     positionY++;
                     positionX = 0;
                 }
-                if (positionY == yLimit)
-                {
+                if(positionY == yLimit) {
                     positionY = 0;
                     positionX = 0;
                 }
                 Vector3 vector = new Vector3(position.x + positionX, position.y + positionY);
-                WorldTile targetTile = MapBox.instance.GetTile((int)vector.x,(int) vector.y);
-                if (targetTile == null)
-                {
+                WorldTile targetTile = MapBox.instance.GetTile((int)vector.x, (int)vector.y);
+                if(targetTile == null) {
                     Debug.Log("Movement tile not inside world, breaking");
                     return;
                 }
                 BasicMoveAndWait(formation[i], targetTile);
-                if (useFlashOnMove)
+                if(useFlashOnMove)
                     flashEffects.flashPixel(targetTile, 10, ColorType.White);
-                if (formation[i].GetComponent<Boat>() != null) // boat movement
+                if(formation[i].GetComponent<Boat>() != null) // boat movement
                 {
                     formation[i].nextStepPosition = vector;
                 }
@@ -1153,45 +979,39 @@ namespace TWrecks_RPG
         }
         public static void moveFormationLineCentered(List<Actor> formation, Vector3 position, int xLimit, int yLimit) // lines, squares, rectangles
         {
-             // needs work
+            // needs work
             int positionX = 0;
             int positionY = 0;
 
             int offsetX = 0;
             int offsetY = 0;
-            if (xLimit != 1)
-            {
+            if(xLimit != 1) {
                 offsetX = (-(xLimit));
             }
-            if (yLimit != 1)
-            {
+            if(yLimit != 1) {
                 offsetY = (-(yLimit));
 
             }
 
-            for (int i = 0; i < formation.Count; i++)
-            {
-                if (positionX == (xLimit / 2))
-                {
+            for(int i = 0; i < formation.Count; i++) {
+                if(positionX == (xLimit / 2)) {
                     positionY++;
                     positionX = 0;
                 }
-                if (positionY == (yLimit / 2))
-                {
+                if(positionY == (yLimit / 2)) {
                     positionY = 0;
                     positionX = 0;
                 }
                 Vector3 vector = new Vector3(position.x + positionX, position.y + positionY);
                 WorldTile targetTile = MapBox.instance.GetTile((int)vector.x, (int)vector.y);
-                if (targetTile == null)
-                {
+                if(targetTile == null) {
                     Debug.Log("Movement tile not inside world, breaking");
                     return;
                 }
                 BasicMoveAndWait(formation[i], targetTile);
-                if (useFlashOnMove)
+                if(useFlashOnMove)
                     flashEffects.flashPixel(targetTile, 10, ColorType.White);
-                if (formation[i].GetComponent<Boat>() != null) // boat movement
+                if(formation[i].GetComponent<Boat>() != null) // boat movement
                 {
                     formation[i].nextStepPosition = vector;
                 }
@@ -1210,70 +1030,54 @@ namespace TWrecks_RPG
         {
             // RPG movement
             lastTile = MapBox.instance.GetTileSimple((int)controlledActor.currentPosition.x, (int)controlledActor.currentPosition.y);
-            if (Input.GetKey(KeyCode.W))
-            {
+            if(Input.GetKey(KeyCode.W)) {
                 directionMoving = "up";
-                if (Input.GetKey(KeyCode.A))
-                {
+                if(Input.GetKey(KeyCode.A)) {
                     directionMoving = "upLeft";
                 }
-                else if (Input.GetKey(KeyCode.D))
-                {
+                else if(Input.GetKey(KeyCode.D)) {
                     directionMoving = "upRight";
                 }
             }
-            else if (Input.GetKey(KeyCode.S))
-            {
+            else if(Input.GetKey(KeyCode.S)) {
                 directionMoving = "down";
-                if (Input.GetKey(KeyCode.A))
-                {
+                if(Input.GetKey(KeyCode.A)) {
                     directionMoving = "downLeft";
                 }
-                else if (Input.GetKey(KeyCode.D))
-                {
+                else if(Input.GetKey(KeyCode.D)) {
                     directionMoving = "downRight";
                 }
             }
-            else if (Input.GetKey(KeyCode.A))
-            {
+            else if(Input.GetKey(KeyCode.A)) {
                 directionMoving = "left";
-                if (Input.GetKey(KeyCode.W))
-                {
+                if(Input.GetKey(KeyCode.W)) {
                     directionMoving = "upLeft";
                 }
-                else if (Input.GetKey(KeyCode.S))
-                {
+                else if(Input.GetKey(KeyCode.S)) {
                     directionMoving = "downLeft";
                 }
             }
-            else if (Input.GetKey(KeyCode.D))
-            {
+            else if(Input.GetKey(KeyCode.D)) {
                 directionMoving = "right";
-                if (Input.GetKey(KeyCode.W))
-                {
+                if(Input.GetKey(KeyCode.W)) {
                     directionMoving = "upRight";
                 }
-                else if (Input.GetKey(KeyCode.S))
-                {
+                else if(Input.GetKey(KeyCode.S)) {
                     directionMoving = "downRight";
                 }
             }
-            else
-            {
+            else {
                 directionMoving = null;
             }
             // when user isnt moving (or interacting?), make controlled be still
             // could add some kind of command queue
-            if (directionMoving == null)
-            {
+            if(directionMoving == null) {
                 controlledActor.stopMovement();
                 controlledActor.cancelAllBeh();
             }
-            if (directionMoving != null)
-            {
+            if(directionMoving != null) {
                 WorldTile movementTile;
-                switch (directionMoving)
-                {
+                switch(directionMoving) {
                     case "up":
                         movementTile = MapBox.instance.GetTile(lastTile.pos.x, lastTile.pos.y + 1);
                         doMovement(movementTile);
@@ -1323,24 +1127,19 @@ namespace TWrecks_RPG
 
         public static bool addExperience_Prefix(int pValue, Actor __instance)
         {
-                ActorStats stats = Reflection.GetField(__instance.GetType(), __instance, "stats") as ActorStats;
-                ActorStatus data = Reflection.GetField(__instance.GetType(), __instance, "data") as ActorStatus;
-                if (stats.canLevelUp)
-                {
-                    int expToLevelup = __instance.getExpToLevelup();
-                    data.experience += pValue;
-                    if (data.experience >= expToLevelup)
-                    {
-                        data.experience = 0;
-                        data.level++;
-                    if (__instance == controlledActor)
-                    {
-                        if (data.level % 5 == 0)
-                        {
+            ActorStats stats = Reflection.GetField(__instance.GetType(), __instance, "stats") as ActorStats;
+            ActorStatus data = Reflection.GetField(__instance.GetType(), __instance, "data") as ActorStatus;
+            if(stats.canLevelUp) {
+                int expToLevelup = __instance.getExpToLevelup();
+                data.experience += pValue;
+                if(data.experience >= expToLevelup) {
+                    data.experience = 0;
+                    data.level++;
+                    if(__instance == controlledActor) {
+                        if(data.level % 5 == 0) {
                             ActorTrait newTrait = null;
                             int attempts = 0;
-                            while ((newTrait == null || controlledActor.haveTrait(newTrait.id)) && attempts < 3)
-                            {
+                            while((newTrait == null || controlledActor.haveTrait(newTrait.id)) && attempts < 3) {
                                 newTrait = positiveTraitsForLevels.GetRandom();
                                 attempts++;
                             }
@@ -1361,7 +1160,7 @@ namespace TWrecks_RPG
                     */
                 }
             }
-                return false;
+            return false;
         }
 
         public static void getHit_Postfix(float pDamage, bool pFlash, AttackType pType, BaseSimObject pAttacker, bool pSkipIfShake, Actor __instance)
@@ -1370,28 +1169,22 @@ namespace TWrecks_RPG
 
             ActorStatus attackerData = null;
 
-            if (__instance != null)
-            {
+            if(__instance != null) {
                 victimData = Reflection.GetField(__instance.GetType(), __instance, "data") as ActorStatus;
             }
-            if (pAttacker != null)
-            {
+            if(pAttacker != null) {
                 attackerData = Reflection.GetField(pAttacker.GetType(), pAttacker, "data") as ActorStatus;
             }
-            if (attackerData != null && victimData != null && victimData.alive && attackerData.alive)
-            {
-                try
-                {
-                    if ((bool)__instance.CallMethod("tryToAttack", new object[] { pAttacker }))
-                    {
+            if(attackerData != null && victimData != null && victimData.alive && attackerData.alive) {
+                try {
+                    if((bool)__instance.CallMethod("tryToAttack", new object[] { pAttacker })) {
                         // Debug.Log("Retaliation success")
                     }
                 }
-                catch (Exception e)
-                {
+                catch(Exception e) {
                     Debug.Log("exception caught");
                 }
-              
+
             }
         }
 
@@ -1414,17 +1207,14 @@ namespace TWrecks_RPG
             ActorStatus data = Reflection.GetField(__instance.GetType(), __instance, "data") as ActorStatus;
 
             data.kills++;
-            if (data.kills > 10)
-            {
+            if(data.kills > 10) {
                 __instance.addTrait("veteran");
             }
             __instance.CallMethod("addExperience", new object[] { expGainOnKill.Value });
 
-            if (controlledActor != null)
-            {
+            if(controlledActor != null) {
                 BaseStats curStats = Reflection.GetField(controlledActor.GetType(), controlledActor, "curStats") as BaseStats;
-                if (__instance == controlledActor)
-                {
+                if(__instance == controlledActor) {
                     controlledActor.restoreHealth(curStats.health / 10); // 10%
                 }
             }
@@ -1468,38 +1258,31 @@ namespace TWrecks_RPG
             int currentAge = data.age;
             Race race = Reflection.GetField(__instance.GetType(), __instance, "race") as Race;
             bool updateAge = (bool)data.CallMethod("updateAge", new object[] { race });
-            if (!updateAge && !__instance.haveTrait("immortal"))
-            {
+            if(!updateAge && !__instance.haveTrait("immortal")) {
                 __instance.killHimself(false, AttackType.Age, true, true);
                 return false;
             }
             int currentAge2 = data.age;
             //Debug.Log("\nDebug: old age: " + currentAge + "\n" + "Debug: new age: " + currentAge2);
-            if (__instance.city != null)
-            {
+            if(__instance.city != null) {
                 Kingdom kingdom = Reflection.GetField(__instance.city.GetType(), __instance.city, "kingdom") as Kingdom;
-                if (kingdom != null)
-                {
-                    if (kingdom.king == __instance)
-                    {
+                if(kingdom != null) {
+                    if(kingdom.king == __instance) {
                         __instance.CallMethod("addExperience", new object[] { kingAgeExp.Value });
                     }
                 }
-                if (__instance.city.leader == __instance)
-                {
+                if(__instance.city.leader == __instance) {
                     __instance.CallMethod("addExperience", new object[] { leaderAgeExp.Value });
                 }
-                if (
+                if(
                     (kingdom == null || (kingdom != null && kingdom.king != __instance))
                     &&
                     (__instance.city == null || (__instance.city != null && __instance.city.leader != __instance))
-                    )
-                {
+                    ) {
                     __instance.CallMethod("addExperience", new object[] { otherAgeExp.Value });
                 }
             }
-            if (data.age > 40 && Toolbox.randomChance(0.3f))
-            {
+            if(data.age > 40 && Toolbox.randomChance(0.3f)) {
                 __instance.addTrait("wise");
             }
             return false;
@@ -1507,10 +1290,8 @@ namespace TWrecks_RPG
 
         public static bool stopMovement_Prefix(ActorBase __instance) // stop controlled actor canceling movement from AI behaviour
         {
-            if ((controlledActor != null && __instance == controlledActor ) || totalSquadActorList.Contains(__instance))
-            {
-                if (directionMoving != null)
-                {
+            if((controlledActor != null && __instance == controlledActor) || totalSquadActorList.Contains(__instance)) {
+                if(directionMoving != null) {
                     return false;
                 }
             }
@@ -1523,7 +1304,7 @@ namespace TWrecks_RPG
             targetActor.stopMovement();
             targetActor.cancelAllBeh();
             targetActor.moveTo(targetTile);
-            if (useFlashOnMove)
+            if(useFlashOnMove)
                 flashEffects.flashPixel(targetTile, 10, ColorType.White);
             AiSystemActor actorAI = Reflection.GetField(targetActor.GetType(), targetActor, "ai") as AiSystemActor;
             actorAI.setTask("wait10", false, true);
@@ -1533,8 +1314,7 @@ namespace TWrecks_RPG
         {
             Event current = Event.current;
             bool inUse = current.type == EventType.MouseDown || current.type == EventType.MouseUp || current.type == EventType.MouseDrag || current.type == EventType.MouseMove;
-            if (inUse)
-            {
+            if(inUse) {
                 windowInUse = windowID;
             }
         }
@@ -1542,8 +1322,7 @@ namespace TWrecks_RPG
         // click-through prevention for menus
         public static void isActionHappening_Postfix(ref bool __result)
         {
-            if (windowInUse != -1)
-            {
+            if(windowInUse != -1) {
                 __result = true; // "menu in use" is the action happening
             }
         }
@@ -1551,8 +1330,7 @@ namespace TWrecks_RPG
         // cancel all control input if a window is in use
         public static bool updateControls_Prefix()
         {
-            if (windowInUse != -1)
-            {
+            if(windowInUse != -1) {
                 return false;
             }
             return true;
@@ -1561,8 +1339,7 @@ namespace TWrecks_RPG
         // cancel empty click usage when windows in use, unused right now
         public static bool checkEmptyClick_Prefix()
         {
-            if (windowInUse != -1)
-            {
+            if(windowInUse != -1) {
                 return false;
             }
             return true;
@@ -1578,8 +1355,7 @@ namespace TWrecks_RPG
         public static int windowInUse = 0;
     }
 
-    public class SquadFormation
-    {
+    public class SquadFormation {
         public List<Actor> actorList = new List<Actor>();
         public Vector3 movementPos;
         public string formationType = "dot";
@@ -1594,8 +1370,7 @@ namespace TWrecks_RPG
         public Vector3 offsetPos = Vector3.one;
     }
 
-    public class SquadLeader
-    {
+    public class SquadLeader {
         public SquadLeader(Actor targetLeader)
         {
             this.squadLeaderActor = targetLeader;

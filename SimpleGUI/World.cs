@@ -322,16 +322,17 @@ namespace SimpleGUI
 				});
 				
 			}
-
+			
 			if (enabledPopulationCap)
 			{
 				List<Actor> actorList = MapBox.instance.units.getSimpleList();
-				for (int i = actorList.Count; i > populationCap; i--)
-				{
-					actorList.Last().killHimself(true, AttackType.Other, true);
+				for(int i = populationCap; i < actorList.Count; ++i) {
+					// Do something with list[i]
+					actorList[i].killHimself(true, AttackType.Other, false, false);
 				}
-				
+
 			}
+			
 			if (buildingLimitEnabled && MapBox.instance.buildings.Count > buildingLimit)
 			{
 				List<Building> buildingList = MapBox.instance.buildings.getSimpleList();
@@ -362,7 +363,7 @@ namespace SimpleGUI
 			}
 			if (GUILayout.Button("Population limit"))
 			{
-			//	populationCap = MapBox.instance.units.Count;
+				populationCap = MapBox.instance.units.Count;
 				enabledPopulationCap = !enabledPopulationCap;
 			}
 			GUI.backgroundColor = originalColor;
@@ -660,6 +661,31 @@ namespace SimpleGUI
 						GUI.DragWindow();
 		}
 
+		public static bool createNewUnit_Prefix(string pStatsID, WorldTile pTile, string pJob, float pZHeight, ActorData pData)
+		{
+			if(!enabledPopulationCap) { return true; }
+			if(MapBox.instance.units.Count > populationCap)
+			{
+				return false;
+			}
+			return true;
+		}
+
+		public static bool spawnNewUnit_Prefix(string pStatsID, WorldTile pTile, string pJob, float pSpawnHeight)
+		{
+			if(!enabledPopulationCap) { return true; }
+			if(MapBox.instance.units.Count > populationCap) {
+				return false;
+			}
+			return true;
+		}
+
+		public static bool destroyActor_Prefix(Actor pActor)
+		{
+			if(!enabledPopulationCap) { return true; }
+			if(pActor == null) { return false; }
+			return true;
+		}
 		/*
 		harmony = new Harmony(pluginGuid);
 		original = AccessTools.Method(typeof(MapBox), "Clicked");
@@ -686,7 +712,7 @@ namespace SimpleGUI
 		}
 		}
 		*/
-		
+
 		public static bool spawn_Prefix()
 		{
             if (disableClouds)

@@ -200,9 +200,7 @@ namespace WorldBox3D {
         public bool hasBeenEnabled;
         public void Update()
         {
-            if(!assets_initialised && showHide3D) {
-                init_assets();
-            }
+            //if(!assets_initialised && showHide3D) { init_assets(); }
             if(_3dEnabled) {
                 if(MapBox.instance.mapBorder.gameObject.active) {
                     MapBox.instance.mapBorder.gameObject.SetActive(false);

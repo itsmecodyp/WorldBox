@@ -12,9 +12,13 @@ namespace MapSizes {
     class MapSizes : BaseUnityPlugin {
         public const string pluginGuid = "cody.worldbox.map.sizes";
         public const string pluginName = "MapSizes";
-        public const string pluginVersion = "0.0.0.4";
+        public const string pluginVersion = "0.0.0.5";
         public static int mapSizeX = 4;
         public static int mapSizeY = 4;
+
+        public static int smallIslands = 4;
+        public static int randomShapes = 4;
+
         public bool showHideMapSizeWindow;
         public Rect mapSizeWindowRect;
         public static string filename = "picture";
@@ -42,7 +46,8 @@ namespace MapSizes {
         public void OnGUI()
         {
             GUILayout.BeginArea(new Rect(Screen.width - 120, 25, 120, 30));
-            if(GUILayout.Button("Map Sizes")) {
+            
+            if(GUILayout.Button(new GUIContent("Map Sizes", "Toggle the menu for MapSizes mod"))) {
                 showHideMapSizeWindow = !showHideMapSizeWindow;
             }
             if(showHideMapSizeWindow) {
@@ -53,8 +58,15 @@ namespace MapSizes {
                     });
             }
             GUILayout.EndArea();
+            tooltipRect.x = Input.mousePosition.x + 5f;
+            tooltipRect.y = (float)Screen.height - Input.mousePosition.y + 5f;
+            GUI.Label(new Rect(tooltipRect), GUI.tooltip);
         }
+
+        public static Rect tooltipRect = new Rect();
+
         public bool syncResize;
+
         public void mapSizesWindow(int windowID)
         {
             GUILayout.BeginHorizontal();
@@ -81,9 +93,39 @@ namespace MapSizes {
                 mapSizeY++;
             }
             GUILayout.EndHorizontal();
+            GUILayout.BeginHorizontal();
+            GUILayout.Button("Islands: " + smallIslands.ToString());
+            GUILayout.Button("Shapes: " + randomShapes.ToString());
+            GUILayout.EndHorizontal();
+            GUILayout.BeginHorizontal();
+            int amountChange = 1;
+            if(Input.GetKeyDown(KeyCode.LeftShift)) {
+                amountChange = 5;
+            }
+            if(GUILayout.Button("-")) {
+                smallIslands -= amountChange;
+                if(smallIslands < 0) {
+                    smallIslands = 0;
+                }
+            }
+            if(GUILayout.Button("+")) {
+                smallIslands += amountChange;
+            }
+            if(GUILayout.Button("-")) {
+                randomShapes -= amountChange;
+                if(randomShapes < 0) {
+                    randomShapes = 0;
+                }
+            }
+            if(GUILayout.Button("+")) {
+                randomShapes+= amountChange;
+            }
+            GUILayout.EndHorizontal();
             if(GUILayout.Button("Regenerate map")) {
                 hasFinishedLoading = false;
-                MapBox.instance.clickGenerateNewMap("islands");
+                intentionallyChangingMapSize = true;
+                WhyDoINeedThis.ChangeConfig(smallIslands, randomShapes);
+                MapBox.instance.clickGenerateNewMap("custom");
             }
             if(GUILayout.Button("Resize current map")) ResizeCurrentMap();
             if(GUILayout.Button("copy map")) CopyMap();
@@ -116,12 +158,14 @@ namespace MapSizes {
             }
             if(GUILayout.Button("Regenerate " + filename + ".png")) {
                 hasFinishedLoading = false;
+                intentionallyChangingMapSize = true;
                 MapBox.instance.setMapSize(mapSizeX, mapSizeY);
                 imageToMap(filename); // why does this run twice?
                 startingPicture = true;
                 MapBox.instance.CallMethod("generateNewMap", new object[] { "earth" });
                 MapBox.instance.finishMakingWorld();
                 hasFinishedLoading = true;
+                intentionallyChangingMapSize = false;
             }
             GUI.DragWindow();
         }
@@ -222,6 +266,7 @@ namespace MapSizes {
         {
             CopyMap();
             hasFinishedLoading = false;
+            intentionallyChangingMapSize = true;
             MapBox.instance.clickGenerateNewMap("islands");
             waitingForLoading = true;
         }
@@ -231,7 +276,10 @@ namespace MapSizes {
             if(waitingForLoading) {
                 if(hasFinishedLoading) {
                     ResizeFinish();
+                    waitingForLoading = false;
+
                     hasFinishedLoading = false;
+                    intentionallyChangingMapSize = false;
                 }
             }
         }
@@ -254,9 +302,11 @@ namespace MapSizes {
             return true;
         }
 
+        public static bool intentionallyChangingMapSize = false;
+
         public static bool setMapSize_Prefix(ref int pWidth, ref int pHeight)
         {
-            if(hasFinishedLoading == false) {
+            if(intentionallyChangingMapSize == true) {
                 pWidth = mapSizeX;
                 pHeight = mapSizeY;
             }
@@ -267,8 +317,9 @@ namespace MapSizes {
         public static void finishMakingWorld_Postfix()
         {
             hasFinishedLoading = true;
+            intentionallyChangingMapSize = false;
         }
-        public static bool hasFinishedLoading = false;
+        public static bool hasFinishedLoading = true; // check if mod wanted game to load and it finished
         // for later: public static Dictionary<WorldTile, Color> customTileColors = new Dictionary<WorldTile, Color>();
         public static int pictureSizeX = 100;
         public static int pictureSizeY = 100;
@@ -292,6 +343,14 @@ namespace MapSizes {
                 }
             }
             // tile.data.tileMinimapColor = texture2D2.GetPixel(i, j); // for when minimap showing pic is important
+        }
+    }
+
+    public class WhyDoINeedThis {
+        public static void ChangeConfig(int pScale, int pShapes)
+        {
+            Config.customPerlinScale = pScale;
+            Config.customRandomShapes = pShapes;
         }
     }
 }

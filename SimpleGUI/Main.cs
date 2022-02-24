@@ -2,24 +2,17 @@
 using UnityEngine;
 using BepInEx;
 using BepInEx.Configuration;
-//using System.Drawing;
 using System.IO;
 using HarmonyLib;
 using System.Reflection;
 using System;
 using UnityEngine.Networking;
 using UnityEngine.UI;
-using System.Runtime.Serialization.Formatters.Binary;
 using System.Linq;
 using System.Collections;
 using Discord;
-using System.Net.Mail;
-using System.Net;
 using Proyecto26;
-using Proyecto26.Common;
-using System.Security.Policy;
 using SimpleJSON;
-using System.Diagnostics;
 using Steamworks;
 
 namespace SimpleGUI {
@@ -27,7 +20,7 @@ namespace SimpleGUI {
     class GuiMain : BaseUnityPlugin {
         public const string pluginGuid = "cody.worldbox.simple.gui";
         public const string pluginName = "SimpleGUI";
-        public const string pluginVersion = "0.1.5.1";
+        public const string pluginVersion = "0.1.5.4";
 
         public static BepInEx.Logging.ManualLogSource logger;
 
@@ -298,6 +291,25 @@ namespace SimpleGUI {
             patch = AccessTools.Method(typeof(GuiMain), "getText_Prefix");
             harmony.Patch(original, new HarmonyMethod(patch));
             UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
+
+            harmony = new Harmony(pluginName);
+            original = AccessTools.Method(typeof(MapBox), "createNewUnit");
+            patch = AccessTools.Method(typeof(GUIWorld), "createNewUnit_Prefix");
+            harmony.Patch(original, new HarmonyMethod(patch));
+            UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
+
+            harmony = new Harmony(pluginName);
+            original = AccessTools.Method(typeof(MapBox), "spawnNewUnit");
+            patch = AccessTools.Method(typeof(GUIWorld), "spawnNewUnit_Prefix");
+            harmony.Patch(original, new HarmonyMethod(patch));
+            UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
+
+            harmony = new Harmony(pluginName);
+            original = AccessTools.Method(typeof(MapBox), "destroyActor");
+            patch = AccessTools.Method(typeof(GUIWorld), "destroyActor_Prefix");
+            harmony.Patch(original, new HarmonyMethod(patch));
+            UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
+
 
             harmony.PatchAll();
         }
