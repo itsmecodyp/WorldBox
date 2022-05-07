@@ -87,12 +87,12 @@ namespace SimpleGUI
                 if (UnityEngine.Random.Range(1, 100) > 90 && !SpawnedNames.ContainsKey(name)) // if name hasnt been used yet
                 {
                     data.firstName = name; // override the name
-                    __instance.addTrait("stupid"); // hehe apex is stupid
-                    __instance.addTrait("attractive"); // hehe apex is attractive
+                    __instance.addTrait("shadow summoner"); // hehe apex is stupid
+                    __instance.addTrait("madness"); // hehe apex is attractive
                     SpawnedNames.Add(name, true); // add it to the "used" list
                     return;
                 }
-                name = "Nicholas";
+                name = "ben";
                 if (UnityEngine.Random.Range(1, 100) > 90 && !SpawnedNames.ContainsKey(name))
                 {
                     data.firstName = name;
@@ -100,7 +100,7 @@ namespace SimpleGUI
 
                     return;
                 }
-                name = "Hayes";
+                name = "patrick";
                 if (UnityEngine.Random.Range(1, 100) > 90 && !SpawnedNames.ContainsKey(name))
                 {
                     data.firstName = name;
@@ -110,7 +110,7 @@ namespace SimpleGUI
 
                     return;
                 }
-                name = "Styderr";
+                name = "pab";
                 if (UnityEngine.Random.Range(1, 100) > 90 && !SpawnedNames.ContainsKey(name))
                 {
                     data.firstName = name;
@@ -119,20 +119,20 @@ namespace SimpleGUI
 
                     return;
                 }
-                name = "Ruma";
+                name = "Ninda";
                 if (UnityEngine.Random.Range(1, 100) > 90 && !SpawnedNames.ContainsKey(name))
                 {
                     data.firstName = name;
-                    ItemGenerator.generateItem(AssetManager.items.get("sword"), "silver", __instance.equipment.weapon, MapBox.instance.mapStats.year, "The Void", name, 1);
-                    ItemGenerator.generateItem(AssetManager.items.get("ring"), "silver", __instance.equipment.ring, MapBox.instance.mapStats.year, "The Void", name, 1);
-                    ItemGenerator.generateItem(AssetManager.items.get("amulet"), "silver", __instance.equipment.amulet, MapBox.instance.mapStats.year, "The Void", name, 1);
-                    ItemGenerator.generateItem(AssetManager.items.get("armor"), "silver", __instance.equipment.armor, MapBox.instance.mapStats.year, "The Void", name, 1);
-                    ItemGenerator.generateItem(AssetManager.items.get("boots"), "silver", __instance.equipment.boots, MapBox.instance.mapStats.year, "The Void", name, 1);
-                    ItemGenerator.generateItem(AssetManager.items.get("helmet"), "silver", __instance.equipment.helmet, MapBox.instance.mapStats.year, "The Void", name, 1);
+                    ItemGenerator.generateItem(AssetManager.items.get("sword"), "adamantine", __instance.equipment.weapon, MapBox.instance.mapStats.year, "The Void", name, 1);
+                    ItemGenerator.generateItem(AssetManager.items.get("ring"), "adamantine", __instance.equipment.ring, MapBox.instance.mapStats.year, "The Void", name, 1);
+                    ItemGenerator.generateItem(AssetManager.items.get("amulet"), "adamantine", __instance.equipment.amulet, MapBox.instance.mapStats.year, "The Void", name, 1);
+                    ItemGenerator.generateItem(AssetManager.items.get("armor"), "adamantine", __instance.equipment.armor, MapBox.instance.mapStats.year, "The Void", name, 1);
+                    ItemGenerator.generateItem(AssetManager.items.get("boots"), "adamantine", __instance.equipment.boots, MapBox.instance.mapStats.year, "The Void", name, 1);
+                    ItemGenerator.generateItem(AssetManager.items.get("helmet"), "adamantine", __instance.equipment.helmet, MapBox.instance.mapStats.year, "The Void", name, 1);
                     SpawnedNames.Add(name, true);
                     return;
                 }
-                name = "Bill Dipperly";
+                name = "Bob";
                 if (UnityEngine.Random.Range(1, 100) > 90 && !SpawnedNames.ContainsKey(name))
                 {
                     data.firstName = name;
@@ -142,28 +142,28 @@ namespace SimpleGUI
             }
             if (race.id == "human")
             {
-                name = "Amon";
+                name = "William afton";
                 if (UnityEngine.Random.Range(1, 100) > 90 && !SpawnedNames.ContainsKey(name))
                 {
                     data.firstName = name;
-                    __instance.addTrait("veteran");
+                    __instance.addTrait("evil");
                     __instance.addTrait("tough");
-                    __instance.addTrait("wise");
+                    __instance.addTrait("mageslayer");
                     __instance.addTrait("paranoid");
                     __instance.addTrait("greedy");
-                    __instance.addTrait("slow");
-                    __instance.addTrait("eyepatch");
+                    __instance.addTrait("fast");
+                    __instance.addTrait("immortal");
                     SpawnedNames.Add(name, true);
                     return;
                 }
             }
             if (stats.race == "cat")
             {
-                name = "PolyMorphik's Lynx";
+                name = "Ben";
                 if (UnityEngine.Random.Range(1, 100) > 90 && !SpawnedNames.ContainsKey(name))
                 {
                     data.firstName = name;
-                    __instance.addTrait("fast");
+                    __instance.addTrait("fat");
                     __instance.addTrait("strong");
                     ActorTrait actorTrait = new ActorTrait();
                     actorTrait.baseStats.speed = 50f;
@@ -175,7 +175,7 @@ namespace SimpleGUI
                     SpawnedNames.Add(name, true);
                     return;
                 }
-                name = "Floppa";
+                name = "garfield";
                 if (UnityEngine.Random.Range(1, 100) > 90 && !SpawnedNames.ContainsKey(name))
                 {
                     data.firstName = name;
@@ -215,19 +215,19 @@ namespace SimpleGUI
             string text = "null";
             if (num == 1)
             {
-                text = "Styderr makes awesome maps, check them out!";
+                text = "Cody helped me make my own unit name generator -Plague";
             }
             if (num == 2)
             {
-                text = "Nothing to see here guys - KJYhere";
+                text = "I used codys Simple gui to make My mod - Plague";
             }
             if (num == 3)
             {
-                text = "Call up Rajit at 1(800)-911-SCAM   - Ramlord";
+                text = "I always come back";
             }
             if (num == 4)
             {
-                text = "10/10 would recommend - boopahead08";
+                text = "Amogus";
             }
             if (num == 5)
             {
@@ -263,14 +263,14 @@ namespace SimpleGUI
             }
             if (num == 10)
             {
-                text = "Tiempo con Juan Diego makes amazing worldbox videos! - Juanchiz";
+                text = "cody makes awesome mods!";
             }
             if (num == 11)
             {
-                text = "Have you heard the legend of Greg?";
+                text = "you can use asteroids to make maps it makes dirt tiles on mountains its perfect!";
             }
             if(num == 12) {
-                text = "Have you heard the legend of Greg?";
+                text = "Tornados can be grown bigger with cursed trait even though there not tomatos";
             }
             if(num == 13) {
                 text = "null";
