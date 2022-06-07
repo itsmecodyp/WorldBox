@@ -11,6 +11,7 @@ using UnityEngine.Tilemaps;
 using System;
 using System.Linq;
 using SimpleGUI;
+using Voxelizer;
 //using TextureLoader;
 
 namespace WorldBox3D {
@@ -103,6 +104,10 @@ namespace WorldBox3D {
         public static void Awake_Postfix(GlowParticles __instance)
         {
             __instance.particles.startSpeed = -5;
+
+            if(_3dEnabled) {
+                //__instance.particles.startSpeed = -5;
+            }
         }
 
         public static bool tile3Denabled;
@@ -110,13 +115,13 @@ namespace WorldBox3D {
         public static void update_CloudPostfix(float pElapsed, Cloud __instance)
         {
             if(_3dEnabled) {
-                __instance.transform.position = new Vector3(__instance.transform.position.x, __instance.transform.position.y, -40f); // cloud height
-            }
-            if(hurricaneList.Contains(__instance)) {
-                __instance.transform.RotateAround(__instance.tile.posV3, Vector3.forward, 20 * Time.deltaTime * Toolbox.randomFloat(0f, 5f));
-            }
-            else {
-                __instance.transform.Translate(-(1f * pElapsed), 0f, 0f);
+				__instance.transform.position = new Vector3(__instance.transform.position.x, __instance.transform.position.y, -40f); // cloud height
+                if(hurricaneList.Contains(__instance)) {
+                    __instance.transform.RotateAround(__instance.tile.posV3, Vector3.forward, 20 * Time.deltaTime * Toolbox.randomFloat(0f, 5f));
+                }
+                else {
+                    __instance.transform.Translate((1f * pElapsed), 0f, 0f);
+                }
             }
         }
 
@@ -200,7 +205,7 @@ namespace WorldBox3D {
         public bool hasBeenEnabled;
         public void Update()
         {
-            //if(!assets_initialised && showHide3D) { init_assets(); }
+            if(!assets_initialised && showHide3D) { init_assets(); }
             if(_3dEnabled) {
                 if(MapBox.instance.mapBorder.gameObject.active) {
                     MapBox.instance.mapBorder.gameObject.SetActive(false);
@@ -226,9 +231,11 @@ namespace WorldBox3D {
                         GameObject gameObject1 = new GameObject("balls");
                         gameObject1.transform.position = spriteRenderer.transform.position;
 
-                        Texture2D texture2D = Voxelizer.VoxelMenu.duplicateTexture(Voxelizer.VoxelMenu.ReadTexture(spriteRenderer.sprite.texture));
-                        Mesh mesh = Voxelizer.VoxelUtil.VoxelizeTexture2D(texture2D, false, 1f);
-                        Texture2D texture2D2 = Voxelizer.VoxelUtil.GenerateTextureMap(ref mesh, texture2D);
+                        //Texture2D spriteTexture = VoxelUtil.textureFromSprite(spriteRenderer.sprite);
+                        //Texture2D texture2D = VoxelMenu.ReadTexture(spriteTexture);
+                        Texture2D texture2D = spriteRenderer.sprite.textureFromSprite(); // VoxelMenu.ReadTexture(spriteRenderer.sprite.texture);
+                        Mesh mesh = VoxelUtil.VoxelizeTexture2D(texture2D, false, 1f);
+                        Texture2D texture2D2 = VoxelUtil.GenerateTextureMap(ref mesh, texture2D);
                         gameObject1.AddComponent<MeshFilter>().sharedMesh = mesh;
                         //gameObject1.transform.parent = actor.transform.parent;
                         //gameObject1.transform.localPosition = actor.gameObject.transform.localPosition;
@@ -254,11 +261,11 @@ namespace WorldBox3D {
                         actorMaterial.SetTexture("_MainTex", spriteRenderer.sprite.texture);
 
                         //Texture2D actorTexture = spriteRenderer.sprite.texture;
-                        Texture2D actorTexture = Voxelizer.VoxelMenu.ReadTexture(spriteRenderer.sprite.texture);
+                        Texture2D actorTexture = VoxelMenu.ReadTexture(spriteRenderer.sprite.texture);
 
 
-                        Mesh actorAsMesh = Voxelizer.VoxelUtil.VoxelizeTexture2D(actorTexture, false, 1f);
-                        Texture2D texture = Voxelizer.VoxelUtil.GenerateTextureMap(ref actorAsMesh, actorTexture);
+                        Mesh actorAsMesh = VoxelUtil.VoxelizeTexture2D(actorTexture, false, 1f);
+                        Texture2D texture = VoxelUtil.GenerateTextureMap(ref actorAsMesh, actorTexture);
 
                         //meshes.Add(new meshT { Actor = actor, mat = actorMaterial, shader = actorShader, mesh = actorAsMesh });
 
@@ -507,7 +514,7 @@ namespace WorldBox3D {
                 __instance.transform.rotation = Quaternion.Euler(-90, 0, 0); // Quaternion.Euler(-90, 0, 0);
             }
             else {
-                __instance.transform.rotation = Quaternion.Euler(0, 0, 0); // Quaternion.Euler(-90, 0, 0);
+                //__instance.transform.rotation = Quaternion.Euler(0, 0, 0); // Quaternion.Euler(-90, 0, 0);
             }
             return true;
         }
@@ -577,12 +584,14 @@ namespace WorldBox3D {
             //ObjectRotationButtons();
             CameraControls();
             if(publicBuild == false) {
+                
                 if(GUILayout.Button("tryMesh: " + tryMesh.ToString())) {
                     tryMesh = !tryMesh;
                 }
                 if(GUILayout.Button("Spawn 100 cloud hurricane (C)") || Input.GetKeyDown(KeyCode.C)) {
                     SpawnCloudsInCircle(MapBox.instance.getMouseTilePos(), 33); // hurricane spin is bugged, so this is disabled
                 }
+                
                 if(GUILayout.Button("tile3d: " + tile3Denabled.ToString())) {
                     tile3Denabled = !tile3Denabled;
                 }
@@ -753,34 +762,61 @@ namespace WorldBox3D {
                     objectsLight.range = 3f;
                     objectsLight.spotAngle = 60;
                     //?
-
-
                     newLightObject.transform.position = MapBox.instance.GetTile(MapBox.width / 2, MapBox.height / 2).posV3;
 
                 }
-                if(GUILayout.Button("PL test 2")) {
+                if(GUILayout.Button("Remove lights")) {
+                    foreach(Building building in MapBox.instance.buildings)
+                    {
+                        lightMan.RemoveLight(building);
+                    }
+                    /*
+					for(int i = 0; i < lightMan.allLights.Count; i++) {
+                        Light light = lightMan.allLights[i];
+                        Destroy(light);
+                    }
+                    */
+                    lightMan.allLights.Clear();
+                    lightMan.lightDict.Clear();
+                }
+                if(GUILayout.Button("Light every")) {
                     foreach(Building building in MapBox.instance.buildings) {
                         lightMan.buildingLight(building);
                     }
                 }
+                if(GUILayout.Button("Light volcano")) {
+                    foreach(Building building in MapBox.instance.buildings) {
+                        if(building.stats.id.Contains("volc"))
+                        lightMan.buildingLight(building);
+                    }
+                }
+                 float amount = 0.1f;
+                    if(Input.GetKey(KeyCode.LeftControl)){
+                    if(Input.GetKey(KeyCode.LeftShift)){
+                    amount = 10f;
+                    }
+                    else{
+                    amount = 5f;
+                    }
+                    }
                 if(GUILayout.Button("Lights Intensity++")) {
                     foreach(Light light in lightMan.allLights) {
-                        light.intensity = light.intensity + 0.1f;
+                        light.intensity = light.intensity + amount;
                     }
                 }
                 if(GUILayout.Button("Lights Intensity--")) {
                     foreach(Light light in lightMan.allLights) {
-                        light.intensity = light.intensity - 0.1f;
+                        light.intensity = light.intensity - amount;
                     }
                 }
                 if(GUILayout.Button("Lights Range++")) {
                     foreach(Light light in lightMan.allLights) {
-                        light.range = light.range + 0.1f;
+                        light.range = light.range + amount;
                     }
                 }
                 if(GUILayout.Button("Lights Range--")) {
                     foreach(Light light in lightMan.allLights) {
-                        light.range = light.range - 0.1f;
+                        light.range = light.range - amount;
                     }
                 }
                 if(GUILayout.Button("White")) {
@@ -816,7 +852,7 @@ namespace WorldBox3D {
                     foreach(Building building in MapBox.instance.buildings) {
                         if(lightMan.lightDict.ContainsKey(building.data.objectID)) {
                             GameObject buildingLight = lightMan.lightDict[building.data.objectID];
-                            buildingLight.transform.localPosition = buildingLight.transform.localPosition + new Vector3(0f, 0f, -1f);
+                            buildingLight.transform.localPosition = buildingLight.transform.localPosition + new Vector3(0f, 0f, -amount);
                         }
                     }
                 }
@@ -824,7 +860,7 @@ namespace WorldBox3D {
                     foreach(Building building in MapBox.instance.buildings) {
                         if(lightMan.lightDict.ContainsKey(building.data.objectID)) {
                             GameObject buildingLight = lightMan.lightDict[building.data.objectID];
-                            buildingLight.transform.localPosition = buildingLight.transform.localPosition + new Vector3(0f, 0f, 1f);
+                            buildingLight.transform.localPosition = buildingLight.transform.localPosition + new Vector3(0f, 0f, amount);
                         }
                     }
                 }
@@ -832,7 +868,7 @@ namespace WorldBox3D {
                     foreach(Building building in MapBox.instance.buildings) {
                         if(lightMan.lightDict.ContainsKey(building.data.objectID)) {
                             GameObject buildingLight = lightMan.lightDict[building.data.objectID];
-                            buildingLight.transform.localPosition = buildingLight.transform.localPosition + new Vector3(0f, 1f, 0f);
+                            buildingLight.transform.localPosition = buildingLight.transform.localPosition + new Vector3(0f, amount, 0f);
                         }
                     }
                 }
@@ -840,7 +876,7 @@ namespace WorldBox3D {
                     foreach(Building building in MapBox.instance.buildings) {
                         if(lightMan.lightDict.ContainsKey(building.data.objectID)) {
                             GameObject buildingLight = lightMan.lightDict[building.data.objectID];
-                            buildingLight.transform.localPosition = buildingLight.transform.localPosition + new Vector3(0f, -1f, 0);
+                            buildingLight.transform.localPosition = buildingLight.transform.localPosition + new Vector3(0f, -amount, 0);
                         }
                     }
                 }
@@ -848,7 +884,7 @@ namespace WorldBox3D {
                     foreach(Building building in MapBox.instance.buildings) {
                         if(lightMan.lightDict.ContainsKey(building.data.objectID)) {
                             GameObject buildingLight = lightMan.lightDict[building.data.objectID];
-                            buildingLight.transform.localPosition = buildingLight.transform.localPosition + new Vector3(-1f, 0f, 0);
+                            buildingLight.transform.localPosition = buildingLight.transform.localPosition + new Vector3(-amount, 0f, 0);
                         }
                     }
                 }
@@ -856,7 +892,7 @@ namespace WorldBox3D {
                     foreach(Building building in MapBox.instance.buildings) {
                         if(lightMan.lightDict.ContainsKey(building.data.objectID)) {
                             GameObject buildingLight = lightMan.lightDict[building.data.objectID];
-                            buildingLight.transform.localPosition = buildingLight.transform.localPosition + new Vector3(1f, 0f, 0);
+                            buildingLight.transform.localPosition = buildingLight.transform.localPosition + new Vector3(amount, 0f, 0);
                         }
                     }
                 }
@@ -886,6 +922,16 @@ namespace WorldBox3D {
                 }
 
             }
+
+            public void RemoveLight(Building pBuilding)
+            {
+                 if(lightDict.ContainsKey(pBuilding.data.objectID)) {
+                     Light targetLight = lightDict[pBuilding.data.objectID].GetComponent<Light>();
+                     allLights.Remove(targetLight);
+                     Destroy(targetLight);
+                     lightDict.Remove(pBuilding.data.objectID);
+                }
+            }
         }
 
         public GameObject Light(Building pParent)
@@ -913,11 +959,11 @@ namespace WorldBox3D {
             LoadAssetBundle();
         }
 
-
         public void LoadAssetBundle()
         {
-            string bundlename = "unleashed";
-            loadedAssetBundle = AssetBundle.LoadFromFile(Path.Combine(Application.streamingAssetsPath, "AssetBundle", bundlename));
+            loadedAssetBundle = AssetBundle.LoadFromMemory(SimpleGUI.Properties.Resources.unleashed);
+            //string bundlename = "unleashed";
+            //loadedAssetBundle = AssetBundle.LoadFromFile(Path.Combine(Application.streamingAssetsPath, "AssetBundle", bundlename));
             if(loadedAssetBundle == null) {
                 Debug.Log("Failed to load AssetBundle");
                 assets_initialised = false;
@@ -929,7 +975,7 @@ namespace WorldBox3D {
 
         static bool assets_initialised;
 
-        public bool publicBuild = true;
+        public bool publicBuild = false;
 
         public bool showHide3D;
         public Rect window3DRect;
@@ -1495,8 +1541,9 @@ namespace Voxelizer {
         /// <summary>
         /// Create a Mesh object from a Texture2D object
         /// </summary>
-        public static Mesh VoxelizeTexture2D(Texture2D texture, bool applyColorPerVertex, float scale)
+        public static Mesh VoxelizeTexture2D(Texture2D pTexture, bool applyColorPerVertex, float scale)
         {
+            Texture2D texture = VoxelMenu.ReadTexture(pTexture);
             texture.filterMode = FilterMode.Point;
 
             if(texture.format != TextureFormat.RGBA32) {
@@ -1674,8 +1721,10 @@ namespace Voxelizer {
         /// <summary>
         /// Generates a Texture Map and assigns the mesh UVs accordingly
         /// </summary>
-        public static Texture2D GenerateTextureMap(ref Mesh mesh, Texture2D inputTexture)
+        public static Texture2D GenerateTextureMap(ref Mesh mesh, Texture2D pInputTexture)
         {
+            Texture2D inputTexture = VoxelMenu.ReadTexture(pInputTexture);
+
             if(mesh == null || inputTexture == null) return null;
 
             Color32[] colorBuffer = inputTexture.GetPixels32();
@@ -1723,6 +1772,26 @@ namespace Voxelizer {
             textureMap.Apply();
 
             return textureMap;
+        }
+
+        /// <summary>
+        /// Gets texture from a sprite, even if its part of a sheet (https://answers.unity.com/questions/651984/convert-sprite-image-to-texture.html)
+        /// </summary>
+        public static Texture2D textureFromSprite(this Sprite sprite)
+        {
+            Texture2D temp = VoxelMenu.ReadTexture(sprite.texture);
+            if(sprite.rect.width != sprite.texture.width) {
+                Texture2D newText = new Texture2D((int)sprite.rect.width, (int)sprite.rect.height);
+                Color[] newColors = temp.GetPixels((int)sprite.textureRect.x,
+                                                             (int)sprite.textureRect.y,
+                                                             (int)sprite.textureRect.width,
+                                                             (int)sprite.textureRect.height);
+                newText.SetPixels(newColors);
+                newText.Apply();
+                return newText;
+            }
+            else
+                return sprite.texture;
         }
     }
 }

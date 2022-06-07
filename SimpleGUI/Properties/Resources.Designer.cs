@@ -69,5 +69,15 @@ namespace SimpleGUI.Properties {
                 return ((byte[])(obj));
             }
         }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
+        internal static byte[] unleashed {
+            get {
+                object obj = ResourceManager.GetObject("unleashed", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
     }
 }

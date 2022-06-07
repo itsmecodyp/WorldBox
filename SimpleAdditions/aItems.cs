@@ -51,7 +51,6 @@ namespace SimpleAdditions {
 			//ActorAnimationLoader.addSprite("w_" + "sword" + "_" + blueSword3.id,
 				//LoadSprite(Properties.Resources.bluesword3, 8, 8, 0.8f, 0.15f));
 			newWeaponsIcons.Add(blueSword3.materials[0], LoadSprite(Properties.Resources.bluesword3, 16, 16, 0f, 0f));
-
 		}
 
 

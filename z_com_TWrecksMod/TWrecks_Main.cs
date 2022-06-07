@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -7,6 +8,7 @@ using System.Threading.Tasks;
 using BepInEx;
 using BepInEx.Configuration;
 using HarmonyLib;
+using Newtonsoft.Json;
 using UnityEngine;
 using UnityEngine.UIElements;
 using static UnityEngine.GraphicsBuffer;
@@ -24,10 +26,12 @@ namespace TWrecks_RPG {
             SettingSetup();
         }
 
-        public void Update()
+		[Obsolete] // stops warning about gameObject.active
+		public void Update()
         {
             UpdateControls();
             UpdateSquadBehaviour();
+            
             if(Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.H)) {
                 if(controlledActor != null) {
                     AddActorToSquad(currentlySelectedFormation, (ClosestActorToTile(MouseTile, 3f)));
@@ -65,7 +69,13 @@ namespace TWrecks_RPG {
                     leaderDict.Add(newSquad.squadID, leader);
                 }
             }
-
+            if(controlledActor != null && Input.GetKeyDown(KeyCode.B)) {
+                guiConstruction.showHideConstruction = !guiConstruction.showHideConstruction;
+            }
+            // need a better check later
+            if(controlledActor == null && MapBox.instance != null && MapBox.instance.canvas.gameObject.active == false) {
+                MapBox.instance.canvas.gameObject.SetActive(true); // hide power bar and other UI..
+            }
         }
 
         public bool showActorInteract;
@@ -100,7 +110,7 @@ namespace TWrecks_RPG {
             kingExpInput = GUILayout.TextField(kingExpInput);
             int newKingExp;
             if(int.TryParse(kingExpInput, out newKingExp)) {
-                kingAgeExp.Value = newKingExp;
+                settings.kingAgeExp = newKingExp;
             }
             GUILayout.EndHorizontal();
             GUILayout.BeginHorizontal();
@@ -108,7 +118,7 @@ namespace TWrecks_RPG {
             leaderExpInput = GUILayout.TextField(leaderExpInput);
             int newLeaderExp;
             if(int.TryParse(leaderExpInput, out newLeaderExp)) {
-                leaderAgeExp.Value = newLeaderExp;
+                settings.leaderAgeExp = newLeaderExp;
             }
             GUILayout.EndHorizontal();
             GUILayout.BeginHorizontal();
@@ -116,7 +126,7 @@ namespace TWrecks_RPG {
             otherExpInput = GUILayout.TextField(otherExpInput);
             int newOtherExp;
             if(int.TryParse(otherExpInput, out newOtherExp)) {
-                otherAgeExp.Value = newOtherExp;
+                settings.otherAgeExp = newOtherExp;
             }
             GUILayout.EndHorizontal();
             GUILayout.BeginHorizontal();
@@ -124,7 +134,7 @@ namespace TWrecks_RPG {
             expToLevel = GUILayout.TextField(expToLevel);
             int newExpToLevel;
             if(int.TryParse(expToLevel, out newExpToLevel)) {
-                baseExpToLevelup.Value = newExpToLevel;
+                settings.baseExpToLevelup = newExpToLevel;
             }
             GUILayout.EndHorizontal();
             GUILayout.BeginHorizontal();
@@ -132,7 +142,7 @@ namespace TWrecks_RPG {
             expGainedOnKill = GUILayout.TextField(expGainedOnKill);
             int newExpGainOnKill;
             if(int.TryParse(expGainedOnKill, out newExpGainOnKill)) {
-                expGainOnKill.Value = newExpGainOnKill;
+                settings.expGainOnKill = newExpGainOnKill;
             }
             GUILayout.EndHorizontal();
             GUILayout.BeginHorizontal();
@@ -141,7 +151,7 @@ namespace TWrecks_RPG {
             int newExpScale;
             if(int.TryParse(expScale, out newExpScale)) {
 
-                expToLevelUpScale.Value = newExpScale;
+                settings.expToLevelUpScale = newExpScale;
             }
             GUILayout.EndHorizontal();
             if(GUILayout.Button("Reset")) {
@@ -154,6 +164,7 @@ namespace TWrecks_RPG {
             }
             GUI.DragWindow();
         }
+        public GUIConstruction guiConstruction = new GUIConstruction();
 
         public void OnGUI()
         {
@@ -173,8 +184,15 @@ namespace TWrecks_RPG {
             {
                 actorInteractWindowRect = GUILayout.Window(79002, actorInteractWindowRect, new GUI.WindowFunction(ActorInteractWindow), "Actor interact", new GUILayoutOption[] { GUILayout.MaxWidth(300f), GUILayout.MinWidth(200f) });
             }
-
+            if(showInventory) // show personal inventory
+            {
+                actorInventoryWindowRect = GUILayout.Window(79004, actorInventoryWindowRect, new GUI.WindowFunction(ActorInventoryWindow), "Inventory", new GUILayoutOption[] { GUILayout.MaxWidth(300f), GUILayout.MinWidth(200f) });
+            }
+            guiConstruction.constructionWindowUpdate();
         }
+        public static bool showInventory;
+        public Rect actorInventoryWindowRect;
+
         public SquadFormation currentlySelectedFormation;
 
         public void SquadLeadersWindow(int windowID)
@@ -184,7 +202,7 @@ namespace TWrecks_RPG {
                     SquadFormation formation = leaderDict.Values.ToList()[i].squad;
                     Actor leaderActor = leaderDict.Values.ToList()[i].squadLeaderActor;
                     if(leaderActor != null) {
-                        ActorStatus data = Reflection.GetField(leaderActor.GetType(), leaderActor, "data") as ActorStatus;
+                        ActorStatus data = leaderActor.data;
                         if(data.alive) {
                             GUILayout.BeginHorizontal();
                             if(GUILayout.Button("Leader: " + data.firstName)) {
@@ -207,35 +225,63 @@ namespace TWrecks_RPG {
             GUI.DragWindow();
         }
 
+        public void ActorInventoryWindow(int windowID)
+		{
+            SetWindowInUse(windowID);
+            if(controlledInventory != null) {
+                GUILayout.Button("Wood: " + controlledInventory.wood.ToString());
+                GUILayout.Button("Stone: " + controlledInventory.wood.ToString());
+                GUILayout.Button("Ore: " + controlledInventory.wood.ToString());
+                GUILayout.Button("Gold: " + controlledInventory.wood.ToString());
+                if(GUILayout.Button("Berries:" + controlledInventory.berries.ToString())) {
+                    if(controlledInventory.berries > 0) {
+                        controlledInventory.berries--; // eat the berries
+                        controlledActor.restoreStatsFromEating(20, 0.1f, true);
+                    }
+                }
+                GUILayout.Button("Wheat: " + controlledInventory.wood.ToString());
+            }
+            GUI.DragWindow();
+        }
+
+        public Dictionary<Actor, PlayerInventory> actorInventories = new Dictionary<Actor, PlayerInventory>(); // to save mod inventories if player swaps actors for a bit
+
         public void ActorInteractWindow(int windowID)
         {
             SetWindowInUse(windowID);
-            ActorStatus currentActorData = Reflection.GetField(lastInteractionActor.GetType(), lastInteractionActor, "data") as ActorStatus;
+            ActorStatus currentActorData = lastInteractionActor.data;
             if(controlledActor == null && lastInteractionActor != null) {
                 if(GUILayout.Button("Take control of " + currentActorData.firstName)) {
                     controlledActor = lastInteractionActor;
+					if(actorInventories.ContainsKey(controlledActor)) {
+                        controlledInventory = actorInventories[controlledActor];
+                    }
+					else {
+                        controlledInventory = new PlayerInventory();
+                    }
+                    MapBox.instance.canvas.gameObject.SetActive(false);
                 }
             }
             if(controlledActor != null) {
                 if(controlledActor == lastInteractionActor) {
                     if(GUILayout.Button("Stop control")) {
+                        if(actorInventories.ContainsKey(controlledActor)) {
+                            actorInventories[controlledActor] = controlledInventory;
+                        }
+                        else {
+                            actorInventories.Add(controlledActor, controlledInventory);
+                        }
                         controlledActor = null;
+                        controlledInventory = null;
                     }
                 }
                 if(controlledActor != null) {
-                    ActorStatus controlledActorData = Reflection.GetField(controlledActor.GetType(), controlledActor, "data") as ActorStatus;
-
+                    ActorStatus controlledActorData = controlledActor.data;
                     GUILayout.Button(controlledActorData.firstName);
                 }
             }
             if(lastInteractionActor == controlledActor) {
-                if(GUILayout.Button("Berries:" + foodCount.ToString())) {
-                    if(foodCount > 0) {
-                        BaseStats curStats = Reflection.GetField(controlledActor.GetType(), controlledActor, "curStats") as BaseStats;
-                        foodCount--;
-                        controlledActor.restoreStatsFromEating(20, 0.1f, true);
-                    }
-                }
+               
             }
 
             if(currentlySelectedFormation != null) {
@@ -247,7 +293,7 @@ namespace TWrecks_RPG {
                 }
                 GUILayout.EndHorizontal();
                 if(listOfSquadsWithLeaders.Contains(currentlySelectedFormation.squadID)) {
-                    ActorStatus data = Reflection.GetField(leaderDict[currentlySelectedFormation.squadID].squadLeaderActor.GetType(), leaderDict[currentlySelectedFormation.squadID].squadLeaderActor, "data") as ActorStatus;
+                    ActorStatus data = leaderDict[currentlySelectedFormation.squadID].squadLeaderActor.data;
                     GUILayout.Button("Leader: " + data.firstName);
                 }
                 else {
@@ -478,7 +524,19 @@ namespace TWrecks_RPG {
             harmony.Patch(original, new HarmonyMethod(patch));
             Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
 
+            harmony = new Harmony(pluginName);
+            original = AccessTools.Method(typeof(MapBox), "canInspectUnitWithCurrentPower");
+            patch = AccessTools.Method(typeof(TWrecks_Main), "canInspectUnitWithCurrentPower_Prefix");
+            harmony.Patch(original, new HarmonyMethod(patch));
+            Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
 
+            harmony = new Harmony(pluginName);
+            original = AccessTools.Method(typeof(MoveCamera), "updateMouseCameraDrag");
+            patch = AccessTools.Method(typeof(TWrecks_Main), "updateMouseCameraDrag_Prefix");
+            harmony.Patch(original, new HarmonyMethod(patch));
+            Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
+
+            
             // auto retaliate feature, disabled because of enum error i cant find
             /*
             harmony = new Harmony(pluginName);
@@ -498,10 +556,22 @@ namespace TWrecks_RPG {
             return true;
         }
 
+        // prevent inspection when clicking units when controlling
+        public static bool canInspectUnitWithCurrentPower_Prefix()
+        {
+            if(controlledActor != null) {
+                return false;
+            }
+            return true;
+        }
+
         public void UpdateControls()
         {
             if(MapBox.instance != null) {
-                Camera camera = Reflection.GetField(MapBox.instance.GetType(), MapBox.instance, "camera") as Camera;
+                if(guiConstruction != null) {
+                    guiConstruction.constructionControl();
+                }
+                Camera camera = MapBox.instance.camera;
                 if(camera != null) {
                     if(controlledActor != null) {
                         if(Input.GetKey(KeyCode.KeypadMinus) || Input.GetKey(KeyCode.KeypadPlus)) {
@@ -530,18 +600,18 @@ namespace TWrecks_RPG {
                     WorldTile clickedTile = null;
                     if(Input.GetMouseButtonDown(0) && MapBox.instance.getMouseTilePos() != null) {
                         clickedTile = MapBox.instance.getMouseTilePos();
+                        if(Toolbox.DistTile(clickedTile, lastTile) > 5f) return;
                         // building interactions
                         if(clickedTile.building != null) {
                             // Check building for resources
                             bool haveResources = clickedTile.building.haveResources;
-                            BuildingAsset stats = clickedTile.building.stats; //Reflection.GetField(clickedTile.building.GetType(), clickedTile.building, "stats") as BuildingAsset;
-                            BuildingData data = clickedTile.building.data; //Reflection.GetField(clickedTile.building.GetType(), clickedTile.building, "data") as BuildingData;
-                            CityData citydata = controlledActor.city.data; //Reflection.GetField(controlledActor.city.GetType(), controlledActor.city, "data") as CityData;
-
+                            BuildingAsset stats = clickedTile.building.stats;
+                            BuildingData data = clickedTile.building.data;
+                            CityData citydata = controlledActor.city.data;
                             if(haveResources && stats.resource_id == "berries") {
                                 // If controlled unit is part of a city, add the resources to it's inventory
                                 if(controlledActor.city != null) {
-									foodCount++;
+                                    controlledInventory.berries++; // personal food storage separate from city
                                     clickedTile.building.extractResources(controlledActor, clickedTile.building.stats.resources_given);
                                 }
                                 //controlledActor.timer_action = 1f; // delay after interact
@@ -549,7 +619,7 @@ namespace TWrecks_RPG {
 
                             // add progress to unfinished building
                             if(clickedTile.building.city != null && controlledActor.city != null && clickedTile.building.city == controlledActor.city && data.underConstruction) {
-                                clickedTile.building.CallMethod("updateBuild", new object[] { 3 });
+                                clickedTile.building.updateBuild(3);
                                 //controlledActor.timer_action = 1f;
                                 Sfx.play("hammer1", false, clickedTile.building.transform.localPosition.x, clickedTile.building.transform.localPosition.y);
                             }
@@ -574,9 +644,9 @@ namespace TWrecks_RPG {
                     */
                     if(Input.GetKey(KeyCode.E)) {
                         Actor target = ClosestActorToTile(MouseTile, 3f);
-                        if(target != null) {
+                        if(target != null && target != controlledActor) {
                             try {
-                                if((bool)controlledActor.CallMethod("tryToAttack", new object[] { target })) {
+                                if((bool)controlledActor.tryToAttack(target)) {
                                     // Debug.Log("Attack success")
                                 }
                             }
@@ -589,8 +659,6 @@ namespace TWrecks_RPG {
                 }
             }
         }
-
-        public static int foodCount = 0;
 
         public static void canAttackTarget_Postfix(BaseSimObject pTarget, ActorBase __instance, ref bool __result)
         {
@@ -619,7 +687,7 @@ namespace TWrecks_RPG {
                     if(target != null) {
                         foreach(Actor squadMate in totalSquadActorList) {
                             try {
-                                if((bool)squadMate.CallMethod("tryToAttack", new object[] { target })) {
+                                if((bool)squadMate.tryToAttack(target)) {
                                     // Debug.Log("Attack success")
                                 }
                             }
@@ -762,7 +830,7 @@ namespace TWrecks_RPG {
                                 workingList.Remove(workingList[j]);
                             }
                             else {
-                                ActorStatus data = Reflection.GetField(workingList[j].GetType(), workingList[j], "data") as ActorStatus;
+                                ActorStatus data = workingList[j].data;
                                 if(data.alive == false) {
                                     workingList.Remove(workingList[j]);
                                 }
@@ -780,9 +848,9 @@ namespace TWrecks_RPG {
 
         public void AttackActor(Actor attacker, Actor target, float damage)
         {
-            attacker.CallMethod("punchTargetAnimation", new object[] { target.currentPosition, target.currentTile, true, false, 40f });
+            attacker.punchTargetAnimation(target.currentPosition, target.currentTile, true, false, 40f);
             Sfx.play("punch", true, attacker.currentPosition.x, attacker.currentPosition.y);
-            target.CallMethod("getHit", new object[] { damage, true, AttackType.Other, null, true });
+            target.getHit(damage, true, AttackType.Other, null, true);
         }
 
         public static List<Actor> totalSquadActorList = new List<Actor>();
@@ -872,7 +940,7 @@ namespace TWrecks_RPG {
             }
         }
 
-        public static bool useFlashOnMove = false;
+        public static bool useFlashOnMove = true;
         public static void moveFormationCircle(List<Actor> formation, Vector3 position, int radius)
         {
             if(formation != null) {
@@ -1119,16 +1187,20 @@ namespace TWrecks_RPG {
 
         public void doMovement(WorldTile targetTile)
         {
+            // strict movement
+			if(targetTile.Type.liquid) { // moving into/out of water is weird.. add for blocking building:  || targetTile.building != null
+                return;
+            }
             lastTile = targetTile;
             BasicMoveAndWait(controlledActor, targetTile);
         }
 
-        public static PixelFlashEffects flashEffects => Reflection.GetField(MapBox.instance.GetType(), MapBox.instance, "flashEffects") as PixelFlashEffects;
+        public static PixelFlashEffects flashEffects => MapBox.instance.flashEffects;
 
         public static bool addExperience_Prefix(int pValue, Actor __instance)
         {
-            ActorStats stats = Reflection.GetField(__instance.GetType(), __instance, "stats") as ActorStats;
-            ActorStatus data = Reflection.GetField(__instance.GetType(), __instance, "data") as ActorStatus;
+            ActorStats stats = __instance.stats;
+            ActorStatus data = __instance.data;
             if(stats.canLevelUp) {
                 int expToLevelup = __instance.getExpToLevelup();
                 data.experience += pValue;
@@ -1149,20 +1221,15 @@ namespace TWrecks_RPG {
                     string trait = AssetManager.traits.list.GetRandom().id;
                     __instance.addTrait(trait);
                     __instance.removeTrait(trait);
-                    BaseStats curStats = Reflection.GetField(__instance.GetType(), __instance, "curStats") as BaseStats;
+                    BaseStats curStats = __instance.curStats;
                     __instance.restoreHealth(curStats.health);
-                    // ^ same as below, just different method
-                    /*
-                    bool statsDirty = (bool)Reflection.GetField(__instance.GetType(), __instance, "statsDirty");
-                    bool event_full_heal = (bool)Reflection.GetField(__instance.GetType(), __instance, "event_full_heal");
-                    statsDirty = true;
-                    event_full_heal = true;
-                    */
                 }
             }
             return false;
         }
 
+        // auto retaliate, known to cause errors but balances out players relentless killing innocents
+        // maybe filter to only retaliate/do something else if people hit "innocent" actor
         public static void getHit_Postfix(float pDamage, bool pFlash, AttackType pType, BaseSimObject pAttacker, bool pSkipIfShake, Actor __instance)
         {
             ActorStatus victimData = null;
@@ -1170,15 +1237,15 @@ namespace TWrecks_RPG {
             ActorStatus attackerData = null;
 
             if(__instance != null) {
-                victimData = Reflection.GetField(__instance.GetType(), __instance, "data") as ActorStatus;
+                victimData = __instance.data;
             }
             if(pAttacker != null) {
-                attackerData = Reflection.GetField(pAttacker.GetType(), pAttacker, "data") as ActorStatus;
+                //attackerData = pAttacker.data; // was data, probably null
             }
             if(attackerData != null && victimData != null && victimData.alive && attackerData.alive) {
                 try {
-                    if((bool)__instance.CallMethod("tryToAttack", new object[] { pAttacker })) {
-                        // Debug.Log("Retaliation success")
+                    if(Toolbox.randomBool() && Toolbox.randomBool() && (bool)__instance.tryToAttack(pAttacker)) {
+                        // Debug.Log("Retaliation/recoil success")
                     }
                 }
                 catch(Exception e) {
@@ -1190,10 +1257,10 @@ namespace TWrecks_RPG {
 
         public static void getExpToLevelup_Postfix(Actor __instance, ref int __result)
         {
-            ActorStatus data = Reflection.GetField(__instance.GetType(), __instance, "data") as ActorStatus;
+            ActorStatus data = __instance.data;
 
-            __result = baseExpToLevelup.Value + (data.level - 1) * expToLevelUpScale.Value;
-            /*
+            __result = settings.baseExpToLevelup + (data.level - 1) * settings.expToLevelUpScale;
+            /* heal controlled actor on level up?
             if (__instance == controlledActor)
             {
                 BaseStats curStats = Reflection.GetField(controlledActor.GetType(), controlledActor, "curStats") as BaseStats;
@@ -1202,47 +1269,87 @@ namespace TWrecks_RPG {
             */
         }
 
+        public static bool updateMouseCameraDrag_Prefix()
+        {
+            if(controlledActor != null) {
+                return false;
+            }
+            else {
+                return true;
+            }
+        }
         public static bool increaseKillCount_Prefix(Actor __instance)
         {
-            ActorStatus data = Reflection.GetField(__instance.GetType(), __instance, "data") as ActorStatus;
+            ActorStatus data = __instance.data;
 
             data.kills++;
             if(data.kills > 10) {
                 __instance.addTrait("veteran");
             }
-            __instance.CallMethod("addExperience", new object[] { expGainOnKill.Value });
+            __instance.addExperience(settings.expGainOnKill);
 
             if(controlledActor != null) {
-                BaseStats curStats = Reflection.GetField(controlledActor.GetType(), controlledActor, "curStats") as BaseStats;
+                BaseStats curStats = controlledActor.curStats;
                 if(__instance == controlledActor) {
+                    // heal on kill, kinda op
                     controlledActor.restoreHealth(curStats.health / 10); // 10%
                 }
             }
             return false;
         }
 
+        public static ModSettings settings;
+
+        //initial setup and loading
         public void SettingSetup()
         {
-            expGainOnKill = Config.AddSetting("EXP", "expGainOnKill", 10, "Experience gained per kill");
-            kingAgeExp = Config.AddSetting("EXP", "kingAgeExp", 20, "Experience gained per year for Kings");
-            leaderAgeExp = Config.AddSetting("EXP", "leaderAgeExp", 10, "Experience gained per year for Leaders");
-            otherAgeExp = Config.AddSetting("EXP", "otherAgeExp", 2, "Experience gained per year for normal people");
-            baseExpToLevelup = Config.AddSetting("EXP", "baseExpToLevelup", 100, "Base experience needed to level up '100 + (level - 1) * 20'");
-            expToLevelUpScale = Config.AddSetting("EXP", "expToLevelUpScale", 20, "Scaling value '100 + (level - 1) * 20'");
-            expGainedOnKill = expGainOnKill.Value.ToString();
-            kingExpInput = kingAgeExp.Value.ToString();
-            leaderExpInput = leaderAgeExp.Value.ToString();
-            otherExpInput = otherAgeExp.Value.ToString();
-            expToLevel = baseExpToLevelup.Value.ToString();
-            expScale = expToLevelUpScale.Value.ToString();
-        }
+            Debug.Log("Settings start");
+            //copied and only slightly changed from igniz's traitbonanza
+            string path = Path.Combine(Application.streamingAssetsPath, "Mods");
+            string text = Path.Combine(path, pluginGuid + ".json");
+            bool flag = Application.platform == RuntimePlatform.WindowsPlayer;
+            if(flag) {
+                text = text.Replace("\\", "/");
+            }
 
-        public static ConfigEntry<int> expGainOnKill { get; set; }
-        public static ConfigEntry<int> kingAgeExp { get; set; }
-        public static ConfigEntry<int> leaderAgeExp { get; set; }
-        public static ConfigEntry<int> otherAgeExp { get; set; }
-        public static ConfigEntry<int> baseExpToLevelup { get; set; }
-        public static ConfigEntry<int> expToLevelUpScale { get; set; }
+            bool fileExist = File.Exists(text);
+			if(fileExist) {
+                string value = File.ReadAllText(text);
+                settings = JsonConvert.DeserializeObject<ModSettings>(value);
+                Debug.Log("loaded saved settings");
+            }
+            else{//file doesnt exist, setup defaults
+                settings = new ModSettings();
+                string text2 = JsonConvert.SerializeObject(settings, Formatting.Indented);
+                Debug.Log("created and saved default");
+                File.WriteAllText(text, text2);
+            }
+            Debug.Log("Settings end");
+            // why do i do all of this with strings? //for menu input/display??
+            expGainedOnKill = settings.expGainOnKill.ToString();
+            kingExpInput = settings.kingAgeExp.ToString();
+            leaderExpInput = settings.leaderAgeExp.ToString();
+            otherExpInput = settings.otherAgeExp.ToString();
+            expToLevel = settings.baseExpToLevelup.ToString();
+            expScale = settings.expToLevelUpScale.ToString();
+        }
+        //standalone methods for calling later if needed
+        public void saveSettings()
+		{
+            string path = Path.Combine(Application.streamingAssetsPath, "Mods");
+            string text = Path.Combine(path, pluginGuid + ".json");
+            string text2 = JsonConvert.SerializeObject(settings, Formatting.Indented);
+            Debug.Log("saved settings");
+            File.WriteAllText(text, text2);
+        }
+        public void loadSettings()
+        {
+            string path = Path.Combine(Application.streamingAssetsPath, "Mods");
+            string text = Path.Combine(path, pluginGuid + ".json");
+            string value = File.ReadAllText(text);
+            settings = JsonConvert.DeserializeObject<ModSettings>(value);
+            Debug.Log("loaded settings");
+        }
 
         //public static int expGainOnKill = 10;
         //public static int kingAgeExp = 20;
@@ -1254,10 +1361,10 @@ namespace TWrecks_RPG {
 
         public static bool updateAge_Prefix(Actor __instance)
         {
-            ActorStatus data = Reflection.GetField(__instance.GetType(), __instance, "data") as ActorStatus;
+            ActorStatus data = __instance.data;
             int currentAge = data.age;
-            Race race = Reflection.GetField(__instance.GetType(), __instance, "race") as Race;
-            bool updateAge = (bool)data.CallMethod("updateAge", new object[] { race });
+            Race race = __instance.race;
+            bool updateAge = data.updateAge(race);
             if(!updateAge && !__instance.haveTrait("immortal")) {
                 __instance.killHimself(false, AttackType.Age, true, true);
                 return false;
@@ -1265,21 +1372,21 @@ namespace TWrecks_RPG {
             int currentAge2 = data.age;
             //Debug.Log("\nDebug: old age: " + currentAge + "\n" + "Debug: new age: " + currentAge2);
             if(__instance.city != null) {
-                Kingdom kingdom = Reflection.GetField(__instance.city.GetType(), __instance.city, "kingdom") as Kingdom;
+                Kingdom kingdom = __instance.city.kingdom;
                 if(kingdom != null) {
                     if(kingdom.king == __instance) {
-                        __instance.CallMethod("addExperience", new object[] { kingAgeExp.Value });
+                        __instance.addExperience(settings.kingAgeExp);
                     }
                 }
                 if(__instance.city.leader == __instance) {
-                    __instance.CallMethod("addExperience", new object[] { leaderAgeExp.Value });
+                    __instance.addExperience(settings.leaderAgeExp);
                 }
                 if(
                     (kingdom == null || (kingdom != null && kingdom.king != __instance))
                     &&
                     (__instance.city == null || (__instance.city != null && __instance.city.leader != __instance))
                     ) {
-                    __instance.CallMethod("addExperience", new object[] { otherAgeExp.Value });
+                    __instance.addExperience(settings.otherAgeExp);
                 }
             }
             if(data.age > 40 && Toolbox.randomChance(0.3f)) {
@@ -1306,7 +1413,7 @@ namespace TWrecks_RPG {
             targetActor.moveTo(targetTile);
             if(useFlashOnMove)
                 flashEffects.flashPixel(targetTile, 10, ColorType.White);
-            AiSystemActor actorAI = Reflection.GetField(targetActor.GetType(), targetActor, "ai") as AiSystemActor;
+            AiSystemActor actorAI = targetActor.ai;
             actorAI.setTask("wait10", false, true);
         }
 
@@ -1353,30 +1460,52 @@ namespace TWrecks_RPG {
         public static WorldTile lastTile = null;
 
         public static int windowInUse = 0;
+
+        public static PlayerInventory controlledInventory; // currently controlled actor's custom inventory
     }
 
-    public class SquadFormation {
-        public List<Actor> actorList = new List<Actor>();
-        public Vector3 movementPos;
-        public string formationType = "dot";
-        public int radius = 5;
-        public int lineX = 5;
-        public int lineY = 5;
+    public class PlayerInventory {
+        public int wood = 0;
+        public int stone = 0;
+        public int ore = 0;
+        public int gold = 0;
+        public int berries = 0;
+        public int wheat = 0;
 
-        public string squadName = "";
-        public string squadID = (TWrecks_Main.squadsInUse.Count + 1).ToString();
-        public bool followsControlledPos = true;
-        public bool followsOffset = false;
-        public Vector3 offsetPos = Vector3.one;
+        public int bread = 0; //not a real item, can make it out of wheat though
+        public int eggs = 0; //interact with chicken, chickens need dict and cooldown
+        public int milk = 0; // interact with cow
+	}
+
+    [JsonObject(MemberSerialization.OptIn)]
+    public class ModSettings {
+        // excluded from serialization
+        // does not have JsonPropertyAttribute
+        public Guid Id { get; set; }
+
+        [JsonProperty]
+        public string Name = "test";
+
+        [JsonProperty]
+        public int Size = 10;
+
+        [JsonProperty]
+        public int expGainOnKill = 10;
+
+        [JsonProperty]
+        public int kingAgeExp = 20;
+
+        [JsonProperty]
+        public int leaderAgeExp = 10;
+
+        [JsonProperty]
+        public int otherAgeExp = 2;
+
+        [JsonProperty]
+        public int baseExpToLevelup = 100;
+        // default: 100 + (this.data.level - 1) * 20;
+
+        [JsonProperty]
+        public int expToLevelUpScale = 20;
     }
-
-    public class SquadLeader {
-        public SquadLeader(Actor targetLeader)
-        {
-            this.squadLeaderActor = targetLeader;
-        }
-        public Actor squadLeaderActor;
-        public SquadFormation squad;
-    }
-
 }

@@ -32,7 +32,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Reflection.cs" />
+    <Compile Include="Construction.cs" />
+    <Compile Include="SquadFormation.cs" />
+    <Compile Include="SquadLeader.cs" />
+    <Compile Include="Survivor.cs" />
     <Compile Include="TWrecks_Main.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -133,6 +136,9 @@
     </Reference>
     <Reference Include="Mono.Security">
       <HintPath>..\..\..\..\..\0wbwb\0.9.6\WorldBoxModded\worldbox_Data\Managed\Mono.Security.dll</HintPath>
+    </Reference>
+    <Reference Include="NCMS">
+      <HintPath>..\..\..\..\..\..\Program Files (x86)\Steam\steamapps\common\worldbox\worldbox_Data\StreamingAssets\Mods\NCMS.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
