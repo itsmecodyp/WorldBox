@@ -15,7 +15,7 @@ namespace SimpleAdditions {
 			newAnimationData.animated = false;
 			newAnimationData.list_main = new List<Sprite>();
 			newAnimationData.list_ruins = new List<Sprite>();
-			newAnimationData.list_shadows = new List<Sprite>();
+			//newAnimationData.list_shadows = new List<Sprite>();
 			newAnimationData.list_special = new List<Sprite>(); // something to do with fruit
 
 			newAnimationData.list_main.Add(testSprite);
@@ -31,7 +31,7 @@ namespace SimpleAdditions {
 				id = "testBuilding",
 				sprites = newBuildingSprites,
 				fundament = new BuildingFundament(1, 1, 1, 0),
-				fauna = false,
+				//fauna = false,
 			};
 			AssetManager.buildings.add(testBuilding);
 		}

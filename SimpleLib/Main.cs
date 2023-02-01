@@ -11,14 +11,14 @@ using EpPathFinding.cs;
 
 namespace SimpleLib
 {
-    // A collection of features and tools that other mods of mine use
+    // A collection of features
     // Might be helpful for other modders
     [BepInPlugin(pluginGuid, pluginName, pluginVersion)]
     public class Main : BaseUnityPlugin
     {
         public const string pluginGuid = "cody.worldbox.simple.lib";
         public const string pluginName = "SimpleLib";
-        public const string pluginVersion = "0.0.0.2";
+        public const string pluginVersion = "0.0.0.3";
 
         public void Update()
         {
