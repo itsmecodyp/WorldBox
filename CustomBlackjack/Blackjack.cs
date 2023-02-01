@@ -57,9 +57,9 @@ namespace CustomBlackjack
             readyToResetDeck = true;
         }
         public static float roundEndTime;
-        public static float roundEndDelay = 3f;
+        public static float roundEndDelay = 5f;
         public static float midRoundEndTime;
-        public static float midRoundEndDelay = 2f;
+        public static float midRoundEndDelay = 3f;
 
         public static float moneySaveTime;
         public static float moneySaveDelay = 3f;

@@ -410,6 +410,8 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Stocks.cs" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <None Include=".editorconfig" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

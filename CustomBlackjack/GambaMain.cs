@@ -65,7 +65,9 @@ namespace CustomBlackjack
 
         public void Awake()
         {
+#pragma warning disable CS0618 // Type or member is obsolete
             stockAmountSOR = Config.AddSetting("Stock", "SOR Stock", 0d, "The amount of stock you're holding (don't cheat please)");
+#pragma warning restore CS0618 // Type or member is obsolete
             stockAmountMST = Config.AddSetting("Stock", "MST Stock", 0d, "The amount of stock you're holding (don't cheat please)");
             stockAmountMAX = Config.AddSetting("Stock", "MAX Stock", 0d, "The amount of stock you're holding (don't cheat please)");
             stockAmountMAS = Config.AddSetting("Stock", "MAS Stock", 0d, "The amount of stock you're holding (don't cheat please)");
@@ -339,13 +341,21 @@ namespace CustomBlackjack
                 humanPlayer.money += printedStash;
                 printedStash = 0f;
             }
-
             GUI.DragWindow();
         }
 
         public double printedStash = 0f;
 
-       
+        //resize windows constantly, 1 frame update
+        public void Update()
+		{
+            foreach(BlackjackPlayer player in Blackjack.currentPlayers) {
+                player.personalWindowRect.height = 1f;
+            }
+            MainWindowRect.height = 1f;
+            Blackjack.dealerWindowRect.height = 1f;
+            WorkWindowRect.height = 1f;
+        }
 
         public void OnGUI()
         {
@@ -355,7 +365,7 @@ namespace CustomBlackjack
                 player.personalWindowRect = GUILayout.Window(player.windowID, player.personalWindowRect, new GUI.WindowFunction(player.PlayerWindow), "Player: " + player.playername, new GUILayoutOption[] { GUILayout.MaxWidth(200f), GUILayout.MinWidth(200f) });
             }
 
-            if (showHideMainWindow)
+            if(showHideMainWindow)
             {
                 MainWindowRect = GUILayout.Window(4300, MainWindowRect, new GUI.WindowFunction(MainWindow), "Blackjack main", new GUILayoutOption[] { GUILayout.MaxWidth(200f), GUILayout.MinWidth(200f) });
                 Blackjack.dealerWindowRect = GUILayout.Window(4303, Blackjack.dealerWindowRect, new GUI.WindowFunction(Blackjack.DealerWindow), "Dealer", new GUILayoutOption[] { GUILayout.MaxWidth(200f), GUILayout.MinWidth(200f) });

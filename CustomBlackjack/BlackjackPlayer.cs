@@ -29,9 +29,22 @@ namespace CustomBlackjack
             return Stocks.moneyString(money); // lazy af
         }
 
+        public Color originalColor = GUI.backgroundColor;
+
         public void PlayerWindow(int windowID)
         {
-            if (roundEndTime + UnityEngine.Random.Range(1f, roundEndDelay) < Time.realtimeSinceStartup)
+            // change window color for last game, maybe do text instead?
+            if(handStatus != HandStatus.None) {
+                if(lastHandResult == HandStatus.Loss) {
+                    GUI.backgroundColor = Color.red;
+				}
+                else if(lastHandResult == HandStatus.Win) {
+                    GUI.backgroundColor = Color.green;
+				}
+			}
+			
+            // wait before end of round, then reset
+            if (roundEndTime + roundEndDelay < Time.realtimeSinceStartup) // UnityEngine.Random.Range(3f, roundEndDelay) 
             {
                 if (readyToResetDeck)
                 {
@@ -73,10 +86,8 @@ namespace CustomBlackjack
             GUILayout.EndHorizontal();
             if (playername == "Human")
             {
-                if (GUILayout.Button("PlayRound"))
-                {
-                    Blackjack.PlayRound();
-                }
+                // force round to continue despite other checks not finding anything
+                // if(GUILayout.Button("PlayRound")) { Blackjack.PlayRound(); }
                 if (betting)
                 {
                     GUILayout.BeginHorizontal();
@@ -123,7 +134,7 @@ namespace CustomBlackjack
                                 DrawCard();
                                 money -= betAmountDouble;
                                 betAmountDouble *= 2;
-                                waiting = true;
+                                TurnEnd();
                             }
                         }
 
