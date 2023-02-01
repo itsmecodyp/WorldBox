@@ -225,7 +225,7 @@ namespace SimpleGUI
 				{
 					ActorTrait actorTrait = new ActorTrait();
 					actorTrait.id = "stats" + data.firstName;
-					actorTrait.icon = "iconVermin";
+					actorTrait.path_icon = "iconVermin";
 					actorTrait.baseStats.health = targetHealth;
 					actorTrait.baseStats.damage = targetAttackDamage;
 					actorTrait.baseStats.speed = targetSpeed;
@@ -247,7 +247,7 @@ namespace SimpleGUI
 					actorTrait.baseStats.intelligence = targetIntelligence;
 					actorTrait.baseStats.army = targetArmy;
 					actorTrait.baseStats.cities = targetCities;
-					actorTrait.baseStats.zones = targetZones;
+					actorTrait.baseStats.zone_range = targetZones;
 					actorTrait.baseStats.bonus_towers = targetBonus_towers;
 					actorTrait.baseStats.s_crit_chance = targetS_crit_chance;
 					actorTrait.baseStats.projectiles = targetProjectiles;

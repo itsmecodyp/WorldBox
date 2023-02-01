@@ -123,12 +123,13 @@ namespace SimpleGUI
                 if (UnityEngine.Random.Range(1, 100) > 90 && !SpawnedNames.ContainsKey(name))
                 {
                     data.firstName = name;
-                    ItemGenerator.generateItem(AssetManager.items.get("sword"), "silver", __instance.equipment.weapon, MapBox.instance.mapStats.year, "The Void", name, 1);
-                    ItemGenerator.generateItem(AssetManager.items.get("ring"), "silver", __instance.equipment.ring, MapBox.instance.mapStats.year, "The Void", name, 1);
-                    ItemGenerator.generateItem(AssetManager.items.get("amulet"), "silver", __instance.equipment.amulet, MapBox.instance.mapStats.year, "The Void", name, 1);
-                    ItemGenerator.generateItem(AssetManager.items.get("armor"), "silver", __instance.equipment.armor, MapBox.instance.mapStats.year, "The Void", name, 1);
-                    ItemGenerator.generateItem(AssetManager.items.get("boots"), "silver", __instance.equipment.boots, MapBox.instance.mapStats.year, "The Void", name, 1);
-                    ItemGenerator.generateItem(AssetManager.items.get("helmet"), "silver", __instance.equipment.helmet, MapBox.instance.mapStats.year, "The Void", name, 1);
+                    //ItemData pData = ItemGenerator.generateItem(itemAsset, materialForItem.id, MapBox.instance.mapStats.year, this.kingdom.name, pCreatorName, pTries, pActor);
+                    ItemGenerator.generateItem(AssetManager.items.get("sword"), "silver", MapBox.instance.mapStats.year, "The Void", name, 1);
+                    ItemGenerator.generateItem(AssetManager.items.get("ring"), "silver"  , MapBox.instance.mapStats.year, "The Void", name, 1);
+                    ItemGenerator.generateItem(AssetManager.items.get("amulet"), "silver", MapBox.instance.mapStats.year, "The Void", name, 1);
+                    ItemGenerator.generateItem(AssetManager.items.get("armor"), "silver", MapBox.instance.mapStats.year, "The Void", name, 1);
+                    ItemGenerator.generateItem(AssetManager.items.get("boots"), "silver", MapBox.instance.mapStats.year, "The Void", name, 1);
+                    ItemGenerator.generateItem(AssetManager.items.get("helmet"), "silver", MapBox.instance.mapStats.year, "The Void", name, 1);
                     SpawnedNames.Add(name, true);
                     return;
                 }
@@ -209,8 +210,9 @@ namespace SimpleGUI
 
         }
 
-        public static void getTipID_Postfix(LoadingScreen __instance)
+        public static void OnEnable_Postfix(LoadingScreen __instance)
         {
+            Debug.Log("1");
             int num = Toolbox.randomInt(1, 13); // highest number == null string, the rest are valid rolls
             string text = "null";
             if (num == 1)
@@ -270,14 +272,32 @@ namespace SimpleGUI
                 text = "Have you heard the legend of Greg?";
             }
             if(num == 12) {
-                text = "Have you heard the legend of Greg?";
+                text = "Want your message here? Support me on Patreon!";
             }
             if(num == 13) {
                 text = "null";
             }
-            __instance.topText.key = text;
-            __instance.topText.CallMethod("updateText", new object[] { true });
+            //time stuff
+            DateTime timeNow = System.DateTime.Now;
+            foreach(KeyValuePair<string, DateTime> birthdayToCheck in birthdays) {
+                if(timeNow.Month == birthdayToCheck.Value.Month) {
+                    if(timeNow.Day == birthdayToCheck.Value.Day) {
+                        // Complete override for single day
+                        text = "Happy birthday to " + birthdayToCheck.Key + "!!";
+                    }
+                }
+            }
+            if(__instance.tipText != null) {
+                // add simplegui tag on new line so people arent thinking these messages came from maxim
+                __instance.tipText.text.text = text + " \n (SimpleGUI)";
+            }
         }
+
+        // years dont matter, i only check month/day
+        public static Dictionary<string, DateTime> birthdays = new Dictionary<string, DateTime>() {
+            {"Cody", new DateTime(1, 1, 17)},
+            //{"Adiniz", new DateTime(1, 9, 11)},
+        };
 
         public int nameCount => SpawnedNames.Count;
         public int setCount = 0;

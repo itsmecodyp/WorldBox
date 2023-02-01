@@ -29,9 +29,9 @@ namespace SimpleGUI
         public static bool load_Prefix(string pTrait)
         {
             ActorTrait loadedTrait = AssetManager.traits.get(pTrait);
-            if (loadedTrait.icon == null)
+            if (loadedTrait.path_icon == null)
             {
-                loadedTrait.icon = "iconVermin";
+                loadedTrait.path_icon = "iconVermin";
                 return true;
             }
             return true;
@@ -214,7 +214,7 @@ namespace SimpleGUI
         {
             if (addingShieldToActor)
             {
-                Dictionary<string, ActiveStatusEffect> activeStatus_dict = Reflection.GetField(target.GetType(), target, "activeStatus_dict") as Dictionary<string, ActiveStatusEffect>;
+                Dictionary<string, StatusEffectData> activeStatus_dict = Reflection.GetField(target.GetType(), target, "activeStatus_dict") as Dictionary<string, StatusEffectData>;
                 if (activeStatus_dict.ContainsKey("shield"))
                 {
                     target.CallMethod("removeStatusEffect", new object[] { "shield", null, -1 });

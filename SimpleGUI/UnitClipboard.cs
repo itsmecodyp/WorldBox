@@ -42,7 +42,7 @@ namespace UnitClipboard {
             if(targetTile != null && unitData != null) {
                 Actor pastedUnit = MapBox.instance.createNewUnit(unitData.statsID, targetTile, null, 0f, null);
                 if(pastedUnit.data.traits != null && pastedUnit.data.traits.Count >= 1) {
-                    pastedUnit.resetTraits();
+                    //pastedUnit.resetTraits(); // removed?
                 }
                 if(unitData.equipment != null) {
                     pastedUnit.equipment = unitData.equipment;
@@ -103,7 +103,7 @@ namespace UnitClipboard {
         public void OnGUI()
         {
             GUILayout.BeginArea(new Rect(Screen.width - 120, 100, 120, 30));
-            if(GUILayout.Button("UnitClipboard")) // "WorldBox3D"
+            if(GUILayout.Button("UnitClipboard"))
             {
                 showHideMainWindow = !showHideMainWindow;
             }

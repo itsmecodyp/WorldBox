@@ -35,9 +35,14 @@ namespace SimpleGUI
 
 		public static void undoLastReplaceInList()
 		{
+			if(listOfUndos.Count < 1) {
+				Debug.Log("no undo to replace");
+				return;
+			}
 			if (listOfUndos.Last<List<WorldTile>>() == null)
 			{
 				Debug.Log("no undo to replace");
+				return;
 			}
 			foreach (WorldTile pTile in listOfUndos.Last<List<WorldTile>>()) // each tile inside the last list
 			{
@@ -57,6 +62,9 @@ namespace SimpleGUI
 			{
 				oldType = MapBox.instance.getMouseTilePos().Type.id;
 			}
+			if(newType == "random") {
+				newType = AssetManager.tiles.list.GetRandom().id;
+			}
 			if (listOfUndos == null)
 			{
 				listOfUndos = new List<List<WorldTile>>();
@@ -64,6 +72,9 @@ namespace SimpleGUI
 			if (listOfUndoTypes == null)
 			{
 				listOfUndoTypes = new List<string>();
+			}
+			if(AssetManager.tiles.get(newType) == null) {
+				return;
 			}
 			string[] typeArray = listOfUndoTypes.ToArray();
 			List<WorldTile> list = new List<WorldTile>();
@@ -251,11 +262,154 @@ namespace SimpleGUI
 						endTile = null;
 						lastSelectedTiles = null;
 					}
+					if(Input.GetKeyDown(KeyCode.C) && Input.GetKey(KeyCode.LeftControl)) {
+						CopyTileSelection();
+					}
+					if(Input.GetKeyDown(KeyCode.V) && Input.GetKey(KeyCode.LeftControl)) {
+						PasteTileSelection();
+					}
+					if(pastedTerrains.Count > 0 && Input.GetKeyDown(KeyCode.Z) && Input.GetKey(KeyCode.LeftControl)) {
+						UndoTilePaste();
+					}
+					if(Input.GetKeyDown(KeyCode.Q) && Input.GetKey(KeyCode.LeftControl)) {
+						RotateTileSelectionLeft();
+					}
+					if(Input.GetKeyDown(KeyCode.E) && Input.GetKey(KeyCode.LeftControl)) {
+						RotateTileSelectionRight();
+					}
+					if(Input.GetKeyDown(KeyCode.Slash)) {
+						//ReorderTileSelection();
+					}
 				}
-				
 			}
-
 		}
+
+		public void CreatePngOutOfTileSelection()
+		{
+			//Texture2D texture2D = new Texture2D(texture.width, texture.height);
+			//Color32[] pixels = texture.GetPixels32();
+			//texture2D.SetPixels32(pixels);
+			//texture2D.Apply();
+			//return texture2D;
+		}
+
+		//tile copy paste, buildings, cityzones, actors come later (if ever)
+		Dictionary<Vector2Int, string> tilesCopied;
+		public void CopyTileSelection()
+		{
+			tilesCopied = new Dictionary<Vector2Int, string>();
+			Vector2Int firstPos = startTile.pos;
+			foreach(WorldTile tile in lastSelectedTiles) {
+				Vector2Int tilePos = tile.pos;
+				Vector2Int offsetPos = tilePos - firstPos;
+				string tileType = tile.main_type.id + "`";
+				if(tile.top_type != null) {
+					tileType += tile.top_type.id;
+				}
+				tilesCopied.Add(offsetPos, tileType);
+			}
+			/*
+			//setup texture width/height for preview of copied tiles
+			//whole section here will be moved to its own method later so rotations can recalculate
+			int difx = dif(startTile.x, endTile.x) + 1; //width of selection
+			int dify = dif(startTile.y, endTile.y) + 1; //height of selection
+			//actually lets use use whole world size and only set section for now
+			Texture2D texture = MapBox.instance.worldLayer.texture;
+			Texture2D texture2D = new Texture2D(texture.width, texture.height);
+			//Texture2D texture2D = new Texture2D(difx, dify);
+			foreach(KeyValuePair<Vector2Int, string> tile in tilesCopied) {
+				Vector2Int pos = tile.Key;
+				Vector2Int newPos = firstPos + pos;
+				WorldTile newTileSpot = MapBox.instance.GetTile(newPos.x, newPos.y);
+				//texture2D.Compress(false);
+				texture2D.SetPixel(newPos.x, newPos.y, newTileSpot.getColor());
+				texture2D.Apply();
+				lastCopiedTexture = texture2D;
+			}
+			//Debug.Log("Difx:" + difx.ToString() + "/Dify:" + dify.ToString());
+			*/
+		}
+
+		public static Texture2D lastCopiedTexture;
+
+		public void RotateTileSelectionRight()
+		{
+			Dictionary<Vector2Int, string> newSelectionAfterEdit = new Dictionary<Vector2Int, string>();
+			foreach(KeyValuePair<Vector2Int, string> tile in tilesCopied) {
+				Vector2Int pos = tile.Key;
+				Vector2Int newPos = new Vector2Int(pos.y, -pos.x);
+				newSelectionAfterEdit.Add(newPos, tile.Value);
+			}
+			tilesCopied = newSelectionAfterEdit;
+		}
+
+		public void RotateTileSelectionLeft()
+		{
+			Dictionary<Vector2Int, string> newSelectionAfterEdit = new Dictionary<Vector2Int, string>();
+			foreach(KeyValuePair<Vector2Int, string> tile in tilesCopied) {
+				Vector2Int pos = tile.Key;
+				Vector2Int newPos = new Vector2Int(-pos.y, pos.x);
+				newSelectionAfterEdit.Add(newPos, tile.Value);
+			}
+			tilesCopied = newSelectionAfterEdit;
+		}
+
+		public void PasteTileSelection()
+		{
+			Vector2Int firstPos = MapBox.instance.getMouseTilePos().pos;
+
+			Dictionary<Vector2Int, string> pasteToUndo = new Dictionary<Vector2Int, string>();
+
+			foreach(KeyValuePair<Vector2Int, string> tile in tilesCopied) {
+				Vector2Int newPos = firstPos + tile.Key;
+				string[] types = tile.Value.Split('`');
+				if(terrainPasteIgnoresWater && (types[0].Contains("ocean") || types[0].Contains("water"))) {
+
+				}
+				else if(terrainPasteIgnoresLava && types[0].Contains("lava")) {
+
+				}
+				else {
+					WorldTile newTileSpot = MapBox.instance.GetTile(newPos.x, newPos.y);
+					if(newTileSpot != null) {
+						string tileType = newTileSpot.main_type.id + "`";
+						if(newTileSpot.top_type != null) {
+							tileType += newTileSpot.top_type.id;
+						}
+						pasteToUndo.Add(newTileSpot.pos, tileType);
+						if(types[1] != string.Empty) {
+							MapAction.terraformTile(newTileSpot, AssetManager.tiles.get(types[0]), AssetManager.topTiles.get(types[1]));
+						}
+						else {
+							MapAction.terraformMain(newTileSpot, AssetManager.tiles.get(types[0]));
+						}
+					}
+				}
+			}
+			pastedTerrains.Add(pasteToUndo);
+		}
+
+		public void UndoTilePaste()
+		{
+			Dictionary<Vector2Int, string> pasteToUndo = pastedTerrains.Last();
+			foreach(KeyValuePair<Vector2Int, string> tile in pasteToUndo) {
+				string[] types = tile.Value.Split('`');
+
+				WorldTile newTileSpot = MapBox.instance.GetTile(tile.Key.x, tile.Key.y);
+				if(newTileSpot != null) {
+					if(types[1] != string.Empty) {
+						MapAction.terraformTile(newTileSpot, AssetManager.tiles.get(types[0]), AssetManager.topTiles.get(types[1]));
+					}
+					else {
+						MapAction.terraformMain(newTileSpot, AssetManager.tiles.get(types[0]));
+					}
+				}
+			}
+			pastedTerrains.Remove(pastedTerrains.Last());
+		}
+
+		List<Dictionary<Vector2Int, string>> pastedTerrains = new List<Dictionary<Vector2Int, string>>();
+
 
 		public void worldUpdate()
 		{
@@ -482,9 +636,12 @@ namespace SimpleGUI
 				dragSelection = !dragSelection;
 				if (dragSelection == false)
 				{
+					/* let player reset this with hotkey/button
+					 * most will disable drag select in order to try powers
 					lastSelectedTiles = null;
 					startTile = null;
 					endTile = null;
+					*/
 				}
 			}
 
@@ -541,16 +698,16 @@ namespace SimpleGUI
 							if (building.city != null)
 							{
 								building.city.addBuilding(building);
-								building.city.status.homesTotal += selectedBuildingAsset.housing * (selectedBuildingAsset.upgradeLevel + 1);
-								if (building.city.status.population > building.city.status.homesTotal)
+								building.city.status.housingTotal += selectedBuildingAsset.housing * (selectedBuildingAsset.upgradeLevel + 1);
+								if (building.city.status.population > building.city.status.housingTotal)
 								{
-									building.city.status.homesOccupied = building.city.status.homesTotal;
+									building.city.status.housingOccupied = building.city.status.housingTotal;
 								}
 								else
 								{
-									building.city.status.homesOccupied = building.city.status.population;
+									building.city.status.housingOccupied = building.city.status.population;
 								}
-								building.city.status.homesFree = building.city.status.homesTotal - building.city.status.homesOccupied;
+								building.city.status.housingFree = building.city.status.housingTotal - building.city.status.housingOccupied;
 							}
 						}
 					}
@@ -625,6 +782,7 @@ namespace SimpleGUI
 				}
 			}
 			GUILayout.EndHorizontal();
+			/* repopulation copied vanilla generation code which has changed, needs redone
 			GUILayout.BeginHorizontal();
 			GUILayout.Button("Repopulate");
 			if (GUILayout.Button("Plants"))
@@ -640,7 +798,7 @@ namespace SimpleGUI
 				RepopulateTerrain();
 			}
 			GUILayout.EndHorizontal();
-
+			*/
 			GUILayout.BeginHorizontal();
 			if (GUILayout.Button("Fill/PaintBucket: " + fillToolEnabled.ToString()))
 			{
@@ -657,9 +815,32 @@ namespace SimpleGUI
 			{
 				disableClouds = !disableClouds;
 			}
-			
-						GUI.DragWindow();
+			if(terrainPasteIgnoresWater) {
+				GUI.backgroundColor = Color.green;
+			}
+			else {
+				GUI.backgroundColor = Color.red;
+			}
+			if(GUILayout.Button("Terrain paste ignores ocean")) {
+				terrainPasteIgnoresWater = !terrainPasteIgnoresWater;
+			}
+			if(terrainPasteIgnoresLava) {
+				GUI.backgroundColor = Color.green;
+			}
+			else {
+				GUI.backgroundColor = Color.red;
+			}
+			if(GUILayout.Button("Terrain paste ignores lava")) {
+				terrainPasteIgnoresLava = !terrainPasteIgnoresLava;
+			}
+			if(lastCopiedTexture != null) {
+				GUILayout.Button(lastCopiedTexture);
+			}
+			GUI.DragWindow();
 		}
+
+		public static bool terrainPasteIgnoresWater;
+		public static bool terrainPasteIgnoresLava;
 
 		public static bool createNewUnit_Prefix(string pStatsID, WorldTile pTile, string pJob, float pZHeight, ActorData pData)
 		{

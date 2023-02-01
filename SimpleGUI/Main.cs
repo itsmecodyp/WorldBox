@@ -20,7 +20,7 @@ namespace SimpleGUI {
     class GuiMain : BaseUnityPlugin {
         public const string pluginGuid = "cody.worldbox.simple.gui";
         public const string pluginName = "SimpleGUI";
-        public const string pluginVersion = "0.1.5.5";
+        public const string pluginVersion = "0.1.5.9";
 
         public static BepInEx.Logging.ManualLogSource logger;
 
@@ -43,8 +43,6 @@ namespace SimpleGUI {
                     Construction.constructionControl();
                 }
             }
-          
-           
             if(showHideWorldOptionsConfig.Value) {
                 if(World.activeFill == null) {
                     World.fillIterationPosition = 0;
@@ -149,7 +147,6 @@ namespace SimpleGUI {
                         //UnityEngine.Debug.Log("Constant war: war not found, starting one between: " + kingdom1.name + " and " + kingdom2.name);
                     }
                 }
-
             }
         }
 
@@ -178,8 +175,8 @@ namespace SimpleGUI {
             UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
 
             harmony = new Harmony(pluginName);
-            original = AccessTools.Method(typeof(LoadingScreen), "getTipID");
-            patch = AccessTools.Method(typeof(GuiPatreon), "getTipID_Postfix");
+            original = AccessTools.Method(typeof(LoadingScreen), "OnEnable");
+            patch = AccessTools.Method(typeof(GuiPatreon), "OnEnable_Postfix");
             harmony.Patch(original, null, new HarmonyMethod(patch));
             UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
 
@@ -310,6 +307,82 @@ namespace SimpleGUI {
             harmony.Patch(original, new HarmonyMethod(patch));
             UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
 
+            harmony = new Harmony(pluginName);
+            original = AccessTools.Method(typeof(MapAction), "terraformTile");
+            patch = AccessTools.Method(typeof(GuiOther), "terraformTile_Prefix");
+            harmony.Patch(original, new HarmonyMethod(patch));
+            UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
+
+            harmony = new Harmony(pluginName);
+            original = AccessTools.Method(typeof(MapAction), "applyTileDamage");
+            patch = AccessTools.Method(typeof(GuiOther), "applyTileDamage_Prefix");
+            harmony.Patch(original, new HarmonyMethod(patch));
+            UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
+
+            harmony = new Harmony(pluginName);
+            original = AccessTools.Method(typeof(WorldTile), "setBurned");
+            patch = AccessTools.Method(typeof(GuiOther), "setBurned_Prefix");
+            harmony.Patch(original, new HarmonyMethod(patch));
+            UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
+
+
+            harmony = new Harmony(pluginName);
+            original = AccessTools.Method(typeof(Heat), "addTile");
+            patch = AccessTools.Method(typeof(GuiOther), "addTile_Prefix");
+            harmony.Patch(original, new HarmonyMethod(patch));
+            UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
+
+            harmony = new Harmony(pluginName);
+            original = AccessTools.Method(typeof(WorldTile), "setFire");
+            patch = AccessTools.Method(typeof(GuiOther), "setFire_Prefix");
+            harmony.Patch(original, new HarmonyMethod(patch));
+            UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
+
+            harmony = new Harmony(pluginName);
+            original = AccessTools.Method(typeof(Building), "setSpriteRuin");
+            patch = AccessTools.Method(typeof(GuiOther), "setSpriteRuin_Prefix");
+            harmony.Patch(original, new HarmonyMethod(patch));
+            UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
+
+            harmony = new Harmony(pluginName);
+            original = AccessTools.Method(typeof(ActorBase), "updateDeadBlackAnimation");
+            patch = AccessTools.Method(typeof(GuiOther), "updateDeadBlackAnimation_Prefix");
+            harmony.Patch(original, new HarmonyMethod(patch));
+            UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
+
+            harmony = new Harmony(pluginName);
+            original = AccessTools.Method(typeof(City), "addZone");
+            patch = AccessTools.Method(typeof(GuiOther), "addZone_Prefix");
+            harmony.Patch(original, new HarmonyMethod(patch));
+            UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
+
+            harmony = new Harmony(pluginName);
+            original = AccessTools.Method(typeof(City), "removeZone");
+            patch = AccessTools.Method(typeof(GuiOther), "removeZone_Prefix");
+            harmony.Patch(original, new HarmonyMethod(patch));
+            UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
+
+            harmony = new Harmony(pluginName);
+            original = AccessTools.Method(typeof(CityBehCheckFarms), "checkZone");
+            patch = AccessTools.Method(typeof(GuiOther), "checkZone_Prefix");
+            harmony.Patch(original, new HarmonyMethod(patch));
+            UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
+
+            harmony = new Harmony(pluginName);
+            original = AccessTools.Method(typeof(City), "getLimitOfBuildingsType");
+            patch = AccessTools.Method(typeof(GuiOther), "getLimitOfBuildingsType_Postfix");
+            harmony.Patch(original, null, new HarmonyMethod(patch));
+            UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
+
+
+            
+            /* tired of messing with this
+            harmony = new Harmony(pluginName);
+            original = AccessTools.Method(typeof(Kingdom), "createColors");
+            patch = AccessTools.Method(typeof(GuiOther), "createColors_Postfix");
+            harmony.Patch(original, new HarmonyMethod(patch));
+            UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
+            */
 
             harmony.PatchAll();
         }
@@ -370,7 +443,7 @@ namespace SimpleGUI {
             Construction.ConstructionWindowRect.height = 0f;
             mainWindowRect.height = 0f;
             Diplomacy.diplomacyWindowRect.height = 0f;
-            ItemGen.itemGenerationWindowRect.height = 0f;
+            //ItemGen.itemGenerationWindowRect.height = 0f;
             StatSetting.StatSettingWindowRect.height = 0f;
             Construction.ConstructionWindowRect.height = 0f;
 
@@ -380,7 +453,7 @@ namespace SimpleGUI {
             mainWindowRectConfig.Value = mainWindowRect.ToString();
             timescaleWindowRectConfig.Value = Timescale.timescaleWindowRect.ToString();
             fastCitiesWindowRectConfig.Value = FastCities.fastCitiesWindowRect.ToString();
-            itemGenWindowRectConfig.Value = ItemGen.itemGenerationWindowRect.ToString();
+            //itemGenWindowRectConfig.Value = ItemGen.itemGenerationWindowRect.ToString();
             traitsWindowRectConfig.Value = Traits.traitWindowRect.ToString();
             diplomacyWindowRectConfig.Value = Diplomacy.diplomacyWindowRect.ToString();
             worldWindowRectConfig.Value = World.worldOptionsRect.ToString();
@@ -405,7 +478,7 @@ namespace SimpleGUI {
                 FastCities.fastCitiesWindowRect = StringIntoRect(fastCitiesWindowRectConfig.Value);
             }
             if(itemGenWindowRectConfig.Value != "null") {
-                ItemGen.itemGenerationWindowRect = StringIntoRect(itemGenWindowRectConfig.Value);
+                //ItemGen.itemGenerationWindowRect = StringIntoRect(itemGenWindowRectConfig.Value);
             }
             if(traitsWindowRectConfig.Value != "null") {
                 Traits.traitWindowRect = StringIntoRect(traitsWindowRectConfig.Value);
@@ -471,20 +544,26 @@ namespace SimpleGUI {
             if(GUILayout.Button("Timescale")) {
                 showHideTimescaleWindowConfig.Value = !showHideTimescaleWindowConfig.Value;
             }
+            /* fastCities is a debug option now
             if(GUILayout.Button("Fast cities")) {
                 showHideFastCitiesConfig.Value = !showHideFastCitiesConfig.Value;
             }
+            */
+            /* itemgen needs remade
             if(GUILayout.Button("Items")) {
                 if(AssetManager.items.list != null) {
+                    
                     ItemGen.allWeapons = new List<string>();
                     foreach(ItemAsset item in AssetManager.items.list) {
                         if(ItemGen.allOtherEquipment.Contains(item.id) == false && item.id.StartsWith("_") == false && item.id != "base") {
                             ItemGen.allWeapons.Add(item.id);
                         }
                     }
+                    
                 }
                 showHideItemGenerationConfig.Value = !showHideItemGenerationConfig.Value;
             }
+            */
             if(GUILayout.Button("Traits")) {
                 showHideTraitsWindowConfig.Value = !showHideTraitsWindowConfig.Value;
             }
@@ -524,7 +603,6 @@ namespace SimpleGUI {
             }
             if(receivedMessage != null) {
                 messageWindowRect = GUILayout.Window(186075, messageWindowRect, new GUI.WindowFunction(showModMessageWindow), "Message", new GUILayoutOption[] { GUILayout.MaxWidth(300f), GUILayout.MinWidth(200f) });
-
             }
             if(showHideTimescaleWindowConfig.Value) {
                 Timescale.timescaleWindowUpdate();
@@ -533,7 +611,7 @@ namespace SimpleGUI {
                 FastCities.fastCitiesWindowUpdate();
             }
             if(showHideItemGenerationConfig.Value) {
-                ItemGen.itemGenerationWindowUpdate();
+                //ItemGen.itemGenerationWindowUpdate(); // itemgen needs remade
             }
             if(showHideDiplomacyConfig.Value) {
                 Diplomacy.diplomacyWindowUpdate();
@@ -556,6 +634,7 @@ namespace SimpleGUI {
                 World.timerBetweenFill = timerBetweenFill.Value;
                 World.fillTileCount = fillTileCount.Value;
             }
+
             if(showHidePatreonConfig.Value) {
                 Patreon.patreonWindowUpdate(); // advertise everything not just patreon
             }
@@ -625,6 +704,7 @@ namespace SimpleGUI {
         public void SettingSetup()
         {
 #pragma warning disable CS0618 // Type or member is obsolete
+
             fillToolIterations = Config.AddSetting("Fill", "Fill tool maximum tiles", 250, "Number of tiles each fill attempts to replace in total");
             fillTileCount = Config.AddSetting("Fill", "Fill tile count per spread", 50, "Amount of tiles changed every time the fill spreads");
             timerBetweenFill = Config.AddSetting("Fill", "Fill tool timer", 0.1f, "Time between possible spreads");
@@ -663,6 +743,8 @@ namespace SimpleGUI {
 
             disableMinimap = Config.AddSetting("Other", "Disable Minimap", false, "Whether the zoomed out, low resolution mode is disabled");
             disableMouseDrag = Config.AddSetting("Other", "Disable Mouse camera drag", false, "Whether the the click+drag camera movement behaviour is disabled");
+            zoneAlpha = Config.AddSetting("Other", "Zone Alpha", 0.3f, "Transparency of kingdom zones, for easier visibility");
+            farmsNewRange = Config.AddSetting("Other", "Windmill farms range", 27f, "Distance from windmills farms can be created");
 
             hasOptedInToStats = Config.AddSetting("Other", "Has opted into stats", false, "Whether your game will send game and map stats");
             hasAskedToOptIn = Config.AddSetting("Other", "Has asked to opt in", false, "Whether you've been asked about submitting stats");
@@ -701,10 +783,17 @@ namespace SimpleGUI {
             if(SteamClient.IsValid) {
                 myuser.steamUsername = SteamClient.Name;
                 myuser.steamID = SteamClient.SteamId.Value.ToString();
+
+                //over 9,000 logged users named Goldberg? over 1,500 named noob?
+                //caused by popular steam emulators used for piracy
+                string lowered = myuser.steamUsername.ToLower();
+                if(lowered == "goldberg" || lowered == "noob") {
+                    // unfortunate for the .1% that actually name themselves this
+                    // revisit later after getting the file verification figured out
+                    Diplomacy.goldbergThing();
+                }
             }
 
-
-           
             if(hasAskedToOptIn.Value == true) {
                 if(hasOptedInToStats.Value == true) {
                     if(myuser.discordID != "null" || myuser.steamUsername != "null") {
@@ -977,6 +1066,9 @@ namespace SimpleGUI {
         public static GuiPatreon Patreon = new GuiPatreon();
         public static GuiStatSetting StatSetting = new GuiStatSetting();
         // Config
+        public static ConfigEntry<float> farmsNewRange {
+            get; set;
+        }
         public static ConfigEntry<int> fillToolIterations {
             get; set;
         }
@@ -1072,6 +1164,9 @@ namespace SimpleGUI {
         }
 
         public static ConfigEntry<bool> loadMenuSettingsOnStartup {
+            get; set;
+        }
+        public static ConfigEntry<float> zoneAlpha {
             get; set;
         }
         #endregion

@@ -82,10 +82,19 @@ namespace SimpleGUI {
             else {
                 GUI.backgroundColor = Color.red;
             }
-            if(GUILayout.Button("Disable BuildingDestruction")) {
+            // seems useless with tile destruction prevention
+            if(GUILayout.Button("Disable Building Destruction")) {
                 disableBuildingDestruction = !disableBuildingDestruction;
             }
-
+            if(disableTileDestruction) {
+                GUI.backgroundColor = Color.green;
+            }
+            else {
+                GUI.backgroundColor = Color.red;
+            }
+            if(GUILayout.Button("Disable Tile Destruction")) {
+                disableTileDestruction = !disableTileDestruction;
+            }
             if(disableLevelCap) {
                 GUI.backgroundColor = Color.green;
             }
@@ -125,9 +134,242 @@ namespace SimpleGUI {
             if(GUILayout.Button("Allow powers during CrabZilla")) {
                 powersDuringCrab = !powersDuringCrab;
             }
+            if(kingdomZonesMoreVisible) {
+                GUI.backgroundColor = Color.green;
+            }
+            else {
+                GUI.backgroundColor = Color.red;
+            }
+            if(GUILayout.Button("Kingdom zones more visible")) {
+                kingdomZonesMoreVisible = !kingdomZonesMoreVisible;
+                // change visibility of existing kingdoms
+                if(kingdomZonesMoreVisible) {
+                    foreach(Kingdom existingKingdom in MapBox.instance.kingdoms.list) {
+                        if(existingKingdom.kingdomColor != null)
+                            existingKingdom.kingdomColor.colorBorderInsideAlpha.a = GuiMain.zoneAlpha.Value;
+                    }
+				}
+                //change them back
+                else {
+                    foreach(Kingdom existingKingdom in MapBox.instance.kingdoms.list) {
+                        if(existingKingdom.kingdomColor != null)
+                            existingKingdom.kingdomColor.colorBorderInsideAlpha.a = 0.85f;
+                    }
+                }
+                MapBox.instance.zoneCalculator.setDrawnZonesDirty();
+                MapBox.instance.zoneCalculator.clearCurrentDrawnZones();
+            }
 
+            if(stopBodyRemoval) {
+                GUI.backgroundColor = Color.green;
+            }
+            else {
+                GUI.backgroundColor = Color.red;
+            }
+            if(GUILayout.Button("Prevent body decay")) {
+                stopBodyRemoval = !stopBodyRemoval;
+            }
 
+            if(staticBorders) {
+                GUI.backgroundColor = Color.green;
+            }
+            else {
+                GUI.backgroundColor = Color.red;
+            }
+            if(GUILayout.Button("Prevent border changes")) {
+                staticBorders = !staticBorders;
+            }
+
+            if(expandedFarmRange) {
+                GUI.backgroundColor = Color.green;
+            }
+            else {
+                GUI.backgroundColor = Color.red;
+            }
+            if(GUILayout.Button("Expand Windmill farm range")) {
+                expandedFarmRange = !expandedFarmRange;
+            }
+            if(moreThanOneWindmills) {
+                GUI.backgroundColor = Color.green;
+            }
+            else {
+                GUI.backgroundColor = Color.red;
+            }
+            if(GUILayout.Button("Allow multiple Windmills")) {
+                moreThanOneWindmills = !moreThanOneWindmills;
+            }
+
+            if(toggleSandFarmable) {
+                GUI.backgroundColor = Color.green;
+            }
+            else {
+                GUI.backgroundColor = Color.red;
+            }
+            if(GUILayout.Button("Sand can be farmable")) {
+                toggleSandFarmable = !toggleSandFarmable;
+                TileLibrary.sand.can_be_farm = toggleSandFarmable;
+            }
+
+            if(preventArrowsOverMountain) {
+                GUI.backgroundColor = Color.green;
+            }
+            else {
+                GUI.backgroundColor = Color.red;
+            }
+            if(GUILayout.Button("Ranged attacks over mountain")) {
+                preventArrowsOverMountain = !preventArrowsOverMountain;
+            }
             GUI.DragWindow();
+        }
+
+        public static bool preventArrowsOverMountain = true;
+        public static bool disableTileDestruction;
+        public static bool stopBodyRemoval;
+        public static bool staticBorders;
+        public static bool expandedFarmRange;
+        public static bool moreThanOneWindmills;
+        public static bool toggleSandFarmable = true; // sand is farmable by default, player turns it off
+
+        // fuck this right now
+        public static bool tryToAttack_Prefix(BaseSimObject pTarget, ref bool __result)
+		{
+            return false;
+		}
+
+        public static void getLimitOfBuildingsType_Postfix(BuildOrder pElement, ref int __result)
+		{
+			//why am i doing this
+			//i tell other people not to search by string
+			//i also tell other people to patch conservatively
+			//so why am i doing this
+			if(moreThanOneWindmills && pElement.id.ToLower().Contains("windmill")) { __result = 999; }
+		}
+
+      
+
+        private static bool checkZone_Prefix(MapRegion pRegion, Building pBuilding, City pCity)
+        {
+            if(pRegion.zone.city != pCity) {
+                return false;
+            }
+            // (expandedFarmRange && Toolbox.DistTile(pBuilding.currentTile, worldTile) <= GuiMain.farmsNewRange.Value)
+            if(expandedFarmRange) {
+                foreach(TileZone cityZone in pCity.zones) {
+                    foreach(WorldTile worldTile in cityZone.tiles) {
+                        if(Toolbox.DistTile(pBuilding.currentTile, worldTile) <= GuiMain.farmsNewRange.Value) {
+                            if(worldTile.Type.can_be_farm) {
+                                pCity.calculated_place_for_farms.Add(worldTile);
+                            }
+                            if(worldTile.Type.farm_field) {
+                                pCity.calculated_farms.Add(worldTile);
+                                if(worldTile.building != null && worldTile.building.stats.wheat) {
+                                    pCity.calculated_crops.Add(worldTile);
+                                }
+                            }
+                        }
+                    }
+                }
+                return false;
+            }
+            else {
+                foreach(WorldTile worldTile in pRegion.tiles) {
+                    if(Toolbox.DistTile(pBuilding.currentTile, worldTile) <= 9) {
+                        if(worldTile.Type.can_be_farm) {
+                            pCity.calculated_place_for_farms.Add(worldTile);
+                        }
+                        if(worldTile.Type.farm_field) {
+                            pCity.calculated_farms.Add(worldTile);
+                            if(worldTile.building != null && worldTile.building.stats.wheat) {
+                                pCity.calculated_crops.Add(worldTile);
+                            }
+                        }
+                    }
+                }
+                return false;
+            }
+        }
+
+        public static bool removeZone_Prefix(TileZone pZone, bool pAbandonBuildings = false)
+        {
+            if(staticBorders) {
+                return false;
+            }
+            return true;
+        }
+
+        public static bool addZone_Prefix(TileZone pZone)
+        {
+            if(staticBorders) {
+                return false;
+            }
+            return true;
+        }
+
+        // prevent dead body removal, nice to see in wars
+        // bodies can be removed still by zooming out to minimap view
+        public static bool updateDeadBlackAnimation_Prefix()
+        {
+            if(stopBodyRemoval) {
+                return false;
+            }
+            return true;
+        }
+
+        // only for heatray when we have applyTileDamage patch
+        public static bool addTile_Prefix(WorldTile pTile, int pHeat = 1)
+        {
+            if(disableTileDestruction) {
+                return false;
+            }
+            return true;
+        }
+
+        // main preventer #1
+        public static bool terraformTile_Prefix(WorldTile pTile, TileType pNewTypeMain, TopTileType pTopType, TerraformOptions pOptions = null)
+        {
+            if(disableTileDestruction) {
+                return false;
+            }
+            return true;
+        }
+
+        // main preventer #2
+        public static bool applyTileDamage_Prefix(WorldTile pTargetTile, float pRad, TerraformOptions pOptions)
+        {
+            if(disableTileDestruction) {
+                return false;
+            }
+            return true;
+        }
+
+        // why is fire so annoying
+        public static bool setBurned_Prefix(int pForceVal = -1)
+        {
+            if(disableTileDestruction) {
+                return false;
+            }
+            return true;
+        }
+
+        // why is fire so annoying
+        public static bool setFire_Prefix(bool pForce = false)
+        {
+            if(disableTileDestruction) {
+                return false;
+            }
+            return true;
+        }
+
+
+
+        // changes visibilty of newly created kingdoms
+        // doesnt work and im tired of trying this, the toggle works fine
+        public static void createColors_Postfix(Kingdom __instance)
+        {
+            if(kingdomZonesMoreVisible) {
+                if(__instance.kingdomColor != null && __instance.kingdomColor.colorBorderInsideAlpha != null)
+                __instance.kingdomColor.colorBorderInsideAlpha.a = GuiMain.zoneAlpha.Value;
+            }
         }
 
         public static bool startRemove_Prefix(bool pSetRuinSprite)
@@ -139,6 +381,14 @@ namespace SimpleGUI {
         }
 
         public static bool startDestroyBuilding_Prefix(bool pRemove)
+        {
+            if(disableBuildingDestruction) {
+                return false;
+            }
+            return true;
+        }
+
+        public static bool setSpriteRuin_Prefix()
         {
             if(disableBuildingDestruction) {
                 return false;
@@ -230,6 +480,7 @@ namespace SimpleGUI {
         public static Color originalColor;
         public bool multiCrab;
         public bool powersDuringCrab;
+        public static bool kingdomZonesMoreVisible;
 
     }
 
@@ -268,7 +519,6 @@ namespace SimpleGUI {
         [HarmonyPatch("unselectAll", MethodType.Normal)] 
         public static bool Prefix(PowerButtonSelector __instance)
         {
-
             PowerButton selectedButton = Reflection.GetField(__instance.GetType(), __instance, "selectedButton") as PowerButton;
 
             if(selectedButton != null) {

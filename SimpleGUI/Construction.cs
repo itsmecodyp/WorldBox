@@ -54,7 +54,7 @@ namespace SimpleGUI
         }
         public void createRoad(WorldTile pTile)
         {
-            MapAction.createRoad(pTile);
+            MapAction.createRoadTile(pTile);
         }
 
         public static bool startDestroyBuilding_Prefix(bool pRemove = false)
@@ -91,16 +91,16 @@ namespace SimpleGUI
                 if (building.city != null)
                 {
                     building.city.addBuilding(building);
-                    building.city.status.homesTotal += selectedBuildingAsset.housing * (selectedBuildingAsset.upgradeLevel + 1);
-                    if (building.city.status.population > building.city.status.homesTotal)
+                    building.city.status.housingTotal += selectedBuildingAsset.housing * (selectedBuildingAsset.upgradeLevel + 1);
+                    if (building.city.status.population > building.city.status.housingTotal)
                     {
-                        building.city.status.homesOccupied = building.city.status.homesTotal;
+                        building.city.status.housingOccupied = building.city.status.housingTotal;
                     }
                     else
                     {
-                        building.city.status.homesOccupied = building.city.status.population;
+                        building.city.status.housingOccupied = building.city.status.population;
                     }
-                    building.city.status.homesFree = building.city.status.homesTotal - building.city.status.homesOccupied;
+                    building.city.status.housingFree = building.city.status.housingTotal - building.city.status.housingOccupied;
                 }
             }
         }
@@ -176,6 +176,8 @@ namespace SimpleGUI
                 if (GUILayout.Button("Toggle placing"))
                 {
                     placingToggleEnabled = !placingToggleEnabled;
+                    //prevent random input from fucking stuff up
+                    Config.lockGameControls = placingToggleEnabled;
                 }
                 scrollPosition = GUILayout.BeginScrollView(
           scrollPosition, GUILayout.Width(225), GUILayout.Height(275));

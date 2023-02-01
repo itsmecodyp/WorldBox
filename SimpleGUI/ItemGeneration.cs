@@ -11,6 +11,7 @@ namespace SimpleGUI
 {
 	class GuiItemGeneration
 	{
+		
 		public void itemGenerationWindowUpdate()
 		{
 			if (GuiMain.showWindowMinimizeButtons.Value)
@@ -51,6 +52,7 @@ namespace SimpleGUI
 			else
 			{
 				GUILayout.BeginHorizontal(new GUILayoutOption[0]);
+				/*
 				itemGenerationQualityString = GUILayout.TextField(itemGenerationQualityString, new GUILayoutOption[0]);
 				bool flag2 = GUILayout.Button("Quality", new GUILayoutOption[0]);
 				if (flag2)
@@ -91,6 +93,7 @@ namespace SimpleGUI
 						return;
 					}
 				}
+				*/
 				GUILayout.EndHorizontal();
 				GUILayout.BeginHorizontal(new GUILayoutOption[0]);
 				itemGenerationMaterial = GUILayout.TextField(itemGenerationMaterial, new GUILayoutOption[0]);
@@ -113,6 +116,7 @@ namespace SimpleGUI
 				}
 				GUILayout.EndHorizontal();
 				GUILayout.BeginHorizontal();
+				/*
 				itemGenerationPrefix = GUILayout.TextField(itemGenerationPrefix);
 				if (GUILayout.Button("Prefix"))
 				{
@@ -129,8 +133,10 @@ namespace SimpleGUI
 					int num3 = itemPrefixPos;
 					itemGenerationPrefix = AssetManager.items_prefix.list[itemPrefixPos].id;
 				}
+				*/
 				GUILayout.EndHorizontal();
 				GUILayout.BeginHorizontal();
+				/*
 				itemGenerationSuffix = GUILayout.TextField(itemGenerationSuffix);
 				if (GUILayout.Button("Suffix"))
 				{
@@ -147,6 +153,7 @@ namespace SimpleGUI
 					int num3 = itemSuffixPos;
 					itemGenerationSuffix = AssetManager.items_suffix.list[itemSuffixPos].id;
 				}
+				*/
 				GUILayout.EndHorizontal();
 				GUILayout.BeginHorizontal(new GUILayoutOption[0]);
 				itemGenerationSlot = GUILayout.TextField(itemGenerationSlot, new GUILayoutOption[0]);
@@ -221,13 +228,13 @@ namespace SimpleGUI
 						}
 						manualGeneration = true;
 						if(currentWeapon == "stick") { // stick only has wood material
-							ItemGenerator.generateItem(weapon, "wood", lastSelectedActor.equipment.weapon, MapBox.instance.mapStats.year, lastSelectedActor.kingdom.name, "a mod", 1);
+							ItemGenerator.generateItem(weapon, "wood", MapBox.instance.mapStats.year, lastSelectedActor.kingdom.name, "a mod", 1);
 						}
 						else if(currentWeapon.Contains("_")) { // only these _ spaced weapons use "base" material, modded weapons could mess up
-							ItemGenerator.generateItem(weapon, "base", lastSelectedActor.equipment.weapon, MapBox.instance.mapStats.year, lastSelectedActor.kingdom.name, "a mod", 1);
+							ItemGenerator.generateItem(weapon, "base", MapBox.instance.mapStats.year, lastSelectedActor.kingdom.name, "a mod", 1);
 						}
 						else { // everything else uses normal material
-							ItemGenerator.generateItem(weapon, itemGenerationMaterial, lastSelectedActor.equipment.weapon, MapBox.instance.mapStats.year, lastSelectedActor.kingdom.name, "a mod", 1);
+							ItemGenerator.generateItem(weapon, itemGenerationMaterial, MapBox.instance.mapStats.year, lastSelectedActor.kingdom.name, "a mod", 1);
 						}
 					}
 					if (itemGenerationSlot == "amulet")
@@ -240,7 +247,7 @@ namespace SimpleGUI
 							amulet.baseStats = randomBaseStats(randomStatsMax);
 						}
 						manualGeneration = true;
-						ItemGenerator.generateItem(amulet, itemGenerationMaterial, lastSelectedActor.equipment.amulet, MapBox.instance.mapStats.year, lastSelectedActor.kingdom.name, "a mod", 1);
+						ItemGenerator.generateItem(amulet, itemGenerationMaterial, MapBox.instance.mapStats.year, lastSelectedActor.kingdom.name, "a mod", 1);
 					}
 					if(itemGenerationSlot == "armor")
 					{
@@ -253,7 +260,7 @@ namespace SimpleGUI
 						}
 						manualGeneration = true;
 
-						ItemGenerator.generateItem(armor, itemGenerationMaterial, lastSelectedActor.equipment.armor, MapBox.instance.mapStats.year, lastSelectedActor.kingdom.name, "a mod", 1);
+						ItemGenerator.generateItem(armor, itemGenerationMaterial, MapBox.instance.mapStats.year, lastSelectedActor.kingdom.name, "a mod", 1);
 					}
 					if (itemGenerationSlot == "boots")
 					{
@@ -266,7 +273,7 @@ namespace SimpleGUI
 						}
 						manualGeneration = true;
 
-						ItemGenerator.generateItem(boots, itemGenerationMaterial, lastSelectedActor.equipment.boots, MapBox.instance.mapStats.year, lastSelectedActor.kingdom.name, "a mod", 1);
+						ItemGenerator.generateItem(boots, itemGenerationMaterial, MapBox.instance.mapStats.year, lastSelectedActor.kingdom.name, "a mod", 1);
 					}
 					if (itemGenerationSlot == "helmet")
 					{
@@ -279,7 +286,7 @@ namespace SimpleGUI
 						}
 						manualGeneration = true;
 
-						ItemGenerator.generateItem(helmet, itemGenerationMaterial, lastSelectedActor.equipment.helmet, MapBox.instance.mapStats.year, lastSelectedActor.kingdom.name, "a mod", 1);
+						ItemGenerator.generateItem(helmet, itemGenerationMaterial, MapBox.instance.mapStats.year, lastSelectedActor.kingdom.name, "a mod", 1);
 					}
 					if (itemGenerationSlot == "ring")
 					{
@@ -292,7 +299,7 @@ namespace SimpleGUI
 						}
 						manualGeneration = true;
 
-						ItemGenerator.generateItem(ring, itemGenerationMaterial, lastSelectedActor.equipment.ring, MapBox.instance.mapStats.year, lastSelectedActor.kingdom.name, "a mod", 1);
+						ItemGenerator.generateItem(ring, itemGenerationMaterial, MapBox.instance.mapStats.year, lastSelectedActor.kingdom.name, "a mod", 1);
 					}
 					setActorStatsDirty(lastSelectedActor);
 
@@ -324,22 +331,22 @@ namespace SimpleGUI
 					}
 					manualGeneration = true;
 
-					ItemGenerator.generateItem(weapon2, itemGenerationMaterial, lastSelectedActor.equipment.weapon, MapBox.instance.mapStats.year, lastSelectedActor.kingdom.name, "a mod", 1);
+					ItemGenerator.generateItem(weapon2, itemGenerationMaterial, MapBox.instance.mapStats.year, lastSelectedActor.kingdom.name, "a mod", 1);
 					manualGeneration = true;
 
-					ItemGenerator.generateItem(ring2, itemGenerationMaterial, lastSelectedActor.equipment.ring, MapBox.instance.mapStats.year, lastSelectedActor.kingdom.name, "a mod", 1);
+					ItemGenerator.generateItem(ring2, itemGenerationMaterial, MapBox.instance.mapStats.year, lastSelectedActor.kingdom.name, "a mod", 1);
 					manualGeneration = true;
 
-					ItemGenerator.generateItem(amulet2, itemGenerationMaterial, lastSelectedActor.equipment.amulet, MapBox.instance.mapStats.year, lastSelectedActor.kingdom.name, "a mod", 1);
+					ItemGenerator.generateItem(amulet2, itemGenerationMaterial, MapBox.instance.mapStats.year, lastSelectedActor.kingdom.name, "a mod", 1);
 					manualGeneration = true;
 
-					ItemGenerator.generateItem(armor2, itemGenerationMaterial, lastSelectedActor.equipment.armor, MapBox.instance.mapStats.year, lastSelectedActor.kingdom.name, "a mod", 1);
+					ItemGenerator.generateItem(armor2, itemGenerationMaterial, MapBox.instance.mapStats.year, lastSelectedActor.kingdom.name, "a mod", 1);
 					manualGeneration = true;
 
-					ItemGenerator.generateItem(boots2, itemGenerationMaterial, lastSelectedActor.equipment.boots, MapBox.instance.mapStats.year, lastSelectedActor.kingdom.name, "a mod", 1);
+					ItemGenerator.generateItem(boots2, itemGenerationMaterial, MapBox.instance.mapStats.year, lastSelectedActor.kingdom.name, "a mod", 1);
 					manualGeneration = true;
 
-					ItemGenerator.generateItem(helmet2, itemGenerationMaterial, lastSelectedActor.equipment.helmet, MapBox.instance.mapStats.year, lastSelectedActor.kingdom.name, "a mod", 1);
+					ItemGenerator.generateItem(helmet2, itemGenerationMaterial, MapBox.instance.mapStats.year, lastSelectedActor.kingdom.name, "a mod", 1);
 					setActorStatsDirty(lastSelectedActor);
 				}
 				bool flag41 = GUILayout.Button("Set city to armor set", new GUILayoutOption[0]);
@@ -371,17 +378,17 @@ namespace SimpleGUI
 						}
 						manualGeneration = true;
 
-						ItemGenerator.generateItem(weapon3, itemGenerationMaterial, actor.equipment.weapon, MapBox.instance.mapStats.year, lastSelectedActor.kingdom.name, "a mod", 1);
+						ItemGenerator.generateItem(weapon3, itemGenerationMaterial, MapBox.instance.mapStats.year, lastSelectedActor.kingdom.name, "a mod", 1);
 						manualGeneration = true;
-						ItemGenerator.generateItem(armor3, itemGenerationMaterial, actor.equipment.armor, MapBox.instance.mapStats.year, lastSelectedActor.kingdom.name, "a mod", 1);
+						ItemGenerator.generateItem(armor3, itemGenerationMaterial, MapBox.instance.mapStats.year, lastSelectedActor.kingdom.name, "a mod", 1);
 						manualGeneration = true;
-						ItemGenerator.generateItem(boots3, itemGenerationMaterial, actor.equipment.boots, MapBox.instance.mapStats.year, lastSelectedActor.kingdom.name, "a mod", 1);
+						ItemGenerator.generateItem(boots3, itemGenerationMaterial, MapBox.instance.mapStats.year, lastSelectedActor.kingdom.name, "a mod", 1);
 						manualGeneration = true;
-						ItemGenerator.generateItem(helmet3, itemGenerationMaterial, actor.equipment.helmet, MapBox.instance.mapStats.year, lastSelectedActor.kingdom.name, "a mod", 1);
+						ItemGenerator.generateItem(helmet3, itemGenerationMaterial, MapBox.instance.mapStats.year, lastSelectedActor.kingdom.name, "a mod", 1);
 						manualGeneration = true;
-						ItemGenerator.generateItem(amulet3, itemGenerationMaterial, actor.equipment.amulet, MapBox.instance.mapStats.year, lastSelectedActor.kingdom.name, "a mod", 1);
+						ItemGenerator.generateItem(amulet3, itemGenerationMaterial, MapBox.instance.mapStats.year, lastSelectedActor.kingdom.name, "a mod", 1);
 						manualGeneration = true;
-						ItemGenerator.generateItem(ring3, itemGenerationMaterial, actor.equipment.ring, MapBox.instance.mapStats.year, lastSelectedActor.kingdom.name, "a mod", 1);
+						ItemGenerator.generateItem(ring3, itemGenerationMaterial, MapBox.instance.mapStats.year, lastSelectedActor.kingdom.name, "a mod", 1);
 						setActorStatsDirty(actor);
 					}
 				}
@@ -446,8 +453,8 @@ namespace SimpleGUI
 		{
 			if (manualGeneration)
 			{
-				pData.prefix = itemGenerationPrefix;
-				pData.suffix = itemGenerationSuffix;
+				//pData.prefix = itemGenerationPrefix;
+				//pData.suffix = itemGenerationSuffix;
 				__instance.data = pData;
 				manualGeneration = false;
 				return false;
@@ -480,4 +487,5 @@ namespace SimpleGUI
 		public static List<string> simpleAdditionItems = new List<string>() { "blueSword1", "blueSword2", "blueSword3" };
 		
 	}
+
 }

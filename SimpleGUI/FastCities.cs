@@ -5,20 +5,24 @@ namespace SimpleGUI
 {
     class GuiFastCities
     {
+        //config.fastcities was removed ~0.14
         public Rect fastCitiesWindowRect;
 
         public void fastCitiesWindow(int windowID)
         {
             GuiMain.SetWindowInUse(windowID);
+            /*
             if (GUILayout.Button("Config.fastCities: " + Config.fastCities.ToString()))
             {
                 Config.fastCities = !Config.fastCities;
             }
+            */
             GUI.DragWindow();
         }
 
         public void fastCitiesWindowUpdate()
         {
+            /*
             if (Config.fastCities)
             {
                 foreach (City city in MapBox.instance.citiesList)
@@ -30,6 +34,7 @@ namespace SimpleGUI
                     }
                 }
             }
+            */
             if (GuiMain.showWindowMinimizeButtons.Value)
             {
                 string buttontext = "F";
