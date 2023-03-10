@@ -17,7 +17,9 @@ Abandoned: No intention to add or fix anything
 CustomAssetLoader: Abandoned
 
 Before NCMS, I needed a way to load custom assets easily without writing code for each one
+
 This loaded pictures and text files containing data, then replaced or added everything ingame. I used it for buildings, actor textures and animations, and traits
+
 Also had some integration with 3d, allowing assets loaded to have some custom data like rotation and height
 
 
