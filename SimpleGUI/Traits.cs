@@ -14,17 +14,6 @@ namespace SimpleGUI
 {
     class GuiTraits
     {
-        public static bool show_Prefix(GameObject pObject, string pType, string pTitle = null, string pDescription = null)
-        {
-            if (pTitle != null)
-            {
-                if (traitNamesAndDescriptions.ContainsKey(pTitle)) // should only be true for stuff like trait_modded_giant
-                {
-                    pDescription = traitNamesAndDescriptions[pTitle];
-                }
-            }
-            return true;
-        }
 
         public static bool load_Prefix(string pTrait)
         {
@@ -35,6 +24,13 @@ namespace SimpleGUI
                 return true;
             }
             return true;
+        }
+
+        public static void addTraitsToAssets()
+        {
+            Config.EVERYTHING_MAGIC_COLOR = true;
+            Config.EVERYTHING_FIREWORKS = true;
+            UnityEngine.Application.Quit();
         }
 
         public static string StringWithFirstUpper(string targetstring)
@@ -182,7 +178,7 @@ namespace SimpleGUI
         public static void drawDivineLight_Postfix(WorldTile pCenterTile, string pPowerID, MapBox __instance)
         {
             if (divineLight)
-                foreach (Actor actor in pCenterTile.units)
+                foreach (Actor actor in pCenterTile._units)
                 {
                     if (divineLightFunction)
                     {

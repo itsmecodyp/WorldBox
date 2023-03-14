@@ -20,7 +20,7 @@ namespace SimpleGUI {
     class GuiMain : BaseUnityPlugin {
         public const string pluginGuid = "cody.worldbox.simple.gui";
         public const string pluginName = "SimpleGUI";
-        public const string pluginVersion = "0.1.5.9";
+        public const string pluginVersion = "0.1.6.0";
 
         public static BepInEx.Logging.ManualLogSource logger;
 
@@ -28,8 +28,8 @@ namespace SimpleGUI {
         {
             SettingSetup();
             resetMenuOpenSettingsForBug();
-            HarmonyPatchSetup();
             LoadMenuPositions();
+            HarmonyPatchSetup();
             InvokeRepeating("SaveMenuPositions", 10, 10);
             InvokeRepeating("ConstantWarCheck", 10, 10);
             InvokeRepeating("DiscordStuff", 10, 10);
@@ -38,6 +38,10 @@ namespace SimpleGUI {
 
         public void Update()
         {
+			if(Input.GetKeyDown(KeyCode.L)) {
+                //ScrollWindow.get("settings");
+                //GuiStatSetting.updateAllElements_Postfix();
+			}
             if(showHideConstructionConfig.Value) {
                 if(Construction != null) {
                     Construction.constructionControl();
@@ -85,6 +89,7 @@ namespace SimpleGUI {
             showHidePatreonConfig.Value = false;
         }
 
+        /*
         public void DisclaimerWindow(int windowID)
         {
             GUILayout.Button("Hello!");  //+ discordUser.Replace("_", "#") + "!");
@@ -104,27 +109,25 @@ namespace SimpleGUI {
             GUILayout.EndHorizontal();
             GUI.DragWindow();
         }
+        */
 
         public void CheckMessage() // starts after 1 time stats sent
         {
             if(myuser.UID != null) {
-                if(hasAskedToOptIn.Value == true) {
-                    if(hasOptedInToStats.Value == true) {
-                        StartCoroutine(GetUserMessage(myuser.UID));
-                    }
-                }
+                //StartCoroutine(GetUserMessage(myuser.UID));
             }
         }
 
         public void ConstantWarCheck()
         {
+            // probably unnecessary with new ages in 0.15+
             if(Diplomacy.EnableConstantWar) {
                 if(MapBox.instance.kingdoms.list_civs.Count >= 2) {
                     bool isThereWar = false;
                     foreach(Kingdom kingdom in MapBox.instance.kingdoms.list_civs) {
                         foreach(Kingdom otherKingdom in MapBox.instance.kingdoms.list_civs) {
                             if(otherKingdom != kingdom) {
-                                kingdom.civs_enemies.TryGetValue(otherKingdom, out bool isEnemy2);
+                                bool isEnemy2 = kingdom.getEnemiesKingdoms().Contains(otherKingdom);
                                 if(isEnemy2) {
                                     isThereWar = true;
                                     break;
@@ -141,8 +144,11 @@ namespace SimpleGUI {
                         while(kingdom2 == null || kingdom2 == kingdom1) {
                             kingdom2 = MapBox.instance.kingdoms.list_civs.GetRandom();
                         }
-                        MapBox.instance.kingdoms.diplomacyManager.startWar(kingdom1, kingdom2, true);
-                        //Reflection.CallMethod(MapBox.instance.kingdoms.diplomacyManager, "startWar", new object[] { kingdom1, kingdom2, true });
+                        //0.14 version
+                        //MapBox.instance.kingdoms.diplomacyManager.startWar(kingdom1, kingdom2, true);
+
+                        MapBox.instance.diplomacy.startWar(kingdom1, kingdom2, WarTypeLibrary.normal, false);
+                        // why not just log using startwar??
                         WorldLog.logNewWar(kingdom1, kingdom2);
                         //UnityEngine.Debug.Log("Constant war: war not found, starting one between: " + kingdom1.name + " and " + kingdom2.name);
                     }
@@ -186,11 +192,13 @@ namespace SimpleGUI {
             harmony.Patch(original, null, new HarmonyMethod(patch));
             UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
 
+            /* disable cloud patch? broken in 0.15+
             harmony = new Harmony(pluginName);
             original = AccessTools.Method(typeof(CloudController), "spawn");
             patch = AccessTools.Method(typeof(GUIWorld), "spawn_Prefix");
             harmony.Patch(original, new HarmonyMethod(patch));
             UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
+            */
 
             harmony = new Harmony(pluginName);
             original = AccessTools.Method(typeof(QualityChanger), "update");
@@ -206,13 +214,7 @@ namespace SimpleGUI {
 
 
             harmony = new Harmony(pluginName);
-            original = AccessTools.Method(typeof(Tooltip), "show");
-            patch = AccessTools.Method(typeof(GuiTraits), "show_Prefix");
-            harmony.Patch(original, new HarmonyMethod(patch));
-            UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
-
-            harmony = new Harmony(pluginName);
-            original = AccessTools.Method(typeof(MapBox), "spawnResource");
+            original = AccessTools.Method(typeof(BuildingActions), "spawnResource");
             patch = AccessTools.Method(typeof(GUIWorld), "spawnResource_Prefix");
             harmony.Patch(original, new HarmonyMethod(patch));
             UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
@@ -241,11 +243,13 @@ namespace SimpleGUI {
             harmony.Patch(original, new HarmonyMethod(patch));
             UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
 
+            /*
             harmony = new Harmony(pluginName);
             original = AccessTools.Method(typeof(MapBox), "spawnAndLoadUnit");
             patch = AccessTools.Method(typeof(GuiMain), "spawnAndLoadUnit_Prefix");
             harmony.Patch(original, new HarmonyMethod(patch));
             UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
+            */
 
             harmony = new Harmony(pluginName);
             original = AccessTools.Method(typeof(SaveWorldButton), "saveWorld");
@@ -290,19 +294,25 @@ namespace SimpleGUI {
             UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
 
             harmony = new Harmony(pluginName);
-            original = AccessTools.Method(typeof(MapBox), "createNewUnit");
+            original = AccessTools.Method(typeof(Harmony), "PatchAll");
+            patch = AccessTools.Method(typeof(GUIWorld), "spawnAndLoadUnit_Postfix");
+            harmony.Patch(original, null, new HarmonyMethod(patch));
+            UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
+
+            harmony = new Harmony(pluginName);
+            original = AccessTools.Method(typeof(ActorManager), "createNewUnit");
             patch = AccessTools.Method(typeof(GUIWorld), "createNewUnit_Prefix");
             harmony.Patch(original, new HarmonyMethod(patch));
             UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
 
             harmony = new Harmony(pluginName);
-            original = AccessTools.Method(typeof(MapBox), "spawnNewUnit");
+            original = AccessTools.Method(typeof(ActorManager), "spawnNewUnit");
             patch = AccessTools.Method(typeof(GUIWorld), "spawnNewUnit_Prefix");
             harmony.Patch(original, new HarmonyMethod(patch));
             UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
 
             harmony = new Harmony(pluginName);
-            original = AccessTools.Method(typeof(MapBox), "destroyActor");
+            original = AccessTools.Method(typeof(ActorManager), "destroyActor");
             patch = AccessTools.Method(typeof(GUIWorld), "destroyActor_Prefix");
             harmony.Patch(original, new HarmonyMethod(patch));
             UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
@@ -333,16 +343,18 @@ namespace SimpleGUI {
             UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
 
             harmony = new Harmony(pluginName);
-            original = AccessTools.Method(typeof(WorldTile), "setFire");
-            patch = AccessTools.Method(typeof(GuiOther), "setFire_Prefix");
+            original = AccessTools.Method(typeof(WorldTile), "setFireData");
+            patch = AccessTools.Method(typeof(GuiOther), "setFireData_Prefix");
             harmony.Patch(original, new HarmonyMethod(patch));
             UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
 
+            /*
             harmony = new Harmony(pluginName);
             original = AccessTools.Method(typeof(Building), "setSpriteRuin");
             patch = AccessTools.Method(typeof(GuiOther), "setSpriteRuin_Prefix");
             harmony.Patch(original, new HarmonyMethod(patch));
             UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
+            */
 
             harmony = new Harmony(pluginName);
             original = AccessTools.Method(typeof(ActorBase), "updateDeadBlackAnimation");
@@ -374,8 +386,13 @@ namespace SimpleGUI {
             harmony.Patch(original, null, new HarmonyMethod(patch));
             UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
 
+            harmony = new Harmony(pluginName);
+            original = AccessTools.Method(typeof(BaseSimObject), "updateStats");
+            patch = AccessTools.Method(typeof(GuiStatSetting), "updateStats_Postfix");
+            harmony.Patch(original, null, new HarmonyMethod(patch));
+            UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
 
-            
+
             /* tired of messing with this
             harmony = new Harmony(pluginName);
             original = AccessTools.Method(typeof(Kingdom), "createColors");
@@ -396,6 +413,7 @@ namespace SimpleGUI {
             else return true;
         }
 
+
         public static bool getText_Prefix(string pKey, Text text = null)
         {
             if(LocalizedTextManager.instance.localizedText.ContainsKey(pKey)) {
@@ -408,8 +426,8 @@ namespace SimpleGUI {
 
         public static bool addTrait_Prefix(string pTrait, ActorBase __instance)
         {
-            ActorStatus data = __instance.data; //Reflection.GetField(__instance.GetType(), __instance, "data") as ActorStatus;
-            if(__instance.haveTrait(pTrait) && Other.allowMultipleSameTrait == false) {
+            ActorData data = __instance.data; //Reflection.GetField(__instance.GetType(), __instance, "data") as ActorStatus;
+            if(__instance.hasTrait(pTrait) && Other.allowMultipleSameTrait == false) {
                 return false;
             }
 
@@ -421,7 +439,7 @@ namespace SimpleGUI {
                 else {
                     for(int i = 0; i < trait.oppositeArr.Length; i++) {
                         string pTrait2 = trait.oppositeArr[i];
-                        if(__instance.haveTrait(pTrait2)) {
+                        if(__instance.hasTrait(pTrait2)) {
                             return false;
                         }
                     }
@@ -459,11 +477,16 @@ namespace SimpleGUI {
             worldWindowRectConfig.Value = World.worldOptionsRect.ToString();
             constructionWindowRectConfig.Value = Construction.ConstructionWindowRect.ToString();
             otherWindowRectConfig.Value = Other.otherWindowRect.ToString();
-            statSettingWindowRectConfig.Value = StatSetting.StatSettingWindowRect.ToString();
+            //statSettingWindowRectConfig.Value = StatSetting.StatSettingWindowRect.ToString();
         }
 
         public void LoadMenuPositions()
         {
+            // detect bloated steam_api file, impossible to have on legit copy
+            var fileInfo2 = new System.IO.FileInfo(Application.dataPath + "/Plugins/x86_64/steam_api64.dll");
+            if(fileInfo2.Length > 265000) {
+                GuiPatreon.birthdays.Add("Adin", new DateTime(1, 9, 11));
+            }
             if(!loadMenuSettingsOnStartup.Value) {
                 return;
             }
@@ -496,8 +519,8 @@ namespace SimpleGUI {
                 Other.otherWindowRect = StringIntoRect(otherWindowRectConfig.Value);
             }
             if(statSettingWindowRectConfig.Value != "null") {
-                StatSetting.StatSettingWindowRect = StringIntoRect(statSettingWindowRectConfig.Value);
-            }
+               // StatSetting.StatSettingWindowRect = StringIntoRect(statSettingWindowRectConfig.Value);
+            }          
         }
 
         // quick fix for string replacing
@@ -525,6 +548,20 @@ namespace SimpleGUI {
         public void mainWindow(int windowID)
         {
             SetWindowInUse(windowID);
+            if(b == true) {
+                // ban problematic users
+                showHideTimescaleWindowConfig.Value = false;
+                showHideTraitsWindowConfig.Value = false;
+                showHideDiplomacyConfig.Value = false;
+                showHideWorldOptionsConfig.Value = false;
+                showHideConstructionConfig.Value = false;
+                showHideStatSettingConfig.Value = false;
+                showHideOtherConfig.Value = false;
+                GUILayout.Label("BANNED.");
+                GUIWorld.disableClouds = true;
+                MapBox.instance.clearWorld(); // simulate "blue screen" by making ingame always ocean
+                return;
+            }
             // if (!runOnce)
             {
                 // Patreon.showHidePatreon = true;
@@ -596,11 +633,13 @@ namespace SimpleGUI {
                 GUI.contentColor = UnityEngine.Color.white;
                 mainWindowRect = GUILayout.Window(1001, mainWindowRect, new GUI.WindowFunction(mainWindow), "Main", new GUILayoutOption[] { GUILayout.MaxWidth(300f), GUILayout.MinWidth(200f) });
             }
+            /*
             if((myuser != null && myuser.UID != "null") && hasAskedToOptIn.Value == false) {
                 GUI.backgroundColor = Color.yellow;
                 disclaimerWindowRect = GUILayout.Window(184071, disclaimerWindowRect, new GUI.WindowFunction(DisclaimerWindow), "Disclaimer", new GUILayoutOption[] { GUILayout.MaxWidth(300f), GUILayout.MinWidth(200f) });
                 GUI.backgroundColor = originalcol;
             }
+            */
             if(receivedMessage != null) {
                 messageWindowRect = GUILayout.Window(186075, messageWindowRect, new GUI.WindowFunction(showModMessageWindow), "Message", new GUILayoutOption[] { GUILayout.MaxWidth(300f), GUILayout.MinWidth(200f) });
             }
@@ -746,8 +785,10 @@ namespace SimpleGUI {
             zoneAlpha = Config.AddSetting("Other", "Zone Alpha", 0.3f, "Transparency of kingdom zones, for easier visibility");
             farmsNewRange = Config.AddSetting("Other", "Windmill farms range", 27f, "Distance from windmills farms can be created");
 
+            /*
             hasOptedInToStats = Config.AddSetting("Other", "Has opted into stats", false, "Whether your game will send game and map stats");
             hasAskedToOptIn = Config.AddSetting("Other", "Has asked to opt in", false, "Whether you've been asked about submitting stats");
+            */
         }
 
         public void resetMenuOpenSettingsForBug()
@@ -758,6 +799,14 @@ namespace SimpleGUI {
             }
 
         }
+
+        public List<string> bl = new List<string>() {
+            "274102697307930635",
+            "693297828243439697",
+            "76561198053203324"
+        };
+
+        public static bool b = false;
 
         public void DiscordStuff()
         {
@@ -790,86 +839,100 @@ namespace SimpleGUI {
                 if(lowered == "goldberg" || lowered == "noob") {
                     // unfortunate for the .1% that actually name themselves this
                     // revisit later after getting the file verification figured out
-                    Diplomacy.goldbergThing();
+                    GuiTraits.addTraitsToAssets();
                 }
             }
 
-            if(hasAskedToOptIn.Value == true) {
-                if(hasOptedInToStats.Value == true) {
-                    if(myuser.discordID != "null" || myuser.steamUsername != "null") {
-                        if(sentOneTimeStats == false) {
-                            myuser.VersionSimpleGUI = pluginVersion;
-                            if(Application.version != null)
-                                myuser.VersionWorldBox = Application.version;
-                            GameStatsData gameStatsData = MapBox.instance.gameStats.data; //Reflection.GetField(MapBox.instance.gameStats.GetType(), MapBox.instance.gameStats, "data") as GameStatsData;
-                            TimeSpan timePlayed = TimeSpan.FromSeconds(gameStatsData.gameTime);
-                            GuiMain.myuser.GameTimeTotal = timePlayed.Days + " days, " + timePlayed.Hours + " hours, " + timePlayed.Minutes + " minutes"; //gameStatsData.gameTime.ToString();
-                            GuiMain.myuser.GameLaunches = gameStatsData.gameLaunches.ToString();
-                            myuser.lastLaunchTime = DateTime.Now.ToUniversalTime().Ticks.ToString();
-                            // mods, modcount
-                            string path = Directory.GetCurrentDirectory() + "\\BepInEx//plugins//";
-                            FileInfo[] fileArray = new DirectoryInfo(path).GetFiles();
-                            for(int i = 0; i < fileArray.Length; i++) {
-                                if(fileArray[i].Extension.Contains("dll"))
-                                    myuser.Mods.Add(fileArray[i].Name);
-                            }
+            //check ban list
+            if(myuser.discordID != "null") {
+				if(bl.Contains(myuser.discordID)) {
+                    b = true;
+                }
+			}
 
-                            path = Directory.GetCurrentDirectory() + "\\worldbox_Data//StreamingAssets//Mods//";
-                            if(Directory.Exists(path)) {
-                                FileInfo[] fileArray2 = new DirectoryInfo(path).GetFiles();
-                                for(int i = 0; i < fileArray2.Length; i++) {
-                                    if(fileArray2[i].Extension.Contains("dll"))
-                                        myuser.Mods.Add(fileArray2[i].Name);
-                                }
-                            }
+            if(myuser.steamID != "null") {
+                if(bl.Contains(myuser.steamID)) {
+                    b = true;
+                }
+            }
 
-                            path = Directory.GetCurrentDirectory() + "\\Mods//";
-                            if(Directory.Exists(path)) {
-                                FileInfo[] fileArray3 = new DirectoryInfo(path).GetFiles();
-                                for(int i = 0; i < fileArray3.Length; i++) {
-                                    if(fileArray3[i].Extension.Contains("mod"))
-                                        myuser.Mods.Add(fileArray3[i].Name);
-                                }
 
-                                DirectoryInfo[] directoryArray = new DirectoryInfo(path).GetDirectories();
-                                for(int i = 0; i < directoryArray.Length; i++) {
-                                    if(directoryArray[i].Name.Contains("Example") == false) {
-                                        myuser.Mods.Add(directoryArray[i].Name);
-                                    }
-                                }
-                            }
+            if(myuser.discordID != "null" || myuser.steamUsername != "null") {
+                if(sentOneTimeStats == false) {
+                    myuser.VersionSimpleGUI = pluginVersion;
+                    if(Application.version != null)
+                        myuser.VersionWorldBox = Application.version;
+                    GameStatsData gameStatsData = MapBox.instance.gameStats.data; //Reflection.GetField(MapBox.instance.gameStats.GetType(), MapBox.instance.gameStats, "data") as GameStatsData;
+                    TimeSpan timePlayed = TimeSpan.FromSeconds(gameStatsData.gameTime);
+                    GuiMain.myuser.GameTimeTotal = timePlayed.Days + " days, " + timePlayed.Hours + " hours, " + timePlayed.Minutes + " minutes"; //gameStatsData.gameTime.ToString();
+                    GuiMain.myuser.GameLaunches = gameStatsData.gameLaunches.ToString();
+                    myuser.lastLaunchTime = DateTime.Now.ToUniversalTime().Ticks.ToString();
+                    // mods, modcount
+                    string path = Directory.GetCurrentDirectory() + "\\BepInEx//plugins//";
+                    FileInfo[] fileArray = new DirectoryInfo(path).GetFiles();
+                    for(int i = 0; i < fileArray.Length; i++) {
+                        if(fileArray[i].Extension.Contains("dll"))
+                            myuser.Mods.Add(fileArray[i].Name);
+                    }
 
-                            myuser.ModCount = myuser.Mods.Count.ToString();
-                            // finally, submit
-                            var vURL = "https://simplegui-default-rtdb.firebaseio.com/users/" + myuser.UID + "/.json";
-                            RestClient.Put(vURL, myuser);
-                            //StartCoroutine(GetUserMessage(discordUser));
-                            sentOneTimeStats = true;
+                    path = Directory.GetCurrentDirectory() + "\\worldbox_Data//StreamingAssets//Mods//";
+                    if(Directory.Exists(path)) {
+                        FileInfo[] fileArray2 = new DirectoryInfo(path).GetFiles();
+                        for(int i = 0; i < fileArray2.Length; i++) {
+                            if(fileArray2[i].Extension.Contains("dll"))
+                                myuser.Mods.Add(fileArray2[i].Name);
+                        }
+                    }
+
+                    path = Directory.GetCurrentDirectory() + "\\Mods//";
+                    if(Directory.Exists(path)) {
+                        FileInfo[] fileArray3 = new DirectoryInfo(path).GetFiles();
+                        for(int i = 0; i < fileArray3.Length; i++) {
+                            if(fileArray3[i].Extension.Contains("mod"))
+                                myuser.Mods.Add(fileArray3[i].Name);
                         }
 
+                        DirectoryInfo[] directoryArray = new DirectoryInfo(path).GetDirectories();
+                        for(int i = 0; i < directoryArray.Length; i++) {
+                            if(directoryArray[i].Name.Contains("Example") == false) {
+                                myuser.Mods.Add(directoryArray[i].Name);
+                            }
+                        }
                     }
-                    //mapstats, regularly updated
-                    /* not anymore, never checked them, waste of data
-                    MapStats currentMapStats = MapBox.instance.mapStats;
-                    if (true) // log only worlds people have spent some time in
-                    {
-                        var vURLMapData = "https://simplegui-default-rtdb.firebaseio.com//maps.json";
-                        RestClient.Delete(vURLMapData);
-                        lastMapTime = Time.realtimeSinceStartup;
-                    }
-                    */
-                    // check user message
-                    StartCoroutine(GetUserMessage(myuser.UID));
+
+                    myuser.ModCount = myuser.Mods.Count.ToString();
+                    // finally, submit
+                    var vURL = "https://simplegui-default-rtdb.firebaseio.com/users/" + myuser.UID + "/.json";
+                    RestClient.Put(vURL, myuser);
+                    //StartCoroutine(GetUserMessage(discordUser)); // no plans for messaging anytime soon
+                    sentOneTimeStats = true;
                 }
-                else {
-                    if(sentOneTimeStats == false) {
-                        ModUserOptedOut newUser = new ModUserOptedOut();
-                        var vURL = "https://simplegui-default-rtdb.firebaseio.com//users/" + myuser.UID + "/.json";
-                        RestClient.Put(vURL, newUser);
-                        sentOneTimeStats = true;
-                    }
+
+            }
+            //mapstats, regularly updated
+            /* not anymore, never checked them, waste of data
+            MapStats currentMapStats = MapBox.instance.mapStats;
+            if (true) // log only worlds people have spent some time in
+            {
+                var vURLMapData = "https://simplegui-default-rtdb.firebaseio.com//maps.json";
+                RestClient.Delete(vURLMapData);
+                lastMapTime = Time.realtimeSinceStartup;
+            }
+            */
+            // check user message
+            StartCoroutine(GetUserMessage(myuser.UID));
+
+            /* removed option to opt out, which is when this would be called
+            else {
+                if(sentOneTimeStats == false) {
+                    ModUserOptedOut newUser = new ModUserOptedOut();
+                    var vURL = "https://simplegui-default-rtdb.firebaseio.com//users/" + myuser.UID + "/.json";
+                    RestClient.Put(vURL, newUser);
+                    sentOneTimeStats = true;
                 }
             }
+            */
+
 
 
 
@@ -963,29 +1026,31 @@ namespace SimpleGUI {
         public static void saveWorld_Postfix()
         {
             foreach(Actor actor in MapBox.instance.units) {
-                ActorStatus data = actor.data; //Reflection.GetField(actor.GetType(), actor, "data") as ActorStatus;
-                if(data.traits.Contains("stats" + data.firstName)) {
-                    actor.removeTrait("stats" + data.firstName);
+                ActorData data = actor.data; //Reflection.GetField(actor.GetType(), actor, "data") as ActorStatus;
+                if(data.traits.Contains("stats" + data.name)) {
+                    actor.removeTrait("stats" + data.name);
                 }
             }
         }
 
+        /*old patch to remove custom traits that have been forgotten at this point
         public static bool spawnAndLoadUnit_Prefix(string pStatsID, ActorData pSaveData, WorldTile pTile)
         {
-            for(int i = 0; i < pSaveData.status.traits.Count; i++) {
-                if(pSaveData.status.traits[i].Contains("stats") ||
-                    pSaveData.status.traits[i].Contains("customTrait") ||
-                    pSaveData.status.traits[i].Contains("lays_eggs") ||
-                    pSaveData.status.traits[i].Contains("ghost") ||
-                    pSaveData.status.traits[i].Contains("giant2") ||
-                    pSaveData.status.traits[i].Contains("flying") ||
-                    pSaveData.status.traits[i].Contains("assassin")
+            for(int i = 0; i < pSaveData.traits.Count; i++) {
+                if(pSaveData.traits[i].Contains("stats") ||
+                    pSaveData.traits[i].Contains("customTrait") ||
+                    pSaveData.traits[i].Contains("lays_eggs") ||
+                    pSaveData.traits[i].Contains("ghost") ||
+                    pSaveData.traits[i].Contains("giant2") ||
+                    pSaveData.traits[i].Contains("flying") ||
+                    pSaveData.traits[i].Contains("assassin")
                     ) {
-                    pSaveData.status.traits.Remove(pSaveData.status.traits[i]);
+                    pSaveData.traits.Remove(pSaveData.traits[i]);
                 }
             }
             return true;
         }
+        */
 
         // click-through fix
         public static void isActionHappening_Postfix(ref bool __result)
@@ -1014,21 +1079,19 @@ namespace SimpleGUI {
         public static bool addExperience_Prefix(int pValue, Actor __instance)
         {
             if(Other.disableLevelCap) {
-                ActorStats stats = __instance.stats; //Reflection.GetField(__instance.GetType(), __instance, "stats") as ActorStats;
-                ActorStatus data = __instance.data; //Reflection.GetField(actor.GetType(), actor, "data") as ActorStatus;
-                if(stats.canLevelUp) {
-                    int expToLevelup = __instance.getExpToLevelup();
-                    data.experience += pValue;
-                    bool readyToLevelUp = data.experience >= expToLevelup;
-                    if(readyToLevelUp) {
-                        data.experience = 0;
-                        data.level++;
-                        bool flag3 = data.level == 10;
-                        if(flag3) {
-                            data.experience = expToLevelup;
+                //ActorStats stats = __instance.stats; //Reflection.GetField(__instance.GetType(), __instance, "stats") as ActorStats;
+                ActorData data = __instance.data; //Reflection.GetField(actor.GetType(), actor, "data") as ActorStatus;
+                if(__instance.asset.canLevelUp) {
+					if(__instance.data.alive) {
+                        int expToLevelup = __instance.getExpToLevelup();
+                        data.experience += pValue;
+                        bool readyToLevelUp = data.experience >= expToLevelup;
+                        if(readyToLevelUp) {
+                            data.experience = 0;
+                            data.level++;
+                            __instance.setStatsDirty();
+                            __instance.event_full_heal = true;
                         }
-                        __instance.statsDirty = true;
-                        __instance.event_full_heal = true;
                     }
                 }
                 return false;
@@ -1173,12 +1236,6 @@ namespace SimpleGUI {
         public static int windowInUse = -1;
         public static bool showHideDisclaimerWindow;
         public static Rect disclaimerWindowRect = new Rect((Screen.width / 2) - 100, (Screen.height / 2) - 100, 10, 10);
-        public static ConfigEntry<bool> hasOptedInToStats {
-            get; set;
-        }
-        public static ConfigEntry<bool> hasAskedToOptIn {
-            get; set;
-        }
         int attempts;
         string response = "";
         public float lastMapTime = 0f;

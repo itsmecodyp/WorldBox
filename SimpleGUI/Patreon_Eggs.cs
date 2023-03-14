@@ -42,16 +42,16 @@ namespace SimpleGUI
       
         public static void generatePersonality_Postfix(ActorBase __instance)
         {
-            ActorStatus data = Reflection.GetField(__instance.GetType(), __instance, "data") as ActorStatus;
+            ActorData data =__instance.data;
             Race race = Reflection.GetField(__instance.GetType(), __instance, "race") as Race;
-            ActorStats stats = Reflection.GetField(__instance.GetType(), __instance, "stats") as ActorStats;
+            ActorAsset stats = __instance.asset;
             string name = "null";
             if (race.id == "dragon")
             {
                 name = "Ismoehr Traving";
                 if (!SpawnedNames.ContainsKey(name))
                 {
-                    data.firstName = name;
+                    data.setName(name);
                     if (UnityEngine.Random.Range(1, 100) > 90)
                     {
                         __instance.addTrait("burning_feet");
@@ -66,15 +66,15 @@ namespace SimpleGUI
                     name = "Juanchiz";
                     if (UnityEngine.Random.Range(1, 100) > 90 && !SpawnedNames.ContainsKey(name))
                     {
-                        data.firstName = name;
+                        data.setName(name);
                         __instance.addTrait("fast");
                         __instance.addTrait("attractive");
                         ActorTrait actorTrait = new ActorTrait();
-                        actorTrait.baseStats.intelligence = 50;
-                        actorTrait.baseStats.health = 400;
-                        actorTrait.baseStats.damage = 100;
-                        actorTrait.baseStats.diplomacy = 50;
-                        actorTrait.baseStats.personality_administration = 50f;
+                        actorTrait.base_stats["intelligence"] = 50;
+                        actorTrait.base_stats["health"] = 400;
+                        actorTrait.base_stats["damage"] = 100;
+                        actorTrait.base_stats["diplomacy"] = 50;
+                        actorTrait.base_stats["personality_administration"] = 50f;
                         actorTrait.inherit = 0f;
                         actorTrait.id = "customTraitJuan";
                         AssetManager.traits.add(actorTrait);
@@ -86,7 +86,7 @@ namespace SimpleGUI
                 name = "Apex";
                 if (UnityEngine.Random.Range(1, 100) > 90 && !SpawnedNames.ContainsKey(name)) // if name hasnt been used yet
                 {
-                    data.firstName = name; // override the name
+                    data.setName(name); // override the name
                     __instance.addTrait("stupid"); // hehe apex is stupid
                     __instance.addTrait("attractive"); // hehe apex is attractive
                     SpawnedNames.Add(name, true); // add it to the "used" list
@@ -95,7 +95,7 @@ namespace SimpleGUI
                 name = "Nicholas";
                 if (UnityEngine.Random.Range(1, 100) > 90 && !SpawnedNames.ContainsKey(name))
                 {
-                    data.firstName = name;
+                    data.setName(name);
                     SpawnedNames.Add(name, true);
 
                     return;
@@ -103,7 +103,7 @@ namespace SimpleGUI
                 name = "Hayes";
                 if (UnityEngine.Random.Range(1, 100) > 90 && !SpawnedNames.ContainsKey(name))
                 {
-                    data.firstName = name;
+                    data.setName(name);
                     __instance.addTrait("fast");
                     __instance.addTrait("lucky");
                     SpawnedNames.Add(name, true);
@@ -113,7 +113,7 @@ namespace SimpleGUI
                 name = "Styderr";
                 if (UnityEngine.Random.Range(1, 100) > 90 && !SpawnedNames.ContainsKey(name))
                 {
-                    data.firstName = name;
+                    data.setName(name);
                     __instance.addTrait("fast");
                     SpawnedNames.Add(name, true);
 
@@ -122,21 +122,21 @@ namespace SimpleGUI
                 name = "Ruma";
                 if (UnityEngine.Random.Range(1, 100) > 90 && !SpawnedNames.ContainsKey(name))
                 {
-                    data.firstName = name;
+                    data.setName(name);
                     //ItemData pData = ItemGenerator.generateItem(itemAsset, materialForItem.id, MapBox.instance.mapStats.year, this.kingdom.name, pCreatorName, pTries, pActor);
-                    ItemGenerator.generateItem(AssetManager.items.get("sword"), "silver", MapBox.instance.mapStats.year, "The Void", name, 1);
-                    ItemGenerator.generateItem(AssetManager.items.get("ring"), "silver"  , MapBox.instance.mapStats.year, "The Void", name, 1);
-                    ItemGenerator.generateItem(AssetManager.items.get("amulet"), "silver", MapBox.instance.mapStats.year, "The Void", name, 1);
-                    ItemGenerator.generateItem(AssetManager.items.get("armor"), "silver", MapBox.instance.mapStats.year, "The Void", name, 1);
-                    ItemGenerator.generateItem(AssetManager.items.get("boots"), "silver", MapBox.instance.mapStats.year, "The Void", name, 1);
-                    ItemGenerator.generateItem(AssetManager.items.get("helmet"), "silver", MapBox.instance.mapStats.year, "The Void", name, 1);
+                    ItemGenerator.generateItem(AssetManager.items.get("sword"), "silver", MapBox.instance.mapStats.year, null, "The Void", 1, __instance);
+                    ItemGenerator.generateItem(AssetManager.items.get("ring"), "silver"  , MapBox.instance.mapStats.year, null, "The Void", 1, __instance);
+                    ItemGenerator.generateItem(AssetManager.items.get("amulet"), "silver", MapBox.instance.mapStats.year, null, "The Void", 1, __instance);
+                    ItemGenerator.generateItem(AssetManager.items.get("armor"), "silver", MapBox.instance.mapStats.year, null, "The Void", 1, __instance);
+                    ItemGenerator.generateItem(AssetManager.items.get("boots"), "silver", MapBox.instance.mapStats.year, null, "The Void", 1, __instance);
+                    ItemGenerator.generateItem(AssetManager.items.get("helmet"), "silver", MapBox.instance.mapStats.year, null, "The Void", 1, __instance);
                     SpawnedNames.Add(name, true);
                     return;
                 }
                 name = "Bill Dipperly";
                 if (UnityEngine.Random.Range(1, 100) > 90 && !SpawnedNames.ContainsKey(name))
                 {
-                    data.firstName = name;
+                    data.setName(name);
                     SpawnedNames.Add(name, true);
                     return;
                 }
@@ -146,7 +146,7 @@ namespace SimpleGUI
                 name = "Amon";
                 if (UnityEngine.Random.Range(1, 100) > 90 && !SpawnedNames.ContainsKey(name))
                 {
-                    data.firstName = name;
+                    data.setName(name);
                     __instance.addTrait("veteran");
                     __instance.addTrait("tough");
                     __instance.addTrait("wise");
@@ -163,11 +163,11 @@ namespace SimpleGUI
                 name = "PolyMorphik's Lynx";
                 if (UnityEngine.Random.Range(1, 100) > 90 && !SpawnedNames.ContainsKey(name))
                 {
-                    data.firstName = name;
+                    data.setName(name);
                     __instance.addTrait("fast");
                     __instance.addTrait("strong");
                     ActorTrait actorTrait = new ActorTrait();
-                    actorTrait.baseStats.speed = 50f;
+                    actorTrait.base_stats["speed"] = 50f;
                     actorTrait.inherit = 0f;
                     actorTrait.id = "customTraitPoly";
                     AssetManager.traits.add(actorTrait);
@@ -179,7 +179,7 @@ namespace SimpleGUI
                 name = "Floppa";
                 if (UnityEngine.Random.Range(1, 100) > 90 && !SpawnedNames.ContainsKey(name))
                 {
-                    data.firstName = name;
+                    data.setName(name);
                     SpawnedNames.Add(name, true);
                     return;
                 }

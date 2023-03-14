@@ -5,9 +5,16 @@ using System.Text;
 using UnityEngine;
 using System.Threading.Tasks;
 using System.Globalization;
+using ai;
+using ai.behaviours;
 
 namespace SimpleGUI {
     class GuiDiplomacy {
+
+        public Dictionary<Kingdom, List<Kingdom>> eternalAllies = new Dictionary<Kingdom, List<Kingdom>>();
+        public Dictionary<Kingdom, List<Kingdom>> eternalEnemies = new Dictionary<Kingdom, List<Kingdom>>();
+
+
         public void diplomacyWindow(int windowID)
         {
             GuiMain.SetWindowInUse(windowID);
@@ -40,7 +47,7 @@ namespace SimpleGUI {
                 else {
                     GUI.backgroundColor = Color.green;
                 }
-                if(GUILayout.Button(city1Data.cityName)) {
+                if(GUILayout.Button(city1Data.name)) {
                     selectingCity1 = true;
                 }
             }
@@ -56,14 +63,14 @@ namespace SimpleGUI {
                 }
             }
             else if(selectedCity2 != null) {
-                CityData city2Data = Reflection.GetField(selectedCity2.GetType(), selectedCity2, "data") as CityData;
+                CityData city2Data = selectedCity2.data;
                 if(selectingCity2) {
                     GUI.backgroundColor = Color.yellow;
                 }
                 else {
                     GUI.backgroundColor = Color.green;
                 }
-                if(GUILayout.Button(city2Data.cityName)) {
+                if(GUILayout.Button(city2Data.name)) {
                     selectingCity2 = true;
                 }
             }
@@ -73,54 +80,90 @@ namespace SimpleGUI {
             GUILayout.Button("Relation:");
             GUI.backgroundColor = Color.grey;
             if(selectedCity1 != null && selectedCity2 != null) {   // does this look better or does the normal format?
-                selectedCity1Kingdom.allies.TryGetValue(selectedCity2Kingdom, out bool isAlly);
-                selectedCity1Kingdom.civs_allies.TryGetValue(selectedCity2Kingdom, out bool isAlly2);
-                if(isAlly || isAlly2) {
+                //isEnemy
+                bool isEnemy = selectedCity1Kingdom.getEnemiesKingdoms().Contains(selectedCity2Kingdom);
+                //isEnemyv2
+                bool isEnemyv2 = selectedCity1Kingdom.isEnemy(selectedCity2Kingdom);
+                //isAlly
+                Alliance city1KingdomAlliance = selectedCity1Kingdom.getAlliance();
+                Alliance city2KingdomAlliance = selectedCity2Kingdom.getAlliance();
+                bool isAlly = Alliance.isSame(city1KingdomAlliance, city2KingdomAlliance);
+                //selectedCity1Kingdom.allies.TryGetValue(selectedCity2Kingdom, out bool isAlly); //????????
+                //selectedCity1Kingdom.civs_allies.TryGetValue(selectedCity2Kingdom, out bool isAlly2);
+                if(isAlly/*|| isAlly2*/) {
                     GUI.backgroundColor = Color.green;
                 }
                 else {
                     GUI.backgroundColor = Color.red;
                 }
-                if(GUILayout.Button("Ally")) {
-                    Reflection.CallMethod(MapBox.instance.kingdoms.diplomacyManager, "startPeace", new object[] { selectedCity1Kingdom, selectedCity2Kingdom, true });
+                if(GUILayout.Button("Alliance")) {
+					if(selectedCity1Kingdom.hasAlliance()) {
+                        Alliance city1Alliance = selectedCity1Kingdom.getAlliance();
+                        //MapBox.instance.alliances.
+                        city1KingdomAlliance.join(selectedCity2Kingdom, true); // selectedCity2Kingdom.allianceJoin(city1Alliance);
+                        //selectedCity2Kingdom.allianceJoin(city1Alliance);
+                    }
+                    else {
+                        MapBox.instance.alliances.newAlliance(selectedCity1Kingdom, selectedCity2Kingdom);
+                    }
+                   
                 }
-                selectedCity1Kingdom.enemies.TryGetValue(selectedCity2Kingdom, out bool isEnemy);
                 if(isEnemy) {
                     GUI.backgroundColor = Color.green;
                 }
                 else {
                     GUI.backgroundColor = Color.red;
                 }
-                if(GUILayout.Button("Enemy")) {
-                    Reflection.CallMethod(MapBox.instance.kingdoms.diplomacyManager, "startWar", new object[] { selectedCity1Kingdom, selectedCity2Kingdom, true });
+                if(GUILayout.Button("Start war") && isEnemy == false) {
+					if(isAlly == false) {
+                        MapBox.instance.diplomacy.startWar(selectedCity1Kingdom, selectedCity2Kingdom, WarTypeLibrary.whisper_of_war, true);
+                    }
+					else {
+                        selectedCity2Kingdom.allianceLeave(city1KingdomAlliance);
+                        MapBox.instance.diplomacy.startWar(selectedCity1Kingdom, selectedCity2Kingdom, WarTypeLibrary.normal);
+                    }
                 }
-                GUILayout.EndHorizontal(); // closing #1
+                GUILayout.EndHorizontal(); 
+                GUI.backgroundColor = Color.grey;
             }
             else {
                 GUI.backgroundColor = Color.yellow;
                 GUILayout.Button("City1");
                 GUILayout.Button("City2");
-                GUILayout.EndHorizontal(); // closing #2
+                GUILayout.EndHorizontal();
             }
             if(selectedCity1 != null) {
                 GUILayout.BeginHorizontal();
                 GUI.backgroundColor = Color.cyan;
                 GUILayout.Button("City1:");
                 GUI.backgroundColor = Color.grey;
+                if(GUILayout.Button("Send settler out")) {
+                    Actor selectedNewSettler = selectedCity1.units.GetRandom();
+                    selectedNewSettler.removeFromCity();
+                    selectedNewSettler.ai.setTask("nomad_try_build_city", true, true);
+                }
+                if(selectedCity2 == null) {
+                    GUILayout.Button("NeedCity2");
+                }
+                else {
+                    if(GUILayout.Button("Transfer to Kingdom2")) {
+                        selectedCity1.joinAnotherKingdom(selectedCity2Kingdom);
+                    }
+                }
+                /*
                 if(GUILayout.Button("War everyone")) {
                     foreach(Kingdom kingdom in MapBox.instance.kingdoms.list) {
                         if(kingdom != selectedCity1Kingdom) {
-                            Reflection.CallMethod(MapBox.instance.kingdoms.diplomacyManager, "startWar", new object[] { selectedCity1Kingdom, kingdom, true });
+                            MapBox.instance.diplomacy.startWar(selectedCity1Kingdom, kingdom, WarTypeLibrary.normal, false);
                         }
                     }
                 }
                 if(GUILayout.Button("Peace everyone")) {
-                    foreach(Kingdom kingdom in MapBox.instance.kingdoms.list) {
-                        if(kingdom != selectedCity1Kingdom) {
-                            Reflection.CallMethod(MapBox.instance.kingdoms.diplomacyManager, "startPeace", new object[] { selectedCity1Kingdom, kingdom, true });
-                        }
+                    foreach(War kingdomWar in MapBox.instance.wars.getWars(selectedCity1Kingdom)) {
+                        kingdomWar.removeFromWar(selectedCity1Kingdom);
                     }
                 }
+                */
                 GUILayout.EndHorizontal();
             }
             else {
@@ -133,20 +176,34 @@ namespace SimpleGUI {
                 GUI.backgroundColor = Color.cyan;
                 GUILayout.Button("City2:");
                 GUI.backgroundColor = Color.grey;
+                if(GUILayout.Button("Send settler out")) {
+                    Actor selectedNewSettler = selectedCity2.units.GetRandom();
+                    selectedNewSettler.removeFromCity();
+                    selectedNewSettler.ai.setTask("nomad_try_build_city", true, true);
+                }
+                if(selectedCity1 == null) {
+                    GUILayout.Button("NeedCity1");
+				}
+				else {
+                    if(GUILayout.Button("Transfer to Kingdom1")) {
+                        selectedCity2.joinAnotherKingdom(selectedCity1Kingdom);
+                    }
+                }
+               
+                /*
                 if(GUILayout.Button("War everyone")) {
                     foreach(Kingdom kingdom in MapBox.instance.kingdoms.list) {
                         if(kingdom != selectedCity2Kingdom) {
-                            Reflection.CallMethod(MapBox.instance.kingdoms.diplomacyManager, "startWar", new object[] { selectedCity2Kingdom, kingdom, true });
+                            MapBox.instance.diplomacy.startWar(selectedCity2Kingdom, kingdom, WarTypeLibrary.normal, false);
                         }
                     }
                 }
                 if(GUILayout.Button("Peace everyone")) {
-                    foreach(Kingdom kingdom in MapBox.instance.kingdoms.list) {
-                        if(kingdom != selectedCity2Kingdom) {
-                            Reflection.CallMethod(MapBox.instance.kingdoms.diplomacyManager, "startPeace", new object[] { selectedCity2Kingdom, kingdom, true });
-                        }
+                    foreach(War kingdomWar in MapBox.instance.wars.getWars(selectedCity2Kingdom)) {
+                        kingdomWar.removeFromWar(selectedCity2Kingdom);
                     }
                 }
+                */
                 GUILayout.EndHorizontal();
             }
             else {
@@ -203,149 +260,6 @@ namespace SimpleGUI {
                 GUILayout.Button("NeedCity2");
             }
             GUILayout.EndHorizontal();
-            GUI.backgroundColor = targetColorForZone;
-            GUILayout.Button("Color zone");
-            GUILayout.BeginHorizontal();
-            GUI.backgroundColor = Color.grey;
-            if(selectedCity1 != null) {
-                if(city1PaintColor) {
-                    GUI.backgroundColor = Color.green;
-                }
-                else {
-                    GUI.backgroundColor = Color.red;
-                }
-                if(GUILayout.Button("City1 color")) {
-                    city1PaintColor = !city1PaintColor;
-                    if(city1PaintColor) {
-                        city2PaintColor = false;
-                    }
-                    // SimpleLib.Other.ShowTextTip("Painting border: use left and right click");
-                }
-                if(city1PaintColor && Input.GetKeyDown(KeyCode.R)) {
-                    city1PaintColor = false;
-                }
-            }
-            else {
-                GUILayout.Button("NeedCity1");
-            }
-            GUI.backgroundColor = Color.grey;
-            if(selectedCity2 != null) {
-                if(city2PaintColor) {
-                    GUI.backgroundColor = Color.green;
-                }
-                else {
-                    GUI.backgroundColor = Color.red;
-                }
-                if(GUILayout.Button("City2 color")) {
-                    city2PaintColor = !city2PaintColor;
-                    if(city2PaintColor) {
-                        city1PaintColor = false;
-                    }
-                    // SimpleLib.Other.ShowTextTip("Painting border: use left and right click");
-                }
-                if(city2PaintColor && Input.GetKeyDown(KeyCode.R)) {
-                    city2PaintColor = false;
-                }
-            }
-            else {
-                GUILayout.Button("NeedCity2");
-            }
-            GUILayout.EndHorizontal();
-            targetColorForZone.r = (byte)GUILayout.HorizontalScrollbar((float)targetColorForZone.r, 1f, 0f, 256f);
-            targetColorForZone.g = (byte)GUILayout.HorizontalScrollbar((float)targetColorForZone.g, 1f, 0f, 256f);
-            targetColorForZone.b = (byte)GUILayout.HorizontalScrollbar((float)targetColorForZone.b, 1f, 0f, 256f);
-            if(selectedCity1 != null && selectedCity2 != null) {
-                if(GUILayout.Button("City2 joins city1 kingdom") && selectedCity1Kingdom != null) {
-                    //Kingdom city2 Kingdom = selectedCity2.city
-                    selectedCity2.joinAnotherKingdom(selectedCity1Kingdom);
-                }
-                if(!cityMergeConfirmation) {
-                    if(GUILayout.Button("Merge cities together")) {
-                        cityMergeConfirmation = true;
-                    }
-                }
-                else if(cityMergeConfirmation) {
-                    GUILayout.BeginHorizontal();
-                    GUI.backgroundColor = Color.yellow;
-                    GUILayout.Button("Are you sure:");
-                    GUI.backgroundColor = Color.green;
-                    if(GUILayout.Button("Merge cities")) {
-                        List<Actor> city2Actors = selectedCity2.units.getSimpleList();
-                        for(int i = 0; i < selectedCity2.units.Count; i++) {
-                            Actor citizen = city2Actors[i];
-                            selectedCity2.removeCitizen(citizen, false);
-                            citizen.city = null;
-                            citizen.CallMethod("becomeCitizen", new object[] { selectedCity1 });
-                            cityMergeConfirmation = false;
-
-                        }
-                    }
-                    GUI.backgroundColor = Color.red;
-                    if(GUILayout.Button("Cancel")) {
-                        cityMergeConfirmation = false;
-                    }
-
-                    GUILayout.EndHorizontal();
-                }
-                /*
-                if (!kingdomMergeConfirmation)
-                {
-                    if (GUILayout.Button("Merge kingdoms together"))
-                    {
-                        kingdomMergeConfirmation = true;
-                    }
-                }
-                else if(kingdomMergeConfirmation)
-                {
-                    GUILayout.BeginHorizontal();
-                    GUI.backgroundColor = Color.cyan;
-                    GUILayout.Button("Are you sure:");
-                    GUI.backgroundColor = Color.green;
-                    if (GUILayout.Button("Merge kingdoms"))
-                    {
-                        if(selectedCity1 != null) {
-                            Kingdom city1Kingdom = selectedCity1.kingdom;
-                            if(city1Kingdom == null) {
-                                Debug.Log("Caught error: kingdom1 null");
-                                kingdomMergeConfirmation = false;
-                                return;
-                            }
-                        }
-                        if(selectedCity2 != null) {
-                            Kingdom city2Kingdom = selectedCity2.kingdom;
-                            if(city2Kingdom == null) {
-                                Debug.Log("Caught error: kingdom2 null");
-                                kingdomMergeConfirmation = false;
-                                return;
-                            }
-                            Debug.Log("buildings");
-                            for(int i = 0; i < city2Kingdom.buildings.Count; i++) {
-                                //city2Kingdom.buildings.[i].setKingdom(selectedCity1.kingdom); ;
-                            }
-                            Debug.Log("cities");
-                            for(int i = 0; i < city2Kingdom.cities.Count; i++) {
-                                city2Kingdom.cities[i].setKingdom(selectedCity1.kingdom);
-                            };
-                        }
-                      
-                        kingdomMergeConfirmation = false;
-
-                    }
-                    GUI.backgroundColor = Color.red;
-                    if (GUILayout.Button("Cancel"))
-                    {
-                        kingdomMergeConfirmation = false;
-                    }
-                
-                    GUILayout.EndHorizontal();
-                }
-                */
-            }
-            else {
-                GUI.backgroundColor = Color.yellow;
-                GUILayout.Button("Set both cities before merge");
-                GUI.backgroundColor = Color.grey;
-            }
             if(EnableConstantWar) {
                 GUI.backgroundColor = Color.green;
             }
@@ -361,17 +275,19 @@ namespace SimpleGUI {
             else {
                 GUI.backgroundColor = Color.red;
             }
+            GUI.backgroundColor = Color.grey;
             if(GUILayout.Button("World War")) {
                 foreach(Kingdom kingdom in MapBox.instance.kingdoms.list_civs) {
                     foreach(Kingdom otherKingdom in MapBox.instance.kingdoms.list_civs) {
                         if(otherKingdom != kingdom && kingdom.isEnemy(otherKingdom) == false) {
-                            MapBox.instance.kingdoms.diplomacyManager.startWar(kingdom, otherKingdom, true);
+                            MapBox.instance.diplomacy.startWar(kingdom, otherKingdom, WarTypeLibrary.normal, false);
                         }
                     }
                 }
             }
-            GUI.backgroundColor = Color.grey;
             if(GUILayout.Button("Peaceful World")) {
+                MapBox.instance.wars.stopAllWars();
+                /*
                 foreach(Kingdom kingdom in MapBox.instance.kingdoms.list_civs) {
                     foreach(Kingdom otherKingdom in MapBox.instance.kingdoms.list_civs) {
                         if(otherKingdom != kingdom && kingdom.isEnemy(otherKingdom) == true) {
@@ -379,15 +295,11 @@ namespace SimpleGUI {
                         }
                     }
                 }
+                */
             }
             GUI.DragWindow();
         }
 
-        public void goldbergThing()
-        {
-            Config.EVERYTHING_MAGIC_COLOR = true;
-            Config.EVERYTHING_FIREWORKS = true;
-        }
 
         public void diplomacyWindowUpdate()
         {
@@ -419,32 +331,34 @@ namespace SimpleGUI {
             }
 
             if(city1PaintZone && selectedCity1 != null) {
-                if(Input.GetMouseButton(0) && MapBox.instance.getMouseTilePos() != null && MapBox.instance.getMouseTilePos().zone != null && MapBox.instance.getMouseTilePos().zone.city != null && MapBox.instance.getMouseTilePos().zone.city != selectedCity1) {
-                    MapBox.instance.getMouseTilePos().zone.city.removeZone(MapBox.instance.getMouseTilePos().zone);
+                if(Input.GetMouseButton(0) && MapBox.instance.getMouseTilePos().zone.city != selectedCity1) {
+                    foreach(City city in MapBox.instance.cities.list) {
+                        city.removeZone(MapBox.instance.getMouseTilePos().zone);
+                    }
                     selectedCity1.addZone(MapBox.instance.getMouseTilePos().zone);
                 }
-                if(Input.GetMouseButton(1) && MapBox.instance.getMouseTilePos() != null && MapBox.instance.getMouseTilePos().zone != null && MapBox.instance.getMouseTilePos().zone.city != null && MapBox.instance.getMouseTilePos().zone.city == selectedCity1) {
+                if(Input.GetMouseButton(1) && MapBox.instance.getMouseTilePos().zone.city == selectedCity1) {
                     selectedCity1.removeZone(MapBox.instance.getMouseTilePos().zone);
                 }
             }
             if(city2PaintZone && selectedCity2 != null) {
                 if(Input.GetMouseButton(0) && MapBox.instance.getMouseTilePos().zone.city != selectedCity2) {
-                    foreach(City city in MapBox.instance.citiesList) {
-                        Reflection.CallMethod(city, "removeZone", new object[] { MapBox.instance.getMouseTilePos().zone });
+                    foreach(City city in MapBox.instance.cities.list) {
+                        city.removeZone(MapBox.instance.getMouseTilePos().zone);
                     }
-                    Reflection.CallMethod(selectedCity2, "addZone", new object[] { MapBox.instance.getMouseTilePos().zone });
+                    selectedCity2.addZone(MapBox.instance.getMouseTilePos().zone);
                 }
                 if(Input.GetMouseButton(1) && MapBox.instance.getMouseTilePos().zone.city == selectedCity2) {
-                    Reflection.CallMethod(selectedCity2, "removeZone", new object[] { MapBox.instance.getMouseTilePos().zone });
+                    selectedCity2.removeZone(MapBox.instance.getMouseTilePos().zone);
                 }
             }
-
+            /* pretty sure kingdom coloring is vanilla feature now
             if(city1PaintColor && selectedCity1 != null) {
                 if(Input.GetMouseButton(0) && MapBox.instance.getMouseTilePos() != null && MapBox.instance.getMouseTilePos().zone != null && MapBox.instance.getMouseTilePos().zone.city != null && MapBox.instance.getMouseTilePos().zone.city == selectedCity1) {
                     ZoneCalculator zoneCalculator = Reflection.GetField(MapBox.instance.GetType(), MapBox.instance, "zoneCalculator") as ZoneCalculator;
                     Kingdom kingdom = Reflection.GetField(MapBox.instance.getMouseTilePos().zone.city.GetType(), MapBox.instance.getMouseTilePos().zone.city, "kingdom") as Kingdom;
-                    KingdomColor kingdomColor = Reflection.GetField(kingdom.GetType(), kingdom, "kingdomColor") as KingdomColor;
-                    kingdomColor.colorBorderInside = targetColorForZone;
+                    ColorAsset kingdomColor = kingdom.kingdomColor;
+                    kingdomColor. = targetColorForZone;
                     kingdomColor.colorBorderInsideAlpha = targetColorForZone;
                     kingdomColor.colorBorderInsideAlpha.a = 0.6f;
                     kingdomColor.colorBorderOut = targetColorForZone;
@@ -491,7 +405,7 @@ namespace SimpleGUI {
                     Reflection.CallMethod(selectedCity2, "addZone", new object[] { MapBox.instance.getMouseTilePos().zone });
                 }
             }
-
+            */
             if(GuiMain.showHideDiplomacyConfig != null && GuiMain.showHideDiplomacyConfig.Value) {
                 diplomacyWindowRect = GUILayout.Window(1004, diplomacyWindowRect, new GUI.WindowFunction(diplomacyWindow), "Diplomacy", new GUILayoutOption[]
                 {
@@ -522,10 +436,10 @@ namespace SimpleGUI {
         public static City selectedCity1;
         public static City selectedCity2;
         public static Kingdom selectedCity1Kingdom {
-            get => Reflection.GetField(selectedCity1.GetType(), selectedCity1, "kingdom") as Kingdom;
+            get => selectedCity1.kingdom;
         }
         public static Kingdom selectedCity2Kingdom {
-            get => Reflection.GetField(selectedCity2.GetType(), selectedCity2, "kingdom") as Kingdom;
+            get => selectedCity2.kingdom;
         }
         public bool EnableConstantWar;
         public bool EnableWarOfTheWorld;

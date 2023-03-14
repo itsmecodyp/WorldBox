@@ -11,7 +11,6 @@ namespace SimpleGUI
 {
 	class GuiItemGeneration
 	{
-		
 		public void itemGenerationWindowUpdate()
 		{
 			if (GuiMain.showWindowMinimizeButtons.Value)
@@ -209,6 +208,7 @@ namespace SimpleGUI
 						weaponIDPos++;
 					}
 				}
+				/*
 				if(lastSelectedActor != null && GUILayout.Button("single item", new GUILayoutOption[0]))
 				{
 					if (itemGenerationSlot == "weapon" && GuiMain.ItemGen.allWeapons.Count > 1)
@@ -392,6 +392,7 @@ namespace SimpleGUI
 						setActorStatsDirty(actor);
 					}
 				}
+				*/
 				GUILayout.BeginHorizontal(new GUILayoutOption[0]);
 				if (GUILayout.Button("Toggle random stats on item"))
 				{
@@ -425,7 +426,7 @@ namespace SimpleGUI
 			FieldInfo field = typeof(Actor).GetField("statsDirty", bindFlags);
 			field.SetValue(target, true);
 		}
-
+		/*
 		public static BaseStats randomBaseStats(int maxRange)
 		{
 			return new BaseStats
@@ -448,7 +449,7 @@ namespace SimpleGUI
 				targets = UnityEngine.Random.Range(1, maxRange)
 			};
 		}
-
+		*/
 		public static bool setItem_Prefix(ItemData pData, ActorEquipmentSlot __instance)
 		{
 			if (manualGeneration)

@@ -57,7 +57,7 @@ namespace SimpleGUI
             MapAction.createRoadTile(pTile);
         }
 
-        public static bool startDestroyBuilding_Prefix(bool pRemove = false)
+        public static bool startDestroyBuilding_Prefix()
         {
             if (placingRoad || placingField)
             {
@@ -81,7 +81,7 @@ namespace SimpleGUI
             }
             else
             {
-                Building building = MapBox.instance.addBuilding(selectedBuildingAssetName, MapBox.instance.getMouseTilePos(), null, false, true, BuildPlacingType.New); //CallMethod("addBuilding", new object[] { selectedBuildingAssetName, MapBox.instance.getMouseTilePos(), null, false, true, BuildPlacingType.New }) as Building;
+                Building building = MapBox.instance.buildings.addBuilding(selectedBuildingAssetName, MapBox.instance.getMouseTilePos(), false, false, BuildPlacingType.New); //CallMethod("addBuilding", new object[] { selectedBuildingAssetName, MapBox.instance.getMouseTilePos(), null, false, true, BuildPlacingType.New }) as Building;
                 building.updateBuild(100); //CallMethod("updateBuild", new object[] { 100 });
                 WorldTile currentTile = building.currentTile; //Reflection.GetField(building.GetType(), building, "currentTile") as WorldTile;
                 if (currentTile.zone.city != null)

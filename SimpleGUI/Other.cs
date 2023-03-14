@@ -12,15 +12,17 @@ namespace SimpleGUI {
         {
             GuiMain.SetWindowInUse(windowID);
             Color original = GUI.backgroundColor;
+            /*
             if(GUILayout.Button("Debug map")) {
                 tools.debug.DebugMap.makeDebugMap(MapBox.instance);
             }
+           
             if(GUILayout.Button("Randomize building color")) {
-                List<Building> buildingList = MapBox.instance.buildings.getSimpleList();
+                List<Building> buildingList = MapBox.instance.buildings.ToList();
                 foreach(Building building in buildingList) {
-                    BuildingData data = Reflection.GetField(building.GetType(), building, "data") as BuildingData;
+                    BuildingData data = building.data; //= Reflection.GetField(building.GetType(), building, "data") as BuildingData;
                     if(data.state != BuildingState.Ruins && data.state != BuildingState.CivAbandoned) {
-                        BuildingAsset stats = Reflection.GetField(building.GetType(), building, "stats") as BuildingAsset;
+                        BuildingAsset stats = building.asset;//= Reflection.GetField(building.GetType(), building, "stats") as BuildingAsset;
                         if(stats.hasKingdomColor) {
                             SpriteRenderer spriteRenderer = Reflection.GetField(building.GetType(), building, "spriteRenderer") as SpriteRenderer;
                             spriteRenderer.color = UnityEngine.Random.ColorHSV(0f, 1f, 1f, 1f, 0.5f, 1f); // change color
@@ -29,11 +31,11 @@ namespace SimpleGUI {
                 }
             }
             if(GUILayout.Button("Randomize building roof color")) {
-                List<Building> buildingList = MapBox.instance.buildings.getSimpleList();
+                List<Building> buildingList = MapBox.instance.buildings.ToList();
                 foreach(Building building in buildingList) {
-                    BuildingData data = Reflection.GetField(building.GetType(), building, "data") as BuildingData;
+                    BuildingData data = building.data; //= Reflection.GetField(building.GetType(), building, "data") as BuildingData;
                     if(data.state != BuildingState.Ruins && data.state != BuildingState.CivAbandoned) {
-                        BuildingAsset stats = Reflection.GetField(building.GetType(), building, "stats") as BuildingAsset;
+                        BuildingAsset stats = building.asset;//= Reflection.GetField(building.GetType(), building, "stats") as BuildingAsset;
                         if(stats.hasKingdomColor) {
                             SpriteRenderer roof = Reflection.GetField(building.GetType(), building, "roof") as SpriteRenderer;
                             roof.color = UnityEngine.Random.ColorHSV(0f, 1f, 1f, 1f, 0.5f, 1f); // change color
@@ -41,6 +43,7 @@ namespace SimpleGUI {
                     }
                 }
             }
+            */
             if(GuiMain.disableMinimap.Value) {
                 GUI.backgroundColor = Color.green;
             }
@@ -50,7 +53,7 @@ namespace SimpleGUI {
             if(GUILayout.Button("Disable minimap")) {
                 GuiMain.disableMinimap.Value = !GuiMain.disableMinimap.Value;
                 QualityChanger qualityChanger = Reflection.GetField(MapBox.instance.GetType(), MapBox.instance, "qualityChanger") as QualityChanger;
-                bool lowRes = (bool)Reflection.GetField(qualityChanger.GetType(), qualityChanger, "lowRes");
+                bool lowRes = qualityChanger.lowRes;
                 if(GuiMain.disableMinimap.Value) {
                     lowRes = false;
                 }
@@ -140,6 +143,7 @@ namespace SimpleGUI {
             else {
                 GUI.backgroundColor = Color.red;
             }
+            /* became vanilla feature in 0.15+
             if(GUILayout.Button("Kingdom zones more visible")) {
                 kingdomZonesMoreVisible = !kingdomZonesMoreVisible;
                 // change visibility of existing kingdoms
@@ -159,7 +163,7 @@ namespace SimpleGUI {
                 MapBox.instance.zoneCalculator.setDrawnZonesDirty();
                 MapBox.instance.zoneCalculator.clearCurrentDrawnZones();
             }
-
+            */
             if(stopBodyRemoval) {
                 GUI.backgroundColor = Color.green;
             }
@@ -261,8 +265,8 @@ namespace SimpleGUI {
                                 pCity.calculated_place_for_farms.Add(worldTile);
                             }
                             if(worldTile.Type.farm_field) {
-                                pCity.calculated_farms.Add(worldTile);
-                                if(worldTile.building != null && worldTile.building.stats.wheat) {
+                                pCity.calculated_farm_fields.Add(worldTile);
+                                if(worldTile.building != null && worldTile.building.asset.wheat) {
                                     pCity.calculated_crops.Add(worldTile);
                                 }
                             }
@@ -278,8 +282,8 @@ namespace SimpleGUI {
                             pCity.calculated_place_for_farms.Add(worldTile);
                         }
                         if(worldTile.Type.farm_field) {
-                            pCity.calculated_farms.Add(worldTile);
-                            if(worldTile.building != null && worldTile.building.stats.wheat) {
+                            pCity.calculated_farm_fields.Add(worldTile);
+                            if(worldTile.building != null && worldTile.building.asset.wheat) {
                                 pCity.calculated_crops.Add(worldTile);
                             }
                         }
@@ -352,7 +356,7 @@ namespace SimpleGUI {
         }
 
         // why is fire so annoying
-        public static bool setFire_Prefix(bool pForce = false)
+        public static bool setFireData_Prefix(bool pVal)
         {
             if(disableTileDestruction) {
                 return false;
@@ -364,6 +368,7 @@ namespace SimpleGUI {
 
         // changes visibilty of newly created kingdoms
         // doesnt work and im tired of trying this, the toggle works fine
+        /*
         public static void createColors_Postfix(Kingdom __instance)
         {
             if(kingdomZonesMoreVisible) {
@@ -371,8 +376,8 @@ namespace SimpleGUI {
                 __instance.kingdomColor.colorBorderInsideAlpha.a = GuiMain.zoneAlpha.Value;
             }
         }
-
-        public static bool startRemove_Prefix(bool pSetRuinSprite)
+        */
+        public static bool startRemove_Prefix()
         {
             if(disableBuildingDestruction) {
                 return false;
@@ -388,6 +393,7 @@ namespace SimpleGUI {
             return true;
         }
 
+        /* 
         public static bool setSpriteRuin_Prefix()
         {
             if(disableBuildingDestruction) {
@@ -395,6 +401,7 @@ namespace SimpleGUI {
             }
             return true;
         }
+        */
 
         public static bool destroyBuilding_Prefix()
         {
@@ -474,8 +481,8 @@ namespace SimpleGUI {
         public Actor lastActor {
             get => GuiItemGeneration.lastSelectedActor;
         }
-        public ActorStatus lastActorData {
-            get => Reflection.GetField(lastActor.GetType(), lastActor, "data") as ActorStatus;
+        public ActorData lastActorData {
+            get => lastActor.data;
         }
         public static Color originalColor;
         public bool multiCrab;
@@ -483,19 +490,6 @@ namespace SimpleGUI {
         public static bool kingdomZonesMoreVisible;
 
     }
-
-    // crabzilla spams NRE here
-    // not sure why, lazy fix
-    [HarmonyPatch(typeof(GameObjectZSorter))]
-    class GameObjectZSorter_Update {
-        [HarmonyPatch("Update", MethodType.Normal)]
-        public static bool Prefix(GameObjectZSorter __instance)
-        {
-            if(__instance.zParent == null) { return false; }
-            else { return true; }
-        }
-    }
-    
 
     // allow multiple crabs
     [HarmonyPatch(typeof(Config))]
@@ -550,9 +544,9 @@ namespace SimpleGUI {
     class Actor_killHimself {
 
         [HarmonyPatch("killHimself", MethodType.Normal)]
-        public static void Postfix(bool pDestroy, AttackType pType, bool pCountDeath, bool pLaunchCallbacks, Actor __instance)
+        public static void Postfix(bool pDestroy, AttackType pType, bool pCountDeath, bool pLaunchCallbacks, bool pLogFavorite, Actor __instance)
         {
-			if(GuiMain.Other.multiCrab && __instance.stats.id.Contains("zilla")) {
+			if(GuiMain.Other.multiCrab && __instance.asset.id.Contains("zilla")) {
                 Kingdom kingdomByID = MapBox.instance.kingdoms.getKingdomByID("crabzilla");
                 if(kingdomByID.units.Count > 1) {
                     List<Actor> tempList = kingdomByID.units.getSimpleList();

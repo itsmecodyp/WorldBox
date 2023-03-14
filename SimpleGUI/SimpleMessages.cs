@@ -96,9 +96,9 @@ namespace SimpleMessages {
                     ModMessage activeMessage = listOfMessages[i];
                     if(activeMessage.startTime + activeMessage.duration > Time.realtimeSinceStartup) {
                         Actor actor = activeMessage.assignedActor;
-                        ActorStatus data = null;
+                        ActorData data = null;
                         if(actor != null)
-                            data = Reflection.GetField(actor.GetType(), actor, "data") as ActorStatus;
+                            data = actor.data;
                         Vector3 screenPos = new Vector3();
                         if(data != null && data.alive) {
                             Vector2 textDimensions = GUI.skin.window.CalcSize(new GUIContent(activeMessage.MessageText));
