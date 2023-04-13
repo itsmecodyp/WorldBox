@@ -401,14 +401,22 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="LargeNumbers\AlphabeticNotation.cs" />
     <Compile Include="Blackjack.cs" />
     <Compile Include="BlackjackPlayer.cs" />
     <Compile Include="Card.cs" />
+    <Compile Include="Clicker.cs" />
+    <Compile Include="Crash.cs" />
     <Compile Include="Deck.cs" />
     <Compile Include="GambaMain.cs" />
+    <Compile Include="LargeNumbers\LargeNumber.cs" />
     <Compile Include="ListExtensions.cs" />
+    <Compile Include="Mines.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="LargeNumbers\ScientificNotation.cs" />
+    <Compile Include="Slot.cs" />
     <Compile Include="Stocks.cs" />
+    <Compile Include="LargeNumbers\StringBuilderExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include=".editorconfig" />

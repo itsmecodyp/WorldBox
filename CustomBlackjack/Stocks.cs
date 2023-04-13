@@ -8,6 +8,8 @@ using Proyecto26;
 using SimpleJSON;
 using UnityEngine;
 using static Mono.Security.X509.X520;
+using LargeNumbers;
+
 
 namespace CustomBlackjack
 {
@@ -44,7 +46,7 @@ namespace CustomBlackjack
         public string totalIncomeClicker = "0";
     }
 
-    [BepInPlugin("cody.stocks", "SimpleStocks", "0.0.0.1")]
+    //[BepInPlugin("cody.stocks", "SimpleStocks", "0.0.0.1")]
     public class Stocks : BaseUnityPlugin
     {
 
@@ -102,7 +104,7 @@ namespace CustomBlackjack
 
         public void UploadUserData()
         {
-            myUser.money = moneyString(Main.humanMoney.Value);
+            //myUser.money = moneyString(Main.humanMoney.Value);
             myUser.totalIncomeBlackjack = moneyString(Main.totalIncomeBlackjack.Value);
             myUser.totalIncomeClicker = moneyString(Main.totalIncomeClicker.Value);
             myUser.totalIncomeIdle = moneyString(Main.totalIncomeIdle.Value);
@@ -332,7 +334,7 @@ namespace CustomBlackjack
             Main.stockAmountMAS.Value = Main.userStockDict["MAS"];
             Main.stockAmountDON.Value = Main.userStockDict["DON"];
             Main.stockAmountMST.Value = Main.userStockDict["MST"];
-            Main.humanMoney.Value = Main.humanPlayer.money;
+           // Main.humanMoney.Value = new LargeNumber(Main.humanPlayer.money);
         }
 
     
@@ -535,13 +537,14 @@ namespace CustomBlackjack
                 double loadedMoney = double.Parse(node.Value);
                 if (loadedMoney != null && loadedMoney != 0d)
                 {
-                    Debug.Log("old money: " + Main.humanMoney.Value);
-                    Main.humanPlayer.money = loadedMoney;
-                    Main.humanMoney.Value = loadedMoney;
-                    myUser.money = Main.humanMoney.Value.ToString();
+
+                    Debug.Log("old money: " + new LargeNumber(Main.humanMoneyC.Value, Main.humanMoneyM.Value).ToString());
+                    Main.humanPlayer.money = new LargeNumber(loadedMoney);
+                   // Main.humanMoney.Value = new LargeNumber(loadedMoney);
+                   // myUser.money = Main.humanMoney.Value.ToString();
 
                     Debug.Log("node parsed: " + node.Value);
-                    Debug.Log("new money: " + Main.humanMoney.Value);
+                   // Debug.Log("new money: " + Main.humanMoney.Value);
 
 
                 }

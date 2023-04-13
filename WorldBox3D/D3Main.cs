@@ -16,11 +16,229 @@ namespace WorldBox3D {
     [BepInPlugin(pluginGuid, pluginName, pluginVersion)]
     [System.Obsolete]
     class _3D_Main : BaseUnityPlugin {
+
+        public void window3D(int windowID)
+        {
+            Color temp = GUI.backgroundColor;
+            GUI.backgroundColor = Color.red;
+            if(autoPlacement == true) {
+                GUI.backgroundColor = Color.green;
+            }
+            if(GUILayout.Button("Enable 3D: " + autoPlacement)) {
+                autoPlacement = !autoPlacement;
+                _3dEnabled = !_3dEnabled;
+            }
+            if(GUILayout.Button("Refresh buildings")) {
+                hasCreatedNewCopy = false;
+            }
+            if(GUILayout.Button("Refresh tiles")) {
+                MapBox.instance.allTilesDirty();
+                MapBox.instance.tilemap.redrawTiles(true);
+            }
+            GUI.backgroundColor = Color.red;
+            if(lockCameraControl == true) {
+                GUI.backgroundColor = Color.green;
+            }
+            if(GUILayout.Button("Lock camera: " + lockCameraControl)) {
+                lockCameraControl = !lockCameraControl;
+                Camera.main.transform.rotation = Quaternion.Euler(cameraX, cameraY, cameraZ);
+            }
+            GUI.backgroundColor = temp;
+            if(GUILayout.Button("Reset camera")) {
+                Camera.main.transform.rotation = Quaternion.Euler(cameraX, cameraY, cameraZ);
+            }
+			try {
+                ObjectPositioningButtons();
+            }
+            catch(Exception e) {
+
+			}
+
+            //ObjectRotationButtons();
+            CameraControls();
+            if(publicBuild == false) {
+                /*
+                if(GUILayout.Button("Spawn 100 cloud hurricane (C)") || Input.GetKeyDown(KeyCode.C)) {
+                    SpawnCloudsInCircle(MapBox.instance.getMouseTilePos(), 100); // hurricane spin is bugged, so this is disabled
+                }
+                */
+                if(GUILayout.Button("tile3d: " + tile3Denabled.ToString())) {
+                    tile3Denabled = !tile3Denabled;
+                }
+                if(Input.GetKeyUp(KeyCode.R)) {
+                    if(activeLines != null && activeLines.Count > 1) {
+                        foreach(LineRenderer line in activeLines) {
+                            line.SetVertexCount(0);
+                        }
+                    }
+                    if(tileTypeLines != null && tileTypeLines.Count > 1) {
+                        foreach(LineRenderer line2 in tileTypeLines) {
+                            line2.SetVertexCount(0);
+                        }
+                    }
+                    singleLine.SetVertexCount(0);
+                    deleteAllExtraLayers(); // sprite thickening reset
+                }
+                if(GUILayout.Button("Single line per tile type")) {
+                    /*
+                    int scaleFactor = 5;
+                    if(tileTypeLines == null) {
+                        tileTypeLines = new List<LineRenderer>();
+
+                    }
+                    int currentVertexCount = 0;
+                   //fuck this for now
+                    // List<TileTypeBase> tileTypes = AssetManager.tiles.list.AddRange(AssetManager.topTiles.list);
+
+                    foreach(TileType tileType in) {
+                        List<WorldTile> tilesOfType = new List<WorldTile>();
+                        foreach(WorldTile tile in MapBox.instance.tilesList) {
+                            if(tile.Type == tileType) {
+                                tilesOfType.Add(tile);
+                            }
+                        }
+                        LineRenderer tileTypesNewLine = new GameObject("Line").AddComponent<LineRenderer>();
+                        LineRenderer lineRenderer = tileTypesNewLine;
+                        lineRenderer.SetWidth(1f, 1f);
+                        lineRenderer.SetColors(tileType.color, tileType.color);
+                        Material whiteDiffuseMat = new Material(Shader.Find("UI/Default"));
+                        lineRenderer.material = whiteDiffuseMat;
+                        lineRenderer.material.color = tileType.color;
+                        lineRenderer.SetVertexCount(tilesOfType.Count);
+                        for(int i = 2; i < tilesOfType.Count; i++) {
+                            WorldTile tile = tilesOfType[i];
+                            lineRenderer.SetPosition(i - 2, new Vector3(tile.posV3.x, tile.posV3.y, (-(float)tile.Height / scaleFactor) - 150f));
+                            lineRenderer.SetPosition(i - 1, new Vector3(tile.posV3.x, tile.posV3.y, (-(float)tile.Height / scaleFactor) - 150f) + new Vector3(0, 0, -10));
+                            currentVertexCount++;
+                        }
+                        tileTypeLines.Add(lineRenderer);
+                    }
+                    */
+                }
+                if(GUILayout.Button("Single line for all tiles")) {
+                    int scaleFactor = 5;
+                    Color color1 = new Color(UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f));
+                    Color color2 = new Color(UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f));
+                    if(singleLine == null) {
+                        singleLine = new GameObject("Line").AddComponent<LineRenderer>();
+                    }
+                    LineRenderer lineRenderer = singleLine;
+                    lineRenderer.SetWidth(1f, 1f);
+                    lineRenderer.SetVertexCount(MapBox.instance.tilesList.Length);
+                    lineRenderer.SetColors(color1, color2);
+                    Material whiteDiffuseMat = new Material(Shader.Find("UI/Default"));
+                    lineRenderer.material = whiteDiffuseMat;
+                    lineRenderer.material.color = color1;
+                    for(int i = 2; i < MapBox.instance.tilesList.Length; i++) {
+                        WorldTile tile = MapBox.instance.tilesList[i];
+                        lineRenderer.SetPosition(i - 2, new Vector3(tile.posV3.x, tile.posV3.y, (-(float)tile.Height / scaleFactor) - 150f));
+                        lineRenderer.SetPosition(i - 1, new Vector3(tile.posV3.x, tile.posV3.y, (-(float)tile.Height / scaleFactor) - 150f) + new Vector3(0, 0, -10));
+                    }
+                }
+                if(GUILayout.Button("Single line for all tiles except liquid")) {
+                    int scaleFactor = 5;
+                    if(singleLine == null) {
+                        singleLine = new GameObject("Line").AddComponent<LineRenderer>();
+                    }
+                    LineRenderer lineRenderer = singleLine;
+                    lineRenderer.SetWidth(1f, 1f);
+                    lineRenderer.SetVertexCount(MapBox.instance.tilesList.Length);
+                    lineRenderer.SetColors(Color.green, Color.red);
+                    Material whiteDiffuseMat = new Material(Shader.Find("UI/Default"));
+                    lineRenderer.material = whiteDiffuseMat;
+                    lineRenderer.material.color = Color.green;
+                    for(int i = 2; i < MapBox.instance.tilesList.Length; i++) {
+                        if(!MapBox.instance.tilesList[i].Type.liquid) {
+                            WorldTile tile = MapBox.instance.tilesList[i];
+                            lineRenderer.SetPosition(i - 2, new Vector3(tile.posV3.x, tile.posV3.y, (-(float)tile.Height / scaleFactor) - 150f));
+                            lineRenderer.SetPosition(i - 1, new Vector3(tile.posV3.x, tile.posV3.y, (-(float)tile.Height / scaleFactor) - 150f) + new Vector3(0, 0, -10));
+                            activeLines.Add(lineRenderer);
+                        }
+                    }
+                }
+                if(GUILayout.Button("Line for every tile on the map")) {
+                    int scaleFactor = 5;
+                    foreach(WorldTile tile in MapBox.instance.tilesList) {
+                        // if (!tile.Type.water)
+                        // {
+                        Color tileColor = tile.getColor();
+                        LineRenderer lineRenderer = new GameObject("Line").AddComponent<LineRenderer>();
+                        lineRenderer.SetWidth(1f, 1f);
+                        lineRenderer.startColor = tileColor;
+                        lineRenderer.endColor = tileColor;
+                        lineRenderer.SetColors(tileColor, tileColor);
+                        lineRenderer.SetVertexCount(2);
+                        lineRenderer.SetPosition(0, new Vector3(tile.posV3.x, tile.posV3.y, (-(float)tile.Height / scaleFactor) - 150f));
+                        lineRenderer.SetPosition(1, new Vector3(tile.posV3.x, tile.posV3.y, (-(float)tile.Height / scaleFactor) - 150f) + new Vector3(0, 0, -10));
+                        Material whiteDiffuseMat = new Material(Shader.Find("UI/Default"));
+                        lineRenderer.material = whiteDiffuseMat;
+                        lineRenderer.material.color = tileColor;
+                        // lineRenderer.sortingOrder = 50;
+                        activeLines.Add(lineRenderer);
+                        // }
+                    }
+                }
+                if(GUILayout.Button("Line for every tile on the map except water")) {
+                    int scaleFactor = 5;
+                    foreach(WorldTile tile in MapBox.instance.tilesList) {
+                        if(!tile.Type.liquid) {
+                            Color tileColor = tile.getColor();
+                            LineRenderer lineRenderer = new GameObject("Line").AddComponent<LineRenderer>();
+                            lineRenderer.SetWidth(1f, 1f);
+                            lineRenderer.startColor = tileColor;
+                            lineRenderer.endColor = tileColor;
+                            lineRenderer.SetColors(tileColor, tileColor);
+                            lineRenderer.SetVertexCount(2);
+                            lineRenderer.SetPosition(0, new Vector3(tile.posV3.x, tile.posV3.y, (-(float)tile.Height / scaleFactor) - 150f));
+                            lineRenderer.SetPosition(1, new Vector3(tile.posV3.x, tile.posV3.y, (-(float)tile.Height / scaleFactor) - 150f) + new Vector3(0, 0, -10));
+                            Material whiteDiffuseMat = new Material(Shader.Find("UI/Default"));
+                            lineRenderer.material = whiteDiffuseMat;
+                            lineRenderer.material.color = tileColor;
+                            // lineRenderer.sortingOrder = 50;
+                            activeLines.Add(lineRenderer);
+                        }
+                    }
+                }
+                if(GUILayout.Button("Thicken tiles")) {
+                    foreach(WorldTile tile in MapBox.instance.tilesList) {
+						for(int i = 1; i < 5; i++) {
+                            GameObject tileRepresentation = new GameObject();
+                            tileRepresentation.AddComponent<SpriteRenderer>().sprite = tile.curGraphics.sprite;
+                            tileRepresentation.transform.position = new Vector3(tile.posV3.x, tile.posV3.y - i, -(tile.Height / dividerAmount));
+                        }
+                    }
+                }
+                if(GUILayout.Button("Save snapshot")) {
+                    foreach(WorldTile tile in MapBox.instance.tilesList) {
+                        tileSprites.Add(tile.curGraphics.sprite, new Vector3(tile.posV3.x, tile.posV3.y, -(tile.Height / dividerAmount)));
+					}
+                    foreach(Building building in MapBox.instance.buildings.ToList()) {
+                        WorldTile tile = building.currentTile;
+                        buildingSprites.Add(building.spriteRenderer.sprite, new Vector3(building.currentPosition.x, building.currentPosition.y, -(tile.Height / dividerAmount)));
+                    }
+                }
+                //clear/empty map in between or risk massive performance loss
+                if(GUILayout.Button("Load snapshot")) {
+                    foreach(KeyValuePair<Sprite, Vector3> tileEntry in tileSprites) {
+                        GameObject tileRepresentation = new GameObject();
+                        tileRepresentation.AddComponent<SpriteRenderer>().sprite = tileEntry.Key;
+                        tileRepresentation.transform.position = tileEntry.Value;
+					}
+                }
+            }
+
+            GUI.DragWindow();
+        }
+
+        public static Dictionary<Sprite, Vector3> tileSprites = new Dictionary<Sprite, Vector3>();
+        public static Dictionary<Sprite, Vector3> buildingSprites = new Dictionary<Sprite, Vector3>();
+        public static Dictionary<Sprite, Vector3> actorSprites = new Dictionary<Sprite, Vector3>();
+
+
         public static Dictionary<string, int> buildingCustomHeight = new Dictionary<string, int>();
         public static Dictionary<string, int> buildingCustomThickness = new Dictionary<string, int>();
         public static Dictionary<string, int> buildingCustomAngle = new Dictionary<string, int>();
 
-        public static LightManager lightMan = new LightManager();
         public void SettingSetup()
         {
             regularThickeningScale = Config.AddSetting("3D - Scaling", "Regular Thickness", 7, "How many extra layers the buildings get");
@@ -34,7 +252,7 @@ namespace WorldBox3D {
         }
         public const string pluginGuid = "cody.worldbox.3d";
         public const string pluginName = "WorldBox3D";
-        public const string pluginVersion = "0.0.0.3";
+        public const string pluginVersion = "0.0.0.4";
         public float rotationRate = 2f;
         public float manipulationRate = 0.01f;
         public float cameraX => Camera.main.transform.rotation.x;
@@ -59,6 +277,7 @@ namespace WorldBox3D {
             return pos;
         }
 
+        /* cloud code changed, plus this feature wasnt used much anyway
         public void SpawnCloudsInCircle(WorldTile centerTile, int count)
         {
             Vector3 center = centerTile.posV3; //transform.position;
@@ -73,6 +292,7 @@ namespace WorldBox3D {
                 // Instantiate(prefab, pos, Quaternion.identity);
             }
         }
+        */
 
         public static int dividerAmount = 10;
 
@@ -80,9 +300,9 @@ namespace WorldBox3D {
         public static bool setTile_Prefix(WorldTile pWorldTile, Vector3Int pVec, Tile pGraphic, TilemapExtended __instance)
         {
             if(tile3Denabled) {
-                List<Vector3Int> vec = Reflection.GetField(__instance.GetType(), __instance, "vec") as List<Vector3Int>;
-                List<Tile> tiles = Reflection.GetField(__instance.GetType(), __instance, "tiles") as List<Tile>;
-                Tile curGraphics = Reflection.GetField(pWorldTile.GetType(), pWorldTile, "curGraphics") as Tile;
+                List<Vector3Int> vec = __instance._vec;
+                List<Tile> tiles = __instance._tiles;
+                Tile curGraphics = pWorldTile.curGraphics;
 
                 pVec.z = (-pWorldTile.Height) / dividerAmount; // main change, everything else is recreation/replacement
 
@@ -112,179 +332,8 @@ namespace WorldBox3D {
             }
         }
 
-        public bool tryMesh;
-        public List<Actor> meshdActors = new List<Actor>();
-        public List<Building> meshdBuildings = new List<Building>();
-
-        public List<meshT> meshes = new List<meshT>();
-        public class meshT {
-            public Mesh mesh;
-            public Material mat;
-            public Actor Actor;
-        }
-
-        public Mesh spriteToMesh(Sprite sprite, int depth)
-        {
-            Mesh mesh = new Mesh();
-            List<Vector3> inVertices = Array.ConvertAll(sprite.vertices, i => (Vector3)i).ToList();
-            List<Vector2> uvs = sprite.uv.ToList();
-            List<int> triangles = Array.ConvertAll(sprite.triangles, i => (int)i).ToList();
-            if(depth <= 0) {
-                mesh.SetVertices(inVertices);
-                mesh.SetUVs(0, uvs);
-                mesh.SetTriangles(triangles, 0);
-            }
-            else {
-                List<Vector3> depthVerticles = new List<Vector3>(inVertices);
-                List<Vector2> depthUvs = new List<Vector2>(uvs);
-                List<int> depthTriangles = new List<int>(triangles);
-                foreach(Vector3 vector in inVertices) {
-                    depthVerticles.Add(new Vector3(vector.x, vector.y, depth));
-                }
-                foreach(Vector2 vector in uvs) {
-                    depthUvs.Add(new Vector2(vector.x, vector.y));
-                }
-                //depthTriangles.Add(triangles[0] + inVertices.Count);
-                for(int i = triangles.Count - 1; i >= 0; i--) {
-                    depthTriangles.Add((triangles[i] + inVertices.Count));
-                }
-                List<int> depthTrianglesWithJoinFaces = new List<int>(depthTriangles);
-                for(int i = 0; i + 1 < triangles.Count; i++) {
-                    depthTrianglesWithJoinFaces.Add(triangles[i + 1]);
-                    depthTrianglesWithJoinFaces.Add(triangles[i]);
-                    depthTrianglesWithJoinFaces.Add(triangles[i + 1] + inVertices.Count);
-                    depthTrianglesWithJoinFaces.Add(triangles[i + 1] + inVertices.Count);
-                    depthTrianglesWithJoinFaces.Add(triangles[i]);
-                    depthTrianglesWithJoinFaces.Add(triangles[i] + inVertices.Count);
-                }
-                for(int i = 0; i + 2 + inVertices.Count < depthVerticles.Count; i++) {
-                    depthTrianglesWithJoinFaces.Add(i);
-                    depthTrianglesWithJoinFaces.Add(i + 2);
-                    depthTrianglesWithJoinFaces.Add(i + 2 + inVertices.Count);
-                    depthTrianglesWithJoinFaces.Add(i);
-                    depthTrianglesWithJoinFaces.Add(i + 2 + inVertices.Count);
-                    depthTrianglesWithJoinFaces.Add(i + inVertices.Count);
-                }
-                for(int i = 0; i + 1 + inVertices.Count < depthVerticles.Count; i++) {
-                    depthTrianglesWithJoinFaces.Add(i);
-                    depthTrianglesWithJoinFaces.Add(i + 1);
-                    depthTrianglesWithJoinFaces.Add(i + 1 + inVertices.Count);
-                    depthTrianglesWithJoinFaces.Add(i);
-                    depthTrianglesWithJoinFaces.Add(i + 1 + inVertices.Count);
-                    depthTrianglesWithJoinFaces.Add(i + inVertices.Count);
-                }
-                mesh.SetVertices(depthVerticles.ToList());
-                mesh.SetUVs(0, depthUvs);
-                mesh.SetTriangles(depthTrianglesWithJoinFaces, 0);
-                string values = "";
-                int j = 0;
-                foreach(int i in depthTrianglesWithJoinFaces) {
-                    if(j > 3) {
-                        j = 0;
-                        values += "\n";
-                    }
-                    values += ";" + i;
-                }
-            }
-            return mesh;
-        }
-
-
         public void Update()
         {
-            if(!assets_initialised && showHide3D) {
-                init_assets();
-            }
-            if(tryMesh) {
-                foreach(Actor actor in MapBox.instance.units) {
-                    if(actor != null && !this.meshdActors.Contains(actor)) {
-                        SpriteRenderer spriteRenderer = Reflection.GetField(actor.GetType(), actor, "spriteRenderer") as SpriteRenderer;
-                        Shader oldShader = spriteRenderer.material.shader;
-                        Sprite sprite = spriteRenderer.sprite;
-                        int sortingLayerID = spriteRenderer.sortingLayerID;
-                        string sortingLayerName = spriteRenderer.sortingLayerName;
-                        Material material2 = spriteRenderer.material;
-
-                        GameObject gameObject1 = new GameObject("balls");
-                        gameObject1.transform.position = spriteRenderer.transform.position;
-
-                        Texture2D texture2D = Voxelizer.VoxelMenu.duplicateTexture(Voxelizer.VoxelMenu.ReadTexture(spriteRenderer.sprite.texture));
-                        Mesh mesh = Voxelizer.VoxelUtil.VoxelizeTexture2D(texture2D, false, 1f);
-                        Texture2D texture2D2 = Voxelizer.VoxelUtil.GenerateTextureMap(ref mesh, texture2D);
-                        gameObject1.AddComponent<MeshFilter>().sharedMesh = mesh;
-                        //gameObject1.transform.parent = actor.transform.parent;
-                        //gameObject1.transform.localPosition = actor.gameObject.transform.localPosition;
-                        MeshRenderer meshRenderer1 = gameObject1.AddComponent<MeshRenderer>();
-                        if(texture2D2 != null) {
-                            Material material = new Material(oldShader);
-                            material.SetTexture("_MainTex", texture2D2);
-                            meshRenderer1.sharedMaterial = material;
-                        }
-                        this.meshdActors.Add(actor);
-                    }
-
-                    if(true == false) { //meshdActors.Contains(actor) == false
-
-                        SpriteRenderer spriteRenderer = Reflection.GetField(actor.GetType(), actor, "spriteRenderer") as SpriteRenderer;
-                        Sprite actorSprite = spriteRenderer.sprite;
-
-                        int layer = spriteRenderer.sortingLayerID;
-                        string layerName = spriteRenderer.sortingLayerName;
-
-                        //spriteToMesh(actorSprite, 5);
-                        Material actorMaterial = new Material(Shader.Find("Standard"));
-                        actorMaterial.SetTexture("_MainTex", spriteRenderer.sprite.texture);
-
-                        //Texture2D actorTexture = spriteRenderer.sprite.texture;
-                        Texture2D actorTexture = Voxelizer.VoxelMenu.ReadTexture(spriteRenderer.sprite.texture);
-
-
-                        Mesh actorAsMesh = Voxelizer.VoxelUtil.VoxelizeTexture2D(actorTexture, false, 1f);
-                        Texture2D texture = Voxelizer.VoxelUtil.GenerateTextureMap(ref actorAsMesh, actorTexture);
-
-                        //meshes.Add(new meshT { Actor = actor, mat = actorMaterial, shader = actorShader, mesh = actorAsMesh });
-
-                        GameObject.DestroyImmediate(actor.GetComponent(typeof(SpriteRenderer)) as SpriteRenderer);
-
-                        MeshFilter filter = actor.gameObject.GetComponent(typeof(MeshFilter)) as MeshFilter;
-                        if(filter == null) {
-                            filter = actor.gameObject.AddComponent(typeof(MeshFilter)) as MeshFilter;
-                        }
-                        MeshRenderer render = actor.gameObject.GetComponent(typeof(MeshRenderer)) as MeshRenderer;
-                        if(render == null) {
-                            render = actor.gameObject.AddComponent(typeof(MeshRenderer)) as MeshRenderer;
-                        }
-
-                        actorAsMesh.RecalculateBounds();
-                        actorAsMesh.RecalculateNormals();
-                        filter.mesh = actorAsMesh;
-                        /*
-                        filter.sharedMesh = actorAsMesh;
-                        filter.sharedMesh.RecalculateBounds();
-                        filter.sharedMesh.RecalculateNormals();
-                        */
-                        render.sortingLayerID = layer;
-                        render.sortingLayerName = layerName;
-                        render.material = actorMaterial;
-                        render.sharedMaterial = actorMaterial;
-                        render.material.mainTexture = actorTexture;
-                        meshdActors.Add(actor);
-                    }
-                    if(meshdActors.Contains(actor) == true) {
-                        MeshRenderer meshRender = actor.gameObject.GetComponent(typeof(MeshRenderer)) as MeshRenderer;
-                        if(meshRender != null) {
-
-                        }
-                    }
-                    //render.material = 
-                    //newMaterial.
-                    //Material newMaterial = new Material(actorMaterial);
-                    foreach(meshT m in meshes) {
-                        Graphics.DrawMesh(m.mesh, position: actor.currentTile.posV3, rotation: Quaternion.Euler(-90, 0, 0), m.mat, 5000);
-                    }
-                }
-
-            }
             window3DRect.height = 0f;
 
         }
@@ -410,8 +459,8 @@ namespace WorldBox3D {
 
         public float BuildingHeight(Building target)
         {
-            float height = 0f;
-            BuildingAsset stats = Reflection.GetField(target.GetType(), target, "stats") as BuildingAsset;
+            float height = 3f;
+            BuildingAsset stats = target.asset;
 
             if(buildingCustomHeight.ContainsKey(stats.id)) {
                 height = buildingCustomHeight[stats.id];
@@ -465,7 +514,7 @@ namespace WorldBox3D {
             return true;
         }
         */
-        public static bool punchTargetAnimation_Prefix(Vector3 pDirection, WorldTile pTile, bool pFlip, bool pReverse, float pAngle, Actor __instance)
+        public static bool punchTargetAnimation_Prefix(Vector3 pDirection, bool pFlip, bool pReverse, float pAngle, Actor __instance)
         {
             if(_3dEnabled) {
                 return false;
@@ -501,394 +550,8 @@ namespace WorldBox3D {
         }
         public static LineRenderer singleLine;
         public static List<LineRenderer> tileTypeLines;
-        public void window3D(int windowID)
-        {
-            Color temp = GUI.backgroundColor;
-            GUI.backgroundColor = Color.red;
-            if(autoPlacement == true) {
-                GUI.backgroundColor = Color.green;
-            }
-            if(GUILayout.Button("Enable 3D: " + autoPlacement)) {
-                autoPlacement = !autoPlacement;
-                _3dEnabled = !_3dEnabled;
-            }
-            GUI.backgroundColor = Color.red;
-            if(lockCameraControl == true) {
-                GUI.backgroundColor = Color.green;
-            }
-            if(GUILayout.Button("Lock camera: " + lockCameraControl)) {
-                lockCameraControl = !lockCameraControl;
-                Camera.main.transform.rotation = Quaternion.Euler(cameraX, cameraY, cameraZ);
-            }
-            GUI.backgroundColor = temp;
-            if(GUILayout.Button("Reset camera")) {
-                Camera.main.transform.rotation = Quaternion.Euler(cameraX, cameraY, cameraZ);
-            }
 
-
-            try {
-                ObjectPositioningButtons();
-            }
-            catch(System.Exception e) {
-                // prevent null error and group repaint error from showing in log.. sloppy but the errors dont mess anything up anyway
-            }
-            //ObjectRotationButtons();
-            CameraControls();
-            if(publicBuild == false) {
-                if(GUILayout.Button("tryMesh: " + tryMesh.ToString())) {
-                    tryMesh = !tryMesh;
-                }
-                if(GUILayout.Button("Spawn 100 cloud hurricane (C)") || Input.GetKeyDown(KeyCode.C)) {
-                    SpawnCloudsInCircle(MapBox.instance.getMouseTilePos(), 100); // hurricane spin is bugged, so this is disabled
-                }
-                if(GUILayout.Button("tile3d: " + tile3Denabled.ToString())) {
-                    tile3Denabled = !tile3Denabled;
-                }
-                if(Input.GetKeyUp(KeyCode.R)) {
-                    if(activeLines != null && activeLines.Count > 1) {
-                        foreach(LineRenderer line in activeLines) {
-                            line.SetVertexCount(0);
-                        }
-                    }
-                    if(tileTypeLines != null && tileTypeLines.Count > 1) {
-                        foreach(LineRenderer line2 in tileTypeLines) {
-                            line2.SetVertexCount(0);
-                        }
-                    }
-                    singleLine.SetVertexCount(0);
-                    deleteAllExtraLayers(); // sprite thickening reset
-                }
-
-                if(GUILayout.Button("Single line per tile type")) {
-                    /*
-                    int scaleFactor = 5;
-                    if(tileTypeLines == null) {
-                        tileTypeLines = new List<LineRenderer>();
-
-                    }
-                    int currentVertexCount = 0;
-                   //fuck this for now
-                    // List<TileTypeBase> tileTypes = AssetManager.tiles.list.AddRange(AssetManager.topTiles.list);
-
-                    foreach(TileType tileType in) {
-                        List<WorldTile> tilesOfType = new List<WorldTile>();
-                        foreach(WorldTile tile in MapBox.instance.tilesList) {
-                            if(tile.Type == tileType) {
-                                tilesOfType.Add(tile);
-                            }
-                        }
-                        LineRenderer tileTypesNewLine = new GameObject("Line").AddComponent<LineRenderer>();
-                        LineRenderer lineRenderer = tileTypesNewLine;
-                        lineRenderer.SetWidth(1f, 1f);
-                        lineRenderer.SetColors(tileType.color, tileType.color);
-                        Material whiteDiffuseMat = new Material(Shader.Find("UI/Default"));
-                        lineRenderer.material = whiteDiffuseMat;
-                        lineRenderer.material.color = tileType.color;
-                        lineRenderer.SetVertexCount(tilesOfType.Count);
-                        for(int i = 2; i < tilesOfType.Count; i++) {
-                            WorldTile tile = tilesOfType[i];
-                            lineRenderer.SetPosition(i - 2, new Vector3(tile.posV3.x, tile.posV3.y, (-(float)tile.Height / scaleFactor) - 150f));
-                            lineRenderer.SetPosition(i - 1, new Vector3(tile.posV3.x, tile.posV3.y, (-(float)tile.Height / scaleFactor) - 150f) + new Vector3(0, 0, -10));
-                            currentVertexCount++;
-                        }
-                        tileTypeLines.Add(lineRenderer);
-                    }
-                    */
-                }
-                if(GUILayout.Button("Single line for all tiles")) {
-                    int scaleFactor = 5;
-                    Color color1 = new Color(UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f));
-                    Color color2 = new Color(UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f));
-                    if(singleLine == null) {
-                        singleLine = new GameObject("Line").AddComponent<LineRenderer>();
-                    }
-                    LineRenderer lineRenderer = singleLine;
-                    lineRenderer.SetWidth(1f, 1f);
-                    lineRenderer.SetVertexCount(MapBox.instance.tilesList.Count);
-                    lineRenderer.SetColors(color1, color2);
-                    Material whiteDiffuseMat = new Material(Shader.Find("UI/Default"));
-                    lineRenderer.material = whiteDiffuseMat;
-                    lineRenderer.material.color = color1;
-                    for(int i = 2; i < MapBox.instance.tilesList.Count; i++) {
-                        WorldTile tile = MapBox.instance.tilesList[i];
-                        lineRenderer.SetPosition(i - 2, new Vector3(tile.posV3.x, tile.posV3.y, (-(float)tile.Height / scaleFactor) - 150f));
-                        lineRenderer.SetPosition(i - 1, new Vector3(tile.posV3.x, tile.posV3.y, (-(float)tile.Height / scaleFactor) - 150f) + new Vector3(0, 0, -10));
-                    }
-                }
-                if(GUILayout.Button("Single line for all tiles except liquid")) {
-                    int scaleFactor = 5;
-                    if(singleLine == null) {
-                        singleLine = new GameObject("Line").AddComponent<LineRenderer>();
-                    }
-                    LineRenderer lineRenderer = singleLine;
-                    lineRenderer.SetWidth(1f, 1f);
-                    lineRenderer.SetVertexCount(MapBox.instance.tilesList.Count);
-                    lineRenderer.SetColors(Color.green, Color.red);
-                    Material whiteDiffuseMat = new Material(Shader.Find("UI/Default"));
-                    lineRenderer.material = whiteDiffuseMat;
-                    lineRenderer.material.color = Color.green;
-                    for(int i = 2; i < MapBox.instance.tilesList.Count; i++) {
-                        if(!MapBox.instance.tilesList[i].Type.liquid) {
-                            WorldTile tile = MapBox.instance.tilesList[i];
-                            lineRenderer.SetPosition(i - 2, new Vector3(tile.posV3.x, tile.posV3.y, (-(float)tile.Height / scaleFactor) - 150f));
-                            lineRenderer.SetPosition(i - 1, new Vector3(tile.posV3.x, tile.posV3.y, (-(float)tile.Height / scaleFactor) - 150f) + new Vector3(0, 0, -10));
-                            activeLines.Add(lineRenderer);
-                        }
-                    }
-                }
-                if(GUILayout.Button("Line for every tile on the map")) {
-                    int scaleFactor = 5;
-                    foreach(WorldTile tile in MapBox.instance.tilesList) {
-                        // if (!tile.Type.water)
-                        // {
-                        Color tileColor = tile.getColor();
-                        LineRenderer lineRenderer = new GameObject("Line").AddComponent<LineRenderer>();
-                        lineRenderer.SetWidth(1f, 1f);
-                        lineRenderer.startColor = tileColor;
-                        lineRenderer.endColor = tileColor;
-                        lineRenderer.SetColors(tileColor, tileColor);
-                        lineRenderer.SetVertexCount(2);
-                        lineRenderer.SetPosition(0, new Vector3(tile.posV3.x, tile.posV3.y, (-(float)tile.Height / scaleFactor) - 150f));
-                        lineRenderer.SetPosition(1, new Vector3(tile.posV3.x, tile.posV3.y, (-(float)tile.Height / scaleFactor) - 150f) + new Vector3(0, 0, -10));
-                        Material whiteDiffuseMat = new Material(Shader.Find("UI/Default"));
-                        lineRenderer.material = whiteDiffuseMat;
-                        lineRenderer.material.color = tileColor;
-                        // lineRenderer.sortingOrder = 50;
-                        activeLines.Add(lineRenderer);
-                        // }
-                    }
-                }
-                if(GUILayout.Button("Line for every tile on the map except water")) {
-                    int scaleFactor = 5;
-                    foreach(WorldTile tile in MapBox.instance.tilesList) {
-                        if(!tile.Type.liquid) {
-                            Color tileColor = tile.getColor();
-                            LineRenderer lineRenderer = new GameObject("Line").AddComponent<LineRenderer>();
-                            lineRenderer.SetWidth(1f, 1f);
-                            lineRenderer.startColor = tileColor;
-                            lineRenderer.endColor = tileColor;
-                            lineRenderer.SetColors(tileColor, tileColor);
-                            lineRenderer.SetVertexCount(2);
-                            lineRenderer.SetPosition(0, new Vector3(tile.posV3.x, tile.posV3.y, (-(float)tile.Height / scaleFactor) - 150f));
-                            lineRenderer.SetPosition(1, new Vector3(tile.posV3.x, tile.posV3.y, (-(float)tile.Height / scaleFactor) - 150f) + new Vector3(0, 0, -10));
-                            Material whiteDiffuseMat = new Material(Shader.Find("UI/Default"));
-                            lineRenderer.material = whiteDiffuseMat;
-                            lineRenderer.material.color = tileColor;
-                            // lineRenderer.sortingOrder = 50;
-                            activeLines.Add(lineRenderer);
-                        }
-                    }
-                }
-                if(GUILayout.Button("Test light")) {
-
-                    // light 1
-                    GameObject newLightObject = new GameObject();
-                    newLightObject.AddComponent<Light>();
-                    Light objectsLight = newLightObject.GetComponent<Light>();
-                    objectsLight.type = LightType.Directional;
-                    newLightObject.transform.DOBlendableRotateBy(new Vector3(-40, 0, 0), 5f, RotateMode.Fast);
-                    // light 2
-                    /*
-                    GameObject newLightObject2 = new GameObject();
-                    newLightObject2.AddComponent<Light>();
-                    Light objectsLight2 = newLightObject2.GetComponent<Light>();
-                    objectsLight2.type = LightType.Directional;
-
-                       objectsLight2.intensity = 1;
-                    objectsLight2.range = 3f;
-                    objectsLight2.spotAngle = 60;
-                                        newLightObject2.transform.position = MapBox.instance.GetTile(MapBox.width / 2, MapBox.height / 2).posV3;
-
-                    */
-
-                    Shader newshader = loadedAssetBundle.LoadAsset<Shader>("CustomDiffuse");
-
-                    List<Material> shaders = Resources.FindObjectsOfTypeAll<Material>().ToList();
-                    shaders.Where(x => x.name.Contains("MatWorld") == true).ToList().First().shader = newshader;
-
-
-                    //?
-                    objectsLight.intensity = 1;
-                    objectsLight.range = 3f;
-                    objectsLight.spotAngle = 60;
-                    //?
-
-
-                    newLightObject.transform.position = MapBox.instance.GetTile(MapBox.width / 2, MapBox.height / 2).posV3;
-
-                }
-                if(GUILayout.Button("PL test 2")) {
-                    foreach(Building building in MapBox.instance.buildings) {
-                        lightMan.buildingLight(building);
-                    }
-                }
-                if(GUILayout.Button("Lights Intensity++")) {
-                    foreach(Light light in lightMan.allLights) {
-                        light.intensity = light.intensity + 0.1f;
-                    }
-                }
-                if(GUILayout.Button("Lights Intensity--")) {
-                    foreach(Light light in lightMan.allLights) {
-                        light.intensity = light.intensity - 0.1f;
-                    }
-                }
-                if(GUILayout.Button("Lights Range++")) {
-                    foreach(Light light in lightMan.allLights) {
-                        light.range = light.range + 0.1f;
-                    }
-                }
-                if(GUILayout.Button("Lights Range--")) {
-                    foreach(Light light in lightMan.allLights) {
-                        light.range = light.range - 0.1f;
-                    }
-                }
-                if(GUILayout.Button("White")) {
-                    foreach(Light light in lightMan.allLights) {
-                        light.color = Color.white;
-                    }
-                }
-                if(GUILayout.Button("red")) {
-                    foreach(Light light in lightMan.allLights) {
-                        light.color = Color.red;
-                    }
-                }
-                if(GUILayout.Button("Random")) {
-                    foreach(Light light in lightMan.allLights) {
-                        light.color = new Color(
-      UnityEngine.Random.Range(0f, 1f),
-      UnityEngine.Random.Range(0f, 1f),
-      UnityEngine.Random.Range(0f, 1f)
-  );
-                    }
-                }
-                if(GUILayout.Button("Spot")) {
-                    foreach(Light light in lightMan.allLights) {
-                        light.type = LightType.Spot;
-                    }
-                }
-                if(GUILayout.Button("Point")) {
-                    foreach(Light light in lightMan.allLights) {
-                        light.type = LightType.Point;
-                    }
-                }
-                if(GUILayout.Button("Up")) {
-                    foreach(Building building in MapBox.instance.buildings) {
-                        if(lightMan.lightDict.ContainsKey(building.data.objectID)) {
-                            GameObject buildingLight = lightMan.lightDict[building.data.objectID];
-                            buildingLight.transform.localPosition = buildingLight.transform.localPosition + new Vector3(0f, 0f, -1f);
-                        }
-                    }
-                }
-                if(GUILayout.Button("Down")) {
-                    foreach(Building building in MapBox.instance.buildings) {
-                        if(lightMan.lightDict.ContainsKey(building.data.objectID)) {
-                            GameObject buildingLight = lightMan.lightDict[building.data.objectID];
-                            buildingLight.transform.localPosition = buildingLight.transform.localPosition + new Vector3(0f, 0f, 1f);
-                        }
-                    }
-                }
-                if(GUILayout.Button("For")) {
-                    foreach(Building building in MapBox.instance.buildings) {
-                        if(lightMan.lightDict.ContainsKey(building.data.objectID)) {
-                            GameObject buildingLight = lightMan.lightDict[building.data.objectID];
-                            buildingLight.transform.localPosition = buildingLight.transform.localPosition + new Vector3(0f, 1f, 0f);
-                        }
-                    }
-                }
-                if(GUILayout.Button("Back")) {
-                    foreach(Building building in MapBox.instance.buildings) {
-                        if(lightMan.lightDict.ContainsKey(building.data.objectID)) {
-                            GameObject buildingLight = lightMan.lightDict[building.data.objectID];
-                            buildingLight.transform.localPosition = buildingLight.transform.localPosition + new Vector3(0f, -1f, 0);
-                        }
-                    }
-                }
-                if(GUILayout.Button("Left")) {
-                    foreach(Building building in MapBox.instance.buildings) {
-                        if(lightMan.lightDict.ContainsKey(building.data.objectID)) {
-                            GameObject buildingLight = lightMan.lightDict[building.data.objectID];
-                            buildingLight.transform.localPosition = buildingLight.transform.localPosition + new Vector3(-1f, 0f, 0);
-                        }
-                    }
-                }
-                if(GUILayout.Button("Right")) {
-                    foreach(Building building in MapBox.instance.buildings) {
-                        if(lightMan.lightDict.ContainsKey(building.data.objectID)) {
-                            GameObject buildingLight = lightMan.lightDict[building.data.objectID];
-                            buildingLight.transform.localPosition = buildingLight.transform.localPosition + new Vector3(1f, 0f, 0);
-                        }
-                    }
-                }
-            }
-
-            GUI.DragWindow();
-        }
-
-        public class LightManager {
-            public Dictionary<string, GameObject> lightDict = new Dictionary<string, GameObject>();
-            public List<Light> allLights = new List<Light>();
-            public Light buildingLight(Building pBuilding)
-			{
-                if(lightDict.ContainsKey(pBuilding.data.objectID)) {
-                    return lightDict[pBuilding.data.objectID].GetComponent<Light>();
-                }
-				else {
-                    // light 1
-                    GameObject newLightObject = new GameObject();
-                    newLightObject.AddComponent<Light>();
-                    Light objectsLight = newLightObject.GetComponent<Light>();
-                    objectsLight.type = LightType.Point;
-                    allLights.Add(objectsLight);
-                    newLightObject.transform.position = pBuilding.currentTile.posV3 + new Vector3(0f, 0, -1);
-                    lightDict.Add(pBuilding.data.objectID, newLightObject);
-                    return objectsLight;
-                }
-
-            }
-        }
-
-        public GameObject Light(Building pParent)
-		{
-            // light 2
-            GameObject newLightObject2 = pParent.gameObject;
-            Light objectsLight2;
-            if(pParent.TryGetComponent<Light>(out Light potentialLight)) {
-                objectsLight2 = potentialLight;
-            }
-			else {
-                newLightObject2.AddComponent<Light>();
-                objectsLight2 = newLightObject2.GetComponent<Light>();
-                newLightObject2.transform.SetParent(pParent.transform);
-            }
-            return newLightObject2;
-        }
-
-
-
-        static AssetBundle loadedAssetBundle;
-
-        void init_assets()
-        {
-            LoadAssetBundle();
-        }
-
-
-        public void LoadAssetBundle()
-        {
-            string bundlename = "unleashed";
-            loadedAssetBundle = AssetBundle.LoadFromFile(Path.Combine(Application.streamingAssetsPath, "AssetBundle", bundlename));
-            if(loadedAssetBundle == null) {
-                Debug.Log("Failed to load AssetBundle");
-                assets_initialised = false;
-                return;
-            }
-
-            assets_initialised = true;
-        }
-
-        static bool assets_initialised;
-
-        public bool publicBuild = true;
+        public bool publicBuild = false;
 
         public bool showHide3D;
         public Rect window3DRect;
@@ -931,15 +594,29 @@ namespace WorldBox3D {
             extraLayers.Add(newSprite2);
 
         }
-        public void layerBuildingSprite(Building targetBuilding)
+        public void layerBuildingSprite(Building targetBuilding, bool twoLayer = false)
         {
-            SpriteRenderer spriteRenderer = Reflection.GetField(targetBuilding.GetType(), targetBuilding, "spriteRenderer") as SpriteRenderer;
+            float height = 0f;
+            SpriteRenderer spriteRenderer = targetBuilding.spriteRenderer;
+			if(twoLayer) {
+                SpriteRenderer newSprite2 = Instantiate(spriteRenderer) as SpriteRenderer;
+                newSprite2.transform.rotation = Quaternion.Euler(0, 90, -90);
+                if(tile3Denabled) {
+                    height = (-targetBuilding.currentTile.Height) / dividerAmount;
+                    targetBuilding.curTransformPosition = new Vector3(targetBuilding.currentPosition.x, targetBuilding.currentPosition.y, height);
+                }
+                newSprite2.transform.position = new Vector3(targetBuilding.currentPosition.x, targetBuilding.currentPosition.y, height);
+                extraLayers.Add(newSprite2);
+            }
             SpriteRenderer newSprite = Instantiate(spriteRenderer) as SpriteRenderer;
-            SpriteRenderer newSprite2 = Instantiate(spriteRenderer) as SpriteRenderer;
-            newSprite2.transform.rotation = Quaternion.Euler(0, 90, -90);
+            newSprite.transform.rotation = Quaternion.Euler(-90, 0, 0);
+            if(tile3Denabled) {
+                height = (-targetBuilding.currentTile.Height) / dividerAmount;
+            }
+            newSprite.transform.position = new Vector3(targetBuilding.currentPosition.x, targetBuilding.currentPosition.y, height);
             extraLayers.Add(newSprite);
-            extraLayers.Add(newSprite2);
-
+            targetBuilding.m_transform.rotation = Quaternion.Euler(-90, 0, 0);
+            targetBuilding.m_transform.position = new Vector3(targetBuilding.currentPosition.x, targetBuilding.currentPosition.y, height);
         }
         public void thickenActorSprite(Actor targetActor)
         {
@@ -994,6 +671,9 @@ namespace WorldBox3D {
             for(int i = 0; i < extraLayers.Count; i++) {
                 Destroy(extraLayers[i]);
             }
+            foreach(Building building in MapBox.instance.buildings) {
+                building.spriteRenderer.enabled = true;
+			}
         }
         public bool rotateBuildingBecauseAssetLoader(Building target) // assetload rotate buildings
         {
@@ -1125,18 +805,30 @@ namespace WorldBox3D {
                 }
             }
         }
-
+        public bool hasCreatedNewCopy;
         private void PositionAndRotateBuildings()
         {
-            if(autoPlacement && Toolbox.randomChance(manipulationRate)) {
-                foreach(Building building in MapBox.instance.buildings) {
+			if(Toolbox.randomChance(manipulationRate)) {
+                deleteAllExtraLayers();
+                hasCreatedNewCopy = false;
+			}
+            if(autoPlacement) {
+                if(!hasCreatedNewCopy) {
+                    foreach(Building building in MapBox.instance.buildings) {
+                        layerBuildingSprite(building);
+                    }
+                    hasCreatedNewCopy = true;
+                    /*
                     building.transform.position = new Vector3(building.transform.position.x, building.transform.position.y, BuildingHeight(building));
                     if(rotateBuildingBecauseAssetLoader(building)) {
                         building.transform.rotation = Quaternion.Euler(0, 90, -90);
                     }
                     else {
                         building.transform.rotation = Quaternion.Euler(-90, 0, 0);
+                        SpriteRenderer spriteRenderer = building.spriteRenderer;
+                        spriteRenderer.transform.rotation = Quaternion.Euler(-90, 0, 0);
                     }
+                    */
                 }
             }
         }

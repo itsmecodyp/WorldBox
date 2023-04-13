@@ -10,13 +10,14 @@ using Proyecto26;
 using SimpleJSON;
 using UnityEngine;
 using UnityEngine.Networking;
+using LargeNumbers;
 
 namespace CustomBlackjack
 {
 
     // worldbox version with firebase support
 
-    [BepInPlugin("cody.blackjack", "SimpleBlackjack", "0.0.0.1")]
+    [BepInPlugin("cody.gamba", "SimpleGambling", "0.0.0.2")]
     public class Main : BaseUnityPlugin
     {
 
@@ -87,8 +88,14 @@ namespace CustomBlackjack
             stockBoughtTotalValue = Config.AddSetting("Stock", "Stock bought value", 0d, "Total value of all stocks bought");
             stockSoldTotalValue = Config.AddSetting("Stock", "Stock sold value", 0d, "Total value of all stocks sold");
 
+            crashLargestWinC = Config.AddSetting("Money", "Crash largest winC", 500d, "Money money (don't cheat please)");
+            crashLargestWinM = Config.AddSetting("Money", "Crash largest winM", 0, "Money money (don't cheat please)");
+            crashLargestWinMult = Config.AddSetting("Money", "Crash largest win mult", 0f, "The multiplier when the largest win was achieved");
 
-            humanMoney = Config.AddSetting("Money", "Human Money", (double)500f, "Money money (don't cheat please)");
+
+            humanMoneyC = Config.AddSetting("Money", "Human MoneyC", 500d, "Money money (don't cheat please)");
+            humanMoneyM = Config.AddSetting("Money", "Human MoneyM", 0, "Money money (don't cheat please)");
+
             aiMoney1 = Config.AddSetting("General", "AI 1 Money", 500f, "Money money");
             aiMoney2 = Config.AddSetting("General", "AI 2 Money", 500f, "Money money");
             aiMoney3 = Config.AddSetting("General", "AI 3 Money", 500f, "Money money");
@@ -99,7 +106,11 @@ namespace CustomBlackjack
 
 
             blackJackLosses = Config.AddSetting("Stats", "Blackjack losses", 0d, "Times you've lost a round of blackjack");
-            blackJackWins = Config.AddSetting("Stats", "Blackjack wins", 0d, "Times you've won a round of blackjack");
+			blackJackWins = Config.AddSetting("Stats", "Blackjack wins", 0d, "Times you've won a round of blackjack");
+            blackjackBlackjacks = Config.AddSetting("Stats", "Blackjack blackjacks", 0d, "Times you've had blackjack");
+
+            blackJackPushes = Config.AddSetting("Stats", "Blackjack pushes", 0d, "Times you've pushed in a round of blackjack");
+
             blackjackGames = Config.AddSetting("Stats", "Blackjack Games", 0d, "Total times you've played a round of blackjack");
 
             totalIncomeClicker = Config.AddSetting("Stats", "Total clicker income", 0d, "Total money youve made from clicker minigame");
@@ -107,13 +118,19 @@ namespace CustomBlackjack
             totalIncomeBlackjack = Config.AddSetting("Stats", "Total blackjack income", 0d, "Total money youve made from blackjack minigame");
             totalIncomeStocks = Config.AddSetting("Stats", "Total stock income", 0d, "Total money youve made from stocks");
 
+            playerName = Config.AddSetting("General", "Player name", "Human", "The name displayed for player's window");
 
             Blackjack.currentPlayers.Clear();
             activePlayer = 0;
-            humanPlayer = new BlackjackPlayer("Human");
-            humanPlayer.money = humanMoney.Value;
+            humanPlayer = new BlackjackPlayer(playerName.Value);
+            humanPlayer.money = new LargeNumber(humanMoneyC.Value, humanMoneyM.Value);
             Blackjack.currentPlayers.Add(humanPlayer);
             InvokeRepeating("CheckClickerPurchases", 10f, 10f);
+        }
+
+        public void CheckClickerPurchases()
+        {
+            idleClicker.CheckClickerPurchases();
         }
 
         IEnumerator GetText(string url)
@@ -135,11 +152,24 @@ namespace CustomBlackjack
             }
         }
 
+        public static ConfigEntry<double> crashLargestWinC { get; set; }
+        public static ConfigEntry<int> crashLargestWinM { get; set; }
+
+        public static LargeNumber crashLargestWin => new LargeNumber(crashLargestWinC.Value, crashLargestWinM.Value);
+
+        public static ConfigEntry<float> crashLargestWinMult { get; set; }
+
 
         public static ConfigEntry<string> cardTexturesPath{get; set;}
 
-        public static ConfigEntry<double> humanMoney
+        public static ConfigEntry<string> playerName { get; set; }
+
+
+        public static ConfigEntry<double> humanMoneyC // coefficient
         {
+            get; set;
+        }
+        public static ConfigEntry<int> humanMoneyM { //magnitude
             get; set;
         }
 
@@ -172,7 +202,9 @@ namespace CustomBlackjack
         {
             get; set;
         }
-
+        public static ConfigEntry<double> blackjackBlackjacks {
+            get; set;
+        }
         public static ConfigEntry<double> blackjackGames
         {
             get; set;
@@ -183,6 +215,9 @@ namespace CustomBlackjack
         }
         public static ConfigEntry<double> blackJackLosses
         {
+            get; set;
+        }
+        public static ConfigEntry<double> blackJackPushes {
             get; set;
         }
 
@@ -213,139 +248,7 @@ namespace CustomBlackjack
 
         public static Main instance = new Main();
 
-        public double levelOnePrinterReward = 50f;
-        public double levelTwoPrinterReward = 375f;
-
-        public double ClickerPurchaseReward()
-        {
-            double totalAmount = 0f;
-            double amount = 0f;
-            for (int i = 0; i < printersLevelOne.Value; i++)
-            {
-                totalAmount += levelOnePrinterReward;
-            }
-            for (int i = 0; i < printersLevelTwo.Value; i++)
-            {
-                totalAmount += levelTwoPrinterReward;
-            }
-            amount = (double)((printedStash + humanPlayer.money) * .02f); // 2% increase
-            for (int i = 0; i < printersLevelThree.Value; i++)
-            {
-                totalAmount += amount;
-            }
-            return totalAmount;
-        }
-
-        public void CheckClickerPurchases()
-        {
-            printedStash += ClickerPurchaseReward();
-        }
-
-        public float plusSlotOne = 1f;
-        public float plusSlotTwo = 10f;
-        public float plusSlotThree => plusSlotTwo * 5f;
-
-        public float plusSlotOneMult = 1.0f;
-        public float plusSlotTwoMult = 1.0f;
-        public float plusSlotThreeMult = 1.0f;
-
-        public float plusSlotOneDelay = 1f;
-        public float plusSlotTwoDelay = 3f;
-        public float plusSlotThreeDelay => plusSlotTwoDelay * 2.5f; // 2.5x the delay
-
-
-        public float plusSlotOneTime = Time.realtimeSinceStartup;
-        public float plusSlotTwoTime = Time.realtimeSinceStartup;
-        public float plusSlotThreeTime = Time.realtimeSinceStartup;
-
-        public void ClickerWindow(int windowID)
-        {
-            GUILayout.BeginHorizontal();
-            GUILayout.Button("Money: " + Stocks.moneyString(humanPlayer.money));
-            GUILayout.EndHorizontal();
-            GUILayout.BeginHorizontal();
-            UnityEngine.Color original = GUI.backgroundColor;
-            bool plusOneActive = Time.realtimeSinceStartup > plusSlotOneTime + plusSlotOneDelay;
-            bool plusTwoActive = Time.realtimeSinceStartup > plusSlotTwoTime + plusSlotTwoDelay;
-            bool plusThreeActive = Time.realtimeSinceStartup > plusSlotThreeTime + plusSlotThreeDelay;
-
-            if (plusOneActive)
-            {
-                GUI.backgroundColor = UnityEngine.Color.green;
-            }
-            else
-            {
-                GUI.backgroundColor = UnityEngine.Color.red;
-            }
-            if (GUILayout.Button("+" + plusSlotOne) && plusOneActive)
-            {
-                humanPlayer.money += plusSlotOne;
-                totalIncomeClicker.Value = totalIncomeClicker.Value + plusSlotOne;
-                plusSlotOneTime = Time.realtimeSinceStartup;
-            }
-            if (plusTwoActive)
-            {
-                GUI.backgroundColor = UnityEngine.Color.green;
-            }
-            else
-            {
-                GUI.backgroundColor = UnityEngine.Color.red;
-            }
-            if (GUILayout.Button("+" + plusSlotTwo) && plusTwoActive)
-            {
-                humanPlayer.money += plusSlotTwo;
-                totalIncomeClicker.Value = totalIncomeClicker.Value + plusSlotTwo;
-
-                plusSlotTwoTime = Time.realtimeSinceStartup;
-            }
-            if (plusThreeActive)
-            {
-                GUI.backgroundColor = UnityEngine.Color.green;
-            }
-            else
-            {
-                GUI.backgroundColor = UnityEngine.Color.red;
-            }
-            if (GUILayout.Button("+" + plusSlotThree) && plusThreeActive)
-            {
-                humanPlayer.money += plusSlotThree;
-                totalIncomeClicker.Value = totalIncomeClicker.Value + plusSlotThree;
-
-                plusSlotThreeTime = Time.realtimeSinceStartup;
-            }
-            GUI.backgroundColor = original;
-            GUILayout.EndHorizontal();
-            if (GUILayout.Button("Buy level 1 money printer for 500"))
-            {
-                humanPlayer.money -= 500f;
-                printersLevelOne.Value++;
-            }
-            GUILayout.Label("50 per 10 sec. You have " + printersLevelOne.Value);
-            if (GUILayout.Button("Buy level 2 money printer for 2500"))
-            {
-                humanPlayer.money -= 2500f;
-                printersLevelTwo.Value++;
-            }
-            GUILayout.Label("375 per 10 sec. You have " + printersLevelTwo.Value);
-            if (GUILayout.Button("Buy level 3 money printer for 10000"))
-            {
-                humanPlayer.money -= 10000f;
-                printersLevelThree.Value++;
-            }
-            GUILayout.Label("2% total per 10 sec. You have " + printersLevelThree.Value);
-            GUILayout.Button("Total printing amount: " + ClickerPurchaseReward());
-            GUILayout.Button("Amount in stash: " + printedStash);
-            if (GUILayout.Button("Collect"))
-            {
-                totalIncomeIdle.Value = totalIncomeIdle.Value + printedStash;
-                humanPlayer.money += printedStash;
-                printedStash = 0f;
-            }
-            GUI.DragWindow();
-        }
-
-        public double printedStash = 0f;
-
+        
         //resize windows constantly, 1 frame update
         public void Update()
 		{
@@ -355,7 +258,19 @@ namespace CustomBlackjack
             MainWindowRect.height = 1f;
             Blackjack.dealerWindowRect.height = 1f;
             WorkWindowRect.height = 1f;
+			if(Input.GetKey(KeyCode.H)) {
+                foreach(BlackjackPlayer player in Blackjack.currentPlayers) {
+                    player.money *= 10;
+                }
+			}
+            if(Input.GetKeyDown(KeyCode.J)) {
+                foreach(BlackjackPlayer player in Blackjack.currentPlayers) {
+                    player.money *= 10;
+                }
+            }
         }
+
+        public Clicker idleClicker = new Clicker();
 
         public void OnGUI()
         {
@@ -367,11 +282,12 @@ namespace CustomBlackjack
 
             if(showHideMainWindow)
             {
-                MainWindowRect = GUILayout.Window(4300, MainWindowRect, new GUI.WindowFunction(MainWindow), "Blackjack main", new GUILayoutOption[] { GUILayout.MaxWidth(200f), GUILayout.MinWidth(200f) });
+                //main window = add ai window
+                //MainWindowRect = GUILayout.Window(4300, MainWindowRect, new GUI.WindowFunction(MainWindow), "Blackjack main", new GUILayoutOption[] { GUILayout.MaxWidth(200f), GUILayout.MinWidth(200f) });
                 Blackjack.dealerWindowRect = GUILayout.Window(4303, Blackjack.dealerWindowRect, new GUI.WindowFunction(Blackjack.DealerWindow), "Dealer", new GUILayoutOption[] { GUILayout.MaxWidth(200f), GUILayout.MinWidth(200f) });
 
                 // idle game
-                WorkWindowRect = GUILayout.Window(43011, WorkWindowRect, new GUI.WindowFunction(ClickerWindow), "SimpleIdleClicker", new GUILayoutOption[] { GUILayout.MaxWidth(200f), GUILayout.MinWidth(200f) });
+                WorkWindowRect = GUILayout.Window(43011, WorkWindowRect, new GUI.WindowFunction(idleClicker.ClickerWindow), "SimpleIdleClicker", new GUILayoutOption[] { GUILayout.MaxWidth(200f), GUILayout.MinWidth(200f) });
 
             }
 
@@ -382,13 +298,31 @@ namespace CustomBlackjack
             {
                 showHideMainWindow = !showHideMainWindow;
             }
+           
+            /*
             if (GUILayout.Button("Stocks"))
             {
                 Stocks.showHideStocks = !Stocks.showHideStocks;
             }
-
+            */
             GUILayout.EndArea();
+            GUILayout.BeginArea(new Rect(Screen.width - 120, 175, 120, 50));
+
+            if(GUILayout.Button("CustomCrash")) {
+                showHideCrashWindow = !showHideCrashWindow;
+            }
+			if(showHideCrashWindow) {
+                crashWindowRect = GUILayout.Window(4605, crashWindowRect, new GUI.WindowFunction(crashGame.CrashWindow), "SimpleCrash", new GUILayoutOption[] { GUILayout.MaxWidth(200f), GUILayout.MinWidth(200f) });
+                //crashGame.CrashWindow(4605);
+            }
+            GUILayout.EndArea();
+
         }
+
+        public Rect crashWindowRect;
+        public bool showHideCrashWindow;
+
+        public Crash crashGame = new Crash();
 
         
         public Card lastCard;
@@ -404,10 +338,12 @@ namespace CustomBlackjack
             }
             if (Blackjack.currentPlayers.Contains(humanPlayer))
             {
+                /* no need, and it gets confusing, most of the code is designed for 1v1
                 if (GUILayout.Button("Add AI Player to the game"))
                 {
                     Blackjack.currentPlayers.Add(new BlackjackPlayer());
                 }
+                */
             }
             /*
             if (lastCard != null)

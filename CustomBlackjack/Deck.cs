@@ -21,7 +21,7 @@ namespace CustomBlackjack
             // add cards to deck
             for (int c = 0; c < Card.values.Length; c++)
             {
-                if (c != 0) // 0 is placeholder/empty in array
+                if (c != 0) // 0 is placeholder/empty in array (so count stays a proper 52)
                 {
                     for (int t = 0; t < Card.suits.Length; t++)
                     {
@@ -30,7 +30,7 @@ namespace CustomBlackjack
                 }
             }
 
-            Debug.Log("Deck reset, shuffling");
+            Debug.Log("Deck reset, now shuffling");
             Shuffle();
         }
 
@@ -38,6 +38,7 @@ namespace CustomBlackjack
         {
             var card = cards.First();
             cards.Remove(card);
+            Blackjack.currentCardNumber++;
             return card;
         }
 

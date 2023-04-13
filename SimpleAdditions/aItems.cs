@@ -18,8 +18,7 @@ namespace SimpleAdditions {
 			ItemAsset blueSword1 = new ItemAsset() {
 				id = "blueSword1",
 				materials = new List<String>() { "blueSword1" },
-				slash = "punch",
-				baseStats = new BaseStats(),
+				path_slash_animation = "punch",
 				attackType = WeaponType.Melee
 			};
 			AssetManager.items.add(blueSword1);
@@ -30,8 +29,7 @@ namespace SimpleAdditions {
 			ItemAsset blueSword2 = new ItemAsset() {
 				id = "blueSword2",
 				materials = new List<String>() { "blueSword2" },
-				slash = "punch",
-				baseStats = new BaseStats(),
+				path_slash_animation = "punch",
 				attackType = WeaponType.Melee
 			};
 			AssetManager.items.add(blueSword2);
@@ -42,8 +40,7 @@ namespace SimpleAdditions {
 			ItemAsset blueSword3 = new ItemAsset() {
 				id = "blueSword3",
 				materials = new List<String>() { "blueSword3" },
-				slash = "punch",
-				baseStats = new BaseStats(),
+				path_slash_animation = "punch",
 				attackType = WeaponType.Melee
 				//tech_needed = "weapon_axe"
 			};
@@ -69,6 +66,7 @@ namespace SimpleAdditions {
 	}
 
 	// crabzilla spams NRE here
+	/*
 	[HarmonyPatch(typeof(EquipmentButton))]
 	class EquipmentButton_load {
 		[HarmonyPatch("load", MethodType.Normal)]
@@ -83,29 +81,31 @@ namespace SimpleAdditions {
 			}
 			
 		}
-		/*
-		[HarmonyPatch("showHoverTooltip", MethodType.Normal)]
-		public static bool Prefix(EquipmentButton __instance)
-		{
-			if(!Config.tooltipsActive) {
-				return false;
-			}
-			ActorEquipmentSlot slot = Reflection.GetField(__instance.GetType(), __instance, "slot") as ActorEquipmentSlot;
-			if(Items.newWeaponsIcons.ContainsKey(slot.data.material)) {
-				Debug.Log("log:");
-				Tooltip.info_equipment_slot = slot;
-				Tooltip.instance.show(__instance.gameObject, "equipment", null, null);
-				__instance.transform.localScale = new Vector3(1f, 1f, 1f);
-				__instance.transform.CallMethod("DOKill", new object[] { false });
-				__instance.transform.CallMethod("DOScale", new object[] { 0.8f, 0.1f }).CallMethod("SetEase", new object[] { Ease.InBack });
-				return false;
-			}
-			else {
-				return true;
-			}
-
-		}
-		*/
 	}
-	
+	*/
+	/*
+	[HarmonyPatch("showHoverTooltip", MethodType.Normal)]
+	public static bool Prefix(EquipmentButton __instance)
+	{
+		if(!Config.tooltipsActive) {
+			return false;
+		}
+		ActorEquipmentSlot slot = Reflection.GetField(__instance.GetType(), __instance, "slot") as ActorEquipmentSlot;
+		if(Items.newWeaponsIcons.ContainsKey(slot.data.material)) {
+			Debug.Log("log:");
+			Tooltip.info_equipment_slot = slot;
+			Tooltip.instance.show(__instance.gameObject, "equipment", null, null);
+			__instance.transform.localScale = new Vector3(1f, 1f, 1f);
+			__instance.transform.CallMethod("DOKill", new object[] { false });
+			__instance.transform.CallMethod("DOScale", new object[] { 0.8f, 0.1f }).CallMethod("SetEase", new object[] { Ease.InBack });
+			return false;
+		}
+		else {
+			return true;
+		}
+
+	}
+	*/
+
+
 }

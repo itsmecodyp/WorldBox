@@ -59,7 +59,7 @@ namespace SimpleGUI {
                 }
                 else {
 
-                } // doesnt work properly
+                } 
             }
             if(!GuiMain.disableMouseDrag.Value) {
                 GUI.backgroundColor = Color.green;
@@ -202,6 +202,15 @@ namespace SimpleGUI {
             if(GUILayout.Button("Allow multiple Windmills")) {
                 moreThanOneWindmills = !moreThanOneWindmills;
             }
+            if(kingdomGetsCapitalName) {
+                GUI.backgroundColor = Color.green;
+            }
+            else {
+                GUI.backgroundColor = Color.red;
+            }
+            if(GUILayout.Button("Kingdom name becomes Capital")) {
+                kingdomGetsCapitalName = !kingdomGetsCapitalName;
+            }
 
             if(toggleSandFarmable) {
                 GUI.backgroundColor = Color.green;
@@ -213,18 +222,67 @@ namespace SimpleGUI {
                 toggleSandFarmable = !toggleSandFarmable;
                 TileLibrary.sand.can_be_farm = toggleSandFarmable;
             }
-
-            if(preventArrowsOverMountain) {
+            if(toggleSnowFarmable) {
                 GUI.backgroundColor = Color.green;
             }
             else {
                 GUI.backgroundColor = Color.red;
             }
-            if(GUILayout.Button("Ranged attacks over mountain")) {
-                preventArrowsOverMountain = !preventArrowsOverMountain;
+            if(GUILayout.Button("Snow can be farmable")) {
+                toggleSnowFarmable = !toggleSnowFarmable;
+                TopTileLibrary.snow_block.can_be_farm = toggleSnowFarmable;
+                TopTileLibrary.snow_sand.can_be_farm = toggleSnowFarmable;
+                TopTileLibrary.snow_hills.can_be_farm = toggleSnowFarmable;
             }
+            if(dockLimitOverride) {
+                GUI.backgroundColor = Color.green;
+            }
+            else {
+                GUI.backgroundColor = Color.red;
+            }
+            GUILayout.BeginHorizontal();
+            if(GUILayout.Button("Dock limit: ")) {
+                dockLimitOverride = !dockLimitOverride;
+            }
+            dockLimitOverrideAmount = Convert.ToInt32(GUILayout.TextField(dockLimitOverrideAmount.ToString()));
+            GUILayout.EndHorizontal();
+
+            if(canDragCreaturesWithMouse) {
+                GUI.backgroundColor = Color.green;
+            }
+            else {
+                GUI.backgroundColor = Color.red;
+            }
+            if(GUILayout.Button("Drag creatures: ")) {
+                canDragCreaturesWithMouse = !canDragCreaturesWithMouse;
+            }
+            GUI.backgroundColor = original;
+
+            /* was for blueskye
+            //get original name generator for mob, in this case sheep
+            NameGeneratorAsset sheepNames = AssetManager.nameGenerator.get("sheep_name");
+            //reset parts used
+            sheepNames.part_groups = new List<string>();
+            //reset templates
+            sheepNames.templates = new List<string>();
+
+            //add new parts
+            sheepNames.part_groups.Add("C");
+            sheepNames.part_groups.Add("o,oo,ooo");
+            sheepNames.part_groups.Add("d");
+            sheepNames.part_groups.Add("y,ie,ee");
+            //use parts in new template
+            sheepNames.templates.Add("part_group");
+
+            //re-add generator with edited parts
+            AssetManager.nameGenerator.add(sheepNames);
+            */
             GUI.DragWindow();
         }
+
+        public static bool canDragCreaturesWithMouse;
+
+        public static int currentExtensionNumber = 0;
 
         public static bool preventArrowsOverMountain = true;
         public static bool disableTileDestruction;
@@ -232,7 +290,20 @@ namespace SimpleGUI {
         public static bool staticBorders;
         public static bool expandedFarmRange;
         public static bool moreThanOneWindmills;
+        public static bool kingdomGetsCapitalName; //requested by shroomcrazy
+
         public static bool toggleSandFarmable = true; // sand is farmable by default, player turns it off
+        public static bool toggleSnowFarmable = true;
+
+        public static float dockLimitOverrideAmount = 1;
+        public static bool dockLimitOverride;
+
+        public static void docksAtBoatLimit_Postfix(ActorAsset pAsset, Docks __instance, ref bool __result)
+        {
+			if(dockLimitOverride) {
+                __result = __instance.getList(pAsset).Count > dockLimitOverrideAmount;
+            }
+        }
 
         // fuck this right now
         public static bool tryToAttack_Prefix(BaseSimObject pTarget, ref bool __result)
