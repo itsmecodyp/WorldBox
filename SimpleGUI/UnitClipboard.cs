@@ -166,7 +166,7 @@ namespace UnitClipboard {
                 }
             }
             GUI.DragWindow();
-        }
+        }        
 
         private void CopyUnit(Actor targetActor)
         {
