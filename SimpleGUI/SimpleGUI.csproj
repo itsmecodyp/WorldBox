@@ -39,7 +39,9 @@
     <SignAssembly>false</SignAssembly>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="ActorInteraction.cs" />
     <Compile Include="Construction.cs" />
+    <Compile Include="Draggables.cs" />
     <Compile Include="Patreon_Eggs.cs" />
     <Compile Include="SimpleMessages.cs" />
     <Compile Include="StatSetting.cs" />

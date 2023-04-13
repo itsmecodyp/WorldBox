@@ -42,8 +42,9 @@ namespace SimpleGUI
       
         public static void generatePersonality_Postfix(ActorBase __instance)
         {
+            //overwrite unit names after they are created
             ActorData data =__instance.data;
-            Race race = Reflection.GetField(__instance.GetType(), __instance, "race") as Race;
+            Race race = __instance.race; //for people who want a certain type of creature to take their name
             ActorAsset stats = __instance.asset;
             string name = "null";
             if (race.id == "dragon")
@@ -188,6 +189,7 @@ namespace SimpleGUI
 
         public static string getKingdomName_Postfix(string __result)
         {
+            //same as above but for kingdom names
             if (UnityEngine.Random.Range(1, 100) > 90 && !SpawnedNames.ContainsKey("Supra Empire"))
             {
                 SpawnedNames.Add("Supra Empire", true);
@@ -275,7 +277,7 @@ namespace SimpleGUI
                 text = "Want your message here? Support me on Patreon!";
             }
             if(num == 13) {
-                text = "null";
+                text = "664187111083212804";
             }
             //time stuff
             DateTime timeNow = System.DateTime.Now;

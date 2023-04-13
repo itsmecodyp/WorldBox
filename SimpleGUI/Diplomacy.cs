@@ -14,6 +14,32 @@ namespace SimpleGUI {
         public Dictionary<Kingdom, List<Kingdom>> eternalAllies = new Dictionary<Kingdom, List<Kingdom>>();
         public Dictionary<Kingdom, List<Kingdom>> eternalEnemies = new Dictionary<Kingdom, List<Kingdom>>();
 
+        public static bool showCultureSelectionWindow;
+        public static string currentCultureFromSelectionWindow = "";
+
+        public void diplomacyCultureSelectWindow(int windowID)
+        {
+            scrollPosition = GUILayout.BeginScrollView(
+          scrollPosition, GUILayout.Height(diplomacyWindowRect.height - 32.5f));
+            foreach(Culture culture in MapBox.instance.cultures.list) {
+				if(GUILayout.Button(culture.name)) {
+                    currentCultureFromSelectionWindow = culture.name;
+                    Culture city1Culture = selectedCity1.getCulture();
+                    if(city1Culture != null) {
+                        /* maybe not necessary
+                        foreach(TileZone zone in selectedCity1.zones) {
+                            zone.removeCulture();
+						}
+                        */
+                        selectedCity1.setCulture(culture);
+                    }
+                    foreach(Actor unit in selectedCity1.units) {
+                        unit.setCulture(culture);
+					}
+                }
+			}
+            GUILayout.EndScrollView();
+        }
 
         public void diplomacyWindow(int windowID)
         {
@@ -141,6 +167,12 @@ namespace SimpleGUI {
                     Actor selectedNewSettler = selectedCity1.units.GetRandom();
                     selectedNewSettler.removeFromCity();
                     selectedNewSettler.ai.setTask("nomad_try_build_city", true, true);
+                }
+                Culture city1Culture = selectedCity1.getCulture();
+                if(city1Culture != null) {
+                    if(GUILayout.Button("Culture: " + city1Culture.name)) {
+                        showCultureSelectionWindow = !showCultureSelectionWindow;
+                    }
                 }
                 if(selectedCity2 == null) {
                     GUILayout.Button("NeedCity2");
@@ -300,6 +332,8 @@ namespace SimpleGUI {
             GUI.DragWindow();
         }
 
+        public Vector2 scrollPosition;
+
 
         public void diplomacyWindowUpdate()
         {
@@ -407,13 +441,25 @@ namespace SimpleGUI {
             }
             */
             if(GuiMain.showHideDiplomacyConfig != null && GuiMain.showHideDiplomacyConfig.Value) {
-                diplomacyWindowRect = GUILayout.Window(1004, diplomacyWindowRect, new GUI.WindowFunction(diplomacyWindow), "Diplomacy", new GUILayoutOption[]
+                diplomacyWindowRect = GUILayout.Window(96850, diplomacyWindowRect, new GUI.WindowFunction(diplomacyWindow), "Diplomacy", new GUILayoutOption[]
                 {
                 GUILayout.MaxWidth(300f),
                 GUILayout.MinWidth(200f)
                 });
             }
+			if(showCultureSelectionWindow) {
+                cultureSelectWindowRect = GUILayout.Window(96851, cultureSelectWindowRect, new GUI.WindowFunction(diplomacyCultureSelectWindow), "Select culture", new GUILayoutOption[]
+               {
+               GUILayout.MinWidth(400f),
+               GUILayout.ExpandWidth(false)
+               });
+            }
+            if(showCultureSelectionWindow) {
+                cultureSelectWindowRect.position = new Vector2(diplomacyWindowRect.x + diplomacyWindowRect.width, (diplomacyWindowRect.y));
+            }
         }
+
+        public Rect cultureSelectWindowRect;
 
         public static string ColorToHex(Color32 color)
         {
@@ -432,7 +478,8 @@ namespace SimpleGUI {
         public static bool cityMergeConfirmation;
         public static bool kingdomMergeConfirmation;
         public static bool paintTilezoneColor;
-        public static Color32 targetColorForZone = Color.white; public Rect diplomacyWindowRect;
+        public static Color32 targetColorForZone = Color.white; 
+        public static Rect diplomacyWindowRect;
         public static City selectedCity1;
         public static City selectedCity2;
         public static Kingdom selectedCity1Kingdom {

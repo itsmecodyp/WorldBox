@@ -50,9 +50,6 @@ namespace SimpleGUI
 						GUILayout.EndHorizontal();
 					}
 				}
-				if(GUILayout.Button("Apply statsDirty")) {
-					lastSelected.setStatsDirty();
-				}
 				if(GUILayout.Button("Apply stats")) {
 					foreach(string statNameInList in statNames.Keys) {
 						string statNameWithoutPrefix = statNameInList.Remove(0, 1);
@@ -62,7 +59,7 @@ namespace SimpleGUI
 					}
 					lastSelected.data.set("customStats", true);
 					lastSelected.data.set("hasStatTrait", false);
-
+					lastSelected.setStatsDirty();
 				}
 			}
 			GUI.DragWindow();
@@ -101,6 +98,8 @@ namespace SimpleGUI
 		public static Actor lastSelected;
 		public static Vector2 scrollPosition;
 
+		//after stats are updated add any saved custom stats on top
+		//probably bypasses any stat limiting from another mod, sorry dej
 		public static void updateStats_Postfix(BaseSimObject __instance)
 		{
 			if(__instance.isActor() && __instance.a != null) {
@@ -124,9 +123,12 @@ namespace SimpleGUI
 							}
 						}
 						freshTrait.base_stats = statsToAdd;
+						freshTrait.path_icon = __instance.a.asset.icon;
+						freshTrait.can_be_given = false;
+						freshTrait.inherit = 0;
 						AssetManager.traits.add(freshTrait);
 						if(__instance.a.hasTrait(__instance.a.name + "Stats")) {
-							__instance.a.setStatsDirty(); // doing this from updateStats is DIRTY AND BAD
+							__instance.a.setStatsDirty(); // doing this from updateStats (the method that runs when statsDirty is true) is BAD
 							// but hopefully it refreshes the new stats on actor
 						}
 						else {

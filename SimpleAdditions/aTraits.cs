@@ -4,45 +4,25 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using HarmonyLib;
+using UnityEngine;
 
 namespace SimpleAdditions {
 
 	class aTraits {
 		public static void AddTraits()
 		{
+			/*
 			ActorTrait testTrait = new ActorTrait() {
 				id = "testFireworks",
-				icon = "iconVermin",
-				group = TraitGroup.Other,
+				path_icon = "ui/Icons/iconVoicesInMyHead",
 				type = TraitType.Positive,
-				baseStats = new BaseStats() { health = 100 }
-			 };
+			};
 			testTrait.action_special_effect = (WorldAction)Delegate.Combine(testTrait.action_special_effect, new WorldAction(traitFireworks));
 			AssetManager.traits.add(testTrait);
 			addTraitToLocalizedLibrary(testTrait.id, "Spawns fireworks every now and then");
-
-			ActorTrait statAbsorb = new ActorTrait() {
-				id = "statAbsorb", // maybe size too
-				icon = "iconVermin",
-				group = TraitGroup.Other,
-				type = TraitType.Positive
-			};
-
-			ActorTrait wolfTrainer = new ActorTrait() {
-				id = "wolfTrainer", // use city bones to create squad of wolves
-				icon = "iconVermin",
-				group = TraitGroup.Other,
-				type = TraitType.Positive
-			};
-
-			ActorTrait wizard = new ActorTrait() {
-				id = "wizard", // we have wizards, but mine are cooler
-				icon = "iconVermin",
-				group = TraitGroup.Other,
-				type = TraitType.Positive
-			};
-
+			*/
 		}
+
 
 		public static bool traitFireworks(BaseSimObject pTarget, WorldTile pTile = null)
 		{
@@ -72,7 +52,7 @@ namespace SimpleAdditions {
 		[HarmonyPatch("takeItems", MethodType.Normal)]
 		public static void Postfix(Actor pActor, bool pIgnoreRangeWeapons, Actor __instance)
 		{
-			if(__instance.haveTrait("statAbsorb")) { 
+			if(__instance.hasTrait("statAbsorb")) { 
 
 			}
 		}

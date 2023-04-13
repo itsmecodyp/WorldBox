@@ -5,16 +5,35 @@ using UnityEngine;
 using System.Reflection;
 
 namespace SimpleMessages {
-    // A collection of features and tools that other mods of mine use
-    // Might be helpful for other modders
     [BepInPlugin(pluginGuid, pluginName, pluginVersion)]
     public class Main : BaseUnityPlugin {
         public const string pluginGuid = "cody.worldbox.simple.lib";
-        public const string pluginName = "SimpleLib";
-        public const string pluginVersion = "0.0.0.2";
+        public const string pluginName = "SimpleLibrary";
+        public const string pluginVersion = "0.0.0.3";
 
         public void Update()
         {
+            if(Input.GetKeyDown(KeyCode.M)) {
+                Actor potentialStarter = UnitClipboard.UnitClipboard_Main.ClosestActorToTile(MapBox.instance.getMouseTilePos(), 5f, null);
+                if(potentialStarter != null) {
+                    string id = potentialStarter.asset.id;
+                    Debug.Log("actor found with id:" + id);
+                    if(Messages.actorStartPhrases.ContainsKey(id)) {
+                        string phraseToSay = Messages.actorStartPhrases[id].GetRandom();
+                        ActorSay(potentialStarter, phraseToSay, 3);
+                    }
+					else {
+                        Debug.Log("No conversation starter found for actor ID");
+					}
+                }
+				else {
+                    Debug.Log("No actor found near cursor");
+                }
+            }
+
+            if(Input.GetKeyDown(KeyCode.L)) { foreach(Actor actor in MapBox.instance.units) { ActorSay(actor, "Hi, my name is " + actor.data.name, 3f); } }
+
+
             /*
             if (lastTimer + 5f < Time.realtimeSinceStartup)
             {
@@ -31,6 +50,7 @@ namespace SimpleMessages {
                 lastTimer = Time.realtimeSinceStartup;
             }
             */
+            Messages.replyUpdate();
         }
 
         public void OnGUI()
@@ -41,10 +61,6 @@ namespace SimpleMessages {
         public static void ActorSay(Actor targetActor, string messageText, float duration)
         {
             Messages.ActorSay(targetActor, messageText, duration);
-        }
-        public static void ActorSay(Actor targetActor, string messageText, string titleText, float duration)
-        {
-            Messages.ActorSay(targetActor, messageText, titleText, duration);
         }
 
         public float lastTimer = 0f;
@@ -59,10 +75,18 @@ namespace SimpleMessages {
     public class Messages : BaseUnityPlugin {
         public const string pluginGuid = "cody.worldbox.simple.messages";
         public const string pluginName = "SimpleMessages";
-        public const string pluginVersion = "0.0.0.2";
+        public const string pluginVersion = "0.0.0.3";
         public static int windowInUse = 0;
         public static List<ModMessage> listOfMessages = new List<ModMessage>();
         public static int messageID = 0;
+
+        public void Awake()
+		{
+            Debug.Log("Messages awake");
+            CreateStartPhrases();
+            CreateResponseDicts();
+            Debug.Log("Messages awake end");
+        }
 
         public static void ActorSay(Actor targetActor, string messageText, float duration = 3f)
         {
@@ -74,20 +98,94 @@ namespace SimpleMessages {
             newMessage.startTime = Time.realtimeSinceStartup;
             newMessage.MessageText = messageText;
             listOfMessages.Add(newMessage);
+
+            timeAtLastMessage = Time.realtimeSinceStartup; // track time for auto reply
+
+            replyActor = null; // reset to be sure
+            replyString = null;
+
+			//potential replier to the message being said right now
+			Actor potentialReplier = UnitClipboard.UnitClipboard_Main.ClosestActorToTile(targetActor.currentTile, 5f, targetActor);
+            if(potentialReplier != null) {
+                if(actorResponses.ContainsKey(messageText)) {
+                    ResponseData responseDict = actorResponses[messageText];
+                    //make sure response has assigned actor asset id, and includes the replier's id
+                    if(responseDict.actorAssetID != null && responseDict.actorAssetID.Contains(potentialReplier.asset.id)) {
+                        reply = responseDict;
+                        replyActor = potentialReplier;
+                        actorReplyActorIsRespondingTo = targetActor;
+                        stringToReplyTo = messageText;
+                    }
+                    //if not, assign null
+                    else {
+                        Debug.Log("Actor ID for reply not in list or list is null");
+                        reply = null;
+                        replyActor = null;
+                        actorReplyActorIsRespondingTo = null;
+                        replyString = null;
+                        stringToReplyTo = null;
+                    }
+                }
+                //if no replies, assign null
+                else {
+                    Debug.Log("No response found for:" + messageText);
+                    reply = null;
+                    replyActor = null;
+                    actorReplyActorIsRespondingTo = null;
+                    replyString = null;
+                    stringToReplyTo = null;
+                }
+            }
+			else {
+                Debug.Log("No potential replier found");
+            }
+
         }
 
-        public static void ActorSay(Actor targetActor, string titleText, string messageText, float duration = 3f)
+        public static void replyUpdate()
         {
-            ModMessage newMessage = new ModMessage();
-            newMessage.id = messageID; // id starts at 0, random start addition to make sure no conflict with other mod menu ids
-            messageID++; // and increments upwards each time
-            newMessage.assignedActor = targetActor;
-            newMessage.duration = 3f;
-            newMessage.startTime = Time.realtimeSinceStartup;
-            newMessage.MessageText = messageText;
-            newMessage.TitleText = titleText;
-            listOfMessages.Add(newMessage);
+            if(replyActor != null && reply != null) {
+                if(timeAtLastMessage == 0f || timeAtLastMessage + 2.5f < Time.realtimeSinceStartup) {
+                    //if original message has replies saved
+                    if(reply.actorReply.Count > 0) {
+                        //if response can be responded to by this actor type
+                        if(reply.actorAssetID.Contains(replyActor.asset.id)) {
+                            //response to say
+                            replyString = reply.actorReply.GetRandom();
+                            timeAtLastMessage = Time.realtimeSinceStartup; // auto reply after a time
+                        }
+                    }
+
+                    //if response has action to execute
+                    //target actor is origin speaker, replier is expected to be last initiator
+                    if(reply.responseAction != null) {
+                        //example: fighting, actor will execute attack against the person who was last speaking
+                        reply.responseAction(replyActor, actorReplyActorIsRespondingTo);
+                    }
+
+                    //if reply string was found before, say it now
+                    if(replyString != null) {
+                        ActorSay(replyActor, replyString, 3f);
+                    }
+                }
+            }
+            else { // random message attempt every 5 seconds?
+                if(timeAtLastMessage == 0f || timeAtLastMessage + 5f < Time.realtimeSinceStartup) {
+                    //Actor target = MapBox.instance.units.GetRandom();
+                }
+            }
         }
+
+
+        //change to list or dict of multiple conversations?
+        public static Actor replyActor = null;
+        public static Actor actorReplyActorIsRespondingTo = null;
+        public static string replyString = null;
+        public static string stringToReplyTo = null;
+        public static ResponseData reply = null;
+
+        public static float timeAtLastMessage = 0f;
+
 
         public void OnGUI()
         {
@@ -135,6 +233,66 @@ namespace SimpleMessages {
             }
             GUI.DragWindow();
         }
+
+        public void CreateStartPhrases(){
+            string[] starterPhrases;
+            //humans
+            starterPhrases = new string[] { "Howdy!", "What's up?", "Good day to you.", "Hello!" };
+            actorStartPhrases.Add("unit_human", starterPhrases);
+        }
+
+        public void CreateResponseDicts(){
+            ResponseData example1 = new ResponseData();
+            example1.inputToRespondTo = "Howdy!";
+            //actor types that can respond to this message
+            example1.actorAssetID = new List<string> { "unit_human" };
+            example1.actorReply = new List<string> { "Hows it going?", "Hello.", "Wanna fight?" };
+            //no response action here
+
+            ResponseData example2 = new ResponseData();
+            example2.inputToRespondTo = "Wanna fight?";
+            example2.actorAssetID = new List<string> { "unit_human" };
+            example2.actorReply = new List<string> { "Bring it on!", "Let's go!" };
+            //actor will respond with one of the above, and also attempt to attack whoever asked
+            example2.responseAction = new ResponseAction(startFight);
+
+            actorResponses.Add(example1.inputToRespondTo, example1);
+            actorResponses.Add(example2.inputToRespondTo, example2);
+        }
+
+        public static void startFight(Actor origin, Actor target)
+        {
+            bool didAttack = origin.tryToAttack(target);
+            Debug.Log("attempting to attack from conversation ending: " + didAttack);
+        }
+
+        //key: statsID, value: list/array of phrases to start conversations
+        public static Dictionary<string, string[]> actorStartPhrases = new Dictionary<string, string[]>();
+        //key: inputToRespondTo, value: response data
+        public static Dictionary<string, ResponseData> actorResponses = new Dictionary<string, ResponseData>();
+    }
+
+    [Serializable]
+    public delegate void ResponseAction(Actor pActor = null, Actor pTarget = null);
+
+    public class ResponseData {
+        public Actor originActor;
+        public Actor respondingActor;
+
+        //input to start these responses, cannot be null
+        //maybe this should be key in dict and actor id is separate?
+        public string inputToRespondTo;
+
+        //list of actor ids that can respond with this
+        public List<string> actorAssetID;
+
+        //key: statsID, value: list/array of replies
+        //if statsID is not in here, actor type will not verbally respond to input
+        public List<string> actorReply = new List<string>();
+
+        //possible action to execute with certain inputs
+        //thems fightin words
+        public ResponseAction responseAction;
     }
 
     [Serializable]

@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
 
+
 namespace SimpleGUI
 {
 	class GuiItemGeneration
@@ -25,10 +26,6 @@ namespace SimpleGUI
 					GuiMain.showHideItemGenerationConfig.Value = !GuiMain.showHideItemGenerationConfig.Value;
 				}
 			}
-			if (lastSelectedActor == null || (lastSelectedActor != null && lastSelectedActor != Config.selectedUnit))
-			{
-				lastSelectedActor = Config.selectedUnit;
-			}
 			if (GuiMain.showHideItemGenerationConfig.Value)
 			{
 				itemGenerationWindowRect = GUILayout.Window(1005, itemGenerationWindowRect, new GUI.WindowFunction(ItemGenerationWindow), "Items", new GUILayoutOption[]
@@ -37,456 +34,213 @@ namespace SimpleGUI
 				GUILayout.MinWidth(200f)
 				});
 			}
+			if(selectedTypeString != "" && itemSelection) {
+				itemGenerationEquipmentWindow1 = GUILayout.Window(95466, itemGenerationEquipmentWindow1, new GUI.WindowFunction(ItemEquipSelectionWindow), "Items1", new GUILayoutOption[]
+				{
+				//this window is expectedly big with many materials in one row
+				GUILayout.MinWidth(600f),
+			    GUILayout.ExpandWidth(false)
+				});
+				itemGenerationEquipmentWindow1.position = new Vector2(itemGenerationWindowRect.x + itemGenerationWindowRect.width, (itemGenerationWindowRect.y));
+			}
 		}
 
 		public static void ItemGenerationWindow(int windowID)
 		{
 			GuiMain.SetWindowInUse(windowID);
-
-			bool flag = lastSelectedActor == null;
-			if (flag)
-			{
-				GUILayout.Button("Inspect a unit to continue", new GUILayoutOption[0]);
+			if(itemSelection) {
+				GUI.backgroundColor = Color.green;
 			}
-			else
-			{
-				GUILayout.BeginHorizontal(new GUILayoutOption[0]);
-				/*
-				itemGenerationQualityString = GUILayout.TextField(itemGenerationQualityString, new GUILayoutOption[0]);
-				bool flag2 = GUILayout.Button("Quality", new GUILayoutOption[0]);
-				if (flag2)
-				{
-					bool flag3 = itemGenerationQualityString == ItemQuality.Junk.ToString();
-					if (flag3)
-					{
-						itemGenerationQualityString = ItemQuality.Normal.ToString();
-						itemGenerationQuality = ItemQuality.Normal;
-						return;
-					}
-					bool flag4 = itemGenerationQualityString == ItemQuality.Normal.ToString();
-					if (flag4)
-					{
-						itemGenerationQualityString = ItemQuality.Rare.ToString();
-						itemGenerationQuality = ItemQuality.Rare;
-						return;
-					}
-					bool flag5 = itemGenerationQualityString == ItemQuality.Rare.ToString();
-					if (flag5)
-					{
-						itemGenerationQualityString = ItemQuality.Epic.ToString();
-						itemGenerationQuality = ItemQuality.Epic;
-						return;
-					}
-					bool flag6 = itemGenerationQualityString == ItemQuality.Epic.ToString();
-					if (flag6)
-					{
-						itemGenerationQualityString = ItemQuality.Legendary.ToString();
-						itemGenerationQuality = ItemQuality.Legendary;
-						return;
-					}
-					bool flag7 = itemGenerationQualityString == ItemQuality.Legendary.ToString();
-					if (flag7)
-					{
-						itemGenerationQualityString = ItemQuality.Junk.ToString();
-						itemGenerationQuality = ItemQuality.Junk;
-						return;
-					}
-				}
-				*/
-				GUILayout.EndHorizontal();
-				GUILayout.BeginHorizontal(new GUILayoutOption[0]);
-				itemGenerationMaterial = GUILayout.TextField(itemGenerationMaterial, new GUILayoutOption[0]);
-				bool flag8 = GUILayout.Button("Material", new GUILayoutOption[0]);
-				if (flag8)
-				{
-					bool flag9 = itemMaterialPos > AssetManager.items_material_armor.list.Count - 2;
-					if (flag9)
-					{
-						itemMaterialPos = 0;
-						return;
-					}
-					bool flag10 = itemMaterialPos >= 0;
-					if (flag10)
-					{
-						itemMaterialPos++;
-					}
-					int num = itemMaterialPos;
-					itemGenerationMaterial = AssetManager.items_material_armor.list[itemMaterialPos].id;
-				}
-				GUILayout.EndHorizontal();
-				GUILayout.BeginHorizontal();
-				/*
-				itemGenerationPrefix = GUILayout.TextField(itemGenerationPrefix);
-				if (GUILayout.Button("Prefix"))
-				{
-					bool flag14 = itemPrefixPos >= 0;
-					if (flag14)
-					{
-						itemPrefixPos++;
-					}
-					bool flag15 = itemPrefixPos > AssetManager.items_prefix.list.Count;
-					if (flag15)
-					{
-						itemPrefixPos = 0;
-					}
-					int num3 = itemPrefixPos;
-					itemGenerationPrefix = AssetManager.items_prefix.list[itemPrefixPos].id;
-				}
-				*/
-				GUILayout.EndHorizontal();
-				GUILayout.BeginHorizontal();
-				/*
-				itemGenerationSuffix = GUILayout.TextField(itemGenerationSuffix);
-				if (GUILayout.Button("Suffix"))
-				{
-					bool flag14 = itemSuffixPos >= 0;
-					if (flag14)
-					{
-						itemSuffixPos++;
-					}
-					bool flag15 = itemSuffixPos > AssetManager.items_suffix.list.Count;
-					if (flag15)
-					{
-						itemSuffixPos = 0;
-					}
-					int num3 = itemSuffixPos;
-					itemGenerationSuffix = AssetManager.items_suffix.list[itemSuffixPos].id;
-				}
-				*/
-				GUILayout.EndHorizontal();
-				GUILayout.BeginHorizontal(new GUILayoutOption[0]);
-				itemGenerationSlot = GUILayout.TextField(itemGenerationSlot, new GUILayoutOption[0]);
-				bool flag11 = GUILayout.Button("Slot", new GUILayoutOption[0]);
-				if (flag11)
-				{
-					string a = itemGenerationSlot;
-					bool flag12 = a == "weapon";
-					if (flag12)
-					{
-						itemGenerationSlot = "helmet";
-						return;
-					}
-					bool flag13 = a == "helmet";
-					if (flag13)
-					{
-						itemGenerationSlot = "armor";
-						return;
-					}
-					bool flag14 = a == "armor";
-					if (flag14)
-					{
-						itemGenerationSlot = "boots";
-						return;
-					}
-					bool flag15 = a == "boots";
-					if (flag15)
-					{
-						itemGenerationSlot = "ring";
-						return;
-					}
-					bool flag16 = a == "ring";
-					if (flag16)
-					{
-						itemGenerationSlot = "amulet";
-						return;
-					}
-					bool flag17 = a == "amulet";
-					if (flag17)
-					{
-						itemGenerationSlot = "weapon";
-						return;
-					}
-				}
-				GUILayout.EndHorizontal();
-				string currentWeapon = GuiMain.ItemGen.allWeapons[weaponIDPos];
-				if(GUILayout.Button("Weapon type: " + currentWeapon) && itemGenerationSlot == "weapon" && GuiMain.ItemGen.allWeapons.Count > 1)
-				{
-					if(weaponIDPos == GuiMain.ItemGen.allWeapons.Count - 1) {
-						weaponIDPos = 0;
+			else {
+				GUI.backgroundColor = Color.red;
+			}
+			if(GUILayout.Button("Item selection")) {
+				itemSelection = !itemSelection;
+			}
+			GUI.backgroundColor = ori;
+
+			if(itemSelection) {
+				string[] enumNames = Enum.GetNames(typeof(EquipmentType));
+				foreach(string equipmentTypeName in enumNames) {
+					if(selectedTypeString == equipmentTypeName) {
+						GUI.backgroundColor = Color.green;
 					}
 					else {
-						weaponIDPos++;
+						GUI.backgroundColor = Color.red;
 					}
+					if(GUILayout.Button(equipmentTypeName)) {
+						// open sub menu for selecting specific item in this type
+						selectedTypeString = equipmentTypeName;
+					}
+					GUI.backgroundColor = ori;
 				}
-				/*
-				if(lastSelectedActor != null && GUILayout.Button("single item", new GUILayoutOption[0]))
-				{
-					if (itemGenerationSlot == "weapon" && GuiMain.ItemGen.allWeapons.Count > 1)
-					{
-						ItemAsset weapon;
-						if(simpleAdditionItems.Contains(itemGenerationWeaponType)) {
-							weapon = AssetManager.items.get("sword");
-						}
-						else {
-							weapon = AssetManager.items.get(currentWeapon);
-						}
-						weapon.quality = itemGenerationQuality;
-						bool flag26 = useRandomBaseStats;
-						if (flag26)
-						{
-							weapon.baseStats = randomBaseStats(randomStatsMax);
-						}
-						manualGeneration = true;
-						if(currentWeapon == "stick") { // stick only has wood material
-							ItemGenerator.generateItem(weapon, "wood", MapBox.instance.mapStats.year, lastSelectedActor.kingdom.name, "a mod", 1);
-						}
-						else if(currentWeapon.Contains("_")) { // only these _ spaced weapons use "base" material, modded weapons could mess up
-							ItemGenerator.generateItem(weapon, "base", MapBox.instance.mapStats.year, lastSelectedActor.kingdom.name, "a mod", 1);
-						}
-						else { // everything else uses normal material
-							ItemGenerator.generateItem(weapon, itemGenerationMaterial, MapBox.instance.mapStats.year, lastSelectedActor.kingdom.name, "a mod", 1);
-						}
-					}
-					if (itemGenerationSlot == "amulet")
-					{
-						ItemAsset amulet = AssetManager.items.get(itemGenerationSlot);
-						amulet.quality = itemGenerationQuality;
-						bool flag28 = useRandomBaseStats;
-						if (flag28)
-						{
-							amulet.baseStats = randomBaseStats(randomStatsMax);
-						}
-						manualGeneration = true;
-						ItemGenerator.generateItem(amulet, itemGenerationMaterial, MapBox.instance.mapStats.year, lastSelectedActor.kingdom.name, "a mod", 1);
-					}
-					if(itemGenerationSlot == "armor")
-					{
-						ItemAsset armor = AssetManager.items.get(itemGenerationSlot);
-						armor.quality = itemGenerationQuality;
-						bool flag30 = useRandomBaseStats;
-						if (flag30)
-						{
-							armor.baseStats = randomBaseStats(randomStatsMax);
-						}
-						manualGeneration = true;
+			}
 
-						ItemGenerator.generateItem(armor, itemGenerationMaterial, MapBox.instance.mapStats.year, lastSelectedActor.kingdom.name, "a mod", 1);
-					}
-					if (itemGenerationSlot == "boots")
-					{
-						ItemAsset boots = AssetManager.items.get(itemGenerationSlot);
-						boots.quality = itemGenerationQuality;
-						bool flag32 = useRandomBaseStats;
-						if (flag32)
-						{
-							boots.baseStats = randomBaseStats(randomStatsMax);
+			if((lastSelectedActor == null && Config.selectedUnit != null) || (lastSelectedActor != Config.selectedUnit && Config.selectedUnit != null)) {
+				lastSelectedActor = Config.selectedUnit;
+			}
+			if(lastSelectedActor == null) {
+				GUILayout.Button("Inspect a unit to continue");
+			}
+			else {
+				if(GUILayout.Button("Give items to inspected actor")) {
+					foreach(string itemID in selectedItems) {
+						ItemAsset asset = AssetManager.items.get(itemID);
+						string materialForItem = selectedItemMaterials[itemID];
+						//check if kingdom isnt null, then add more data about item using more param
+						ItemData pData = ItemGenerator.generateItem(asset, materialForItem, World.world.mapStats.year);
+						if(selectedItemModifiers.ContainsKey(itemID)) {
+							pData.modifiers.Clear();
+							foreach(string mod in selectedItemModifiers[itemID]) {
+								pData.modifiers.Add(mod);
+							}
 						}
-						manualGeneration = true;
+						if(lastSelectedActor.equipment == null) {
+							Debug.LogError("Actor equipment is null, creating so items can be given");
+							lastSelectedActor.equipment = new ActorEquipment();
 
-						ItemGenerator.generateItem(boots, itemGenerationMaterial, MapBox.instance.mapStats.year, lastSelectedActor.kingdom.name, "a mod", 1);
-					}
-					if (itemGenerationSlot == "helmet")
-					{
-						ItemAsset helmet = AssetManager.items.get(itemGenerationSlot);
-						helmet.quality = itemGenerationQuality;
-						bool flag34 = useRandomBaseStats;
-						if (flag34)
-						{
-							helmet.baseStats = randomBaseStats(randomStatsMax);
 						}
-						manualGeneration = true;
-
-						ItemGenerator.generateItem(helmet, itemGenerationMaterial, MapBox.instance.mapStats.year, lastSelectedActor.kingdom.name, "a mod", 1);
+						lastSelectedActor.equipment.getSlot(asset.equipmentType).setItem(pData);
+						//add modifiers
 					}
-					if (itemGenerationSlot == "ring")
-					{
-						ItemAsset ring = AssetManager.items.get(itemGenerationSlot);
-						ring.quality = itemGenerationQuality;
-						bool flag36 = useRandomBaseStats;
-						if (flag36)
-						{
-							ring.baseStats = randomBaseStats(randomStatsMax);
-						}
-						manualGeneration = true;
-
-						ItemGenerator.generateItem(ring, itemGenerationMaterial, MapBox.instance.mapStats.year, lastSelectedActor.kingdom.name, "a mod", 1);
-					}
-					setActorStatsDirty(lastSelectedActor);
-
+					lastSelectedActor.setStatsDirty();
 				}
-				bool flag38 = lastSelectedActor != null && GUILayout.Button("whole set", new GUILayoutOption[0]);
-				if (flag38)
-				{
-					ItemAsset weapon2 = AssetManager.items.get(itemGenerationWeaponType);
-					weapon2.quality = itemGenerationQuality;
-					ItemAsset ring2 = AssetManager.items.get("ring");
-					ring2.quality = itemGenerationQuality;
-					ItemAsset amulet2 = AssetManager.items.get("amulet");
-					amulet2.quality = itemGenerationQuality;
-					ItemAsset armor2 = AssetManager.items.get("armor");
-					armor2.quality = itemGenerationQuality;
-					ItemAsset boots2 = AssetManager.items.get("boots");
-					boots2.quality = itemGenerationQuality;
-					ItemAsset helmet2 = AssetManager.items.get("helmet");
-					helmet2.quality = itemGenerationQuality;
-					bool flag39 = useRandomBaseStats;
-					if (flag39)
-					{
-						weapon2.baseStats = randomBaseStats(randomStatsMax);
-						ring2.baseStats = randomBaseStats(randomStatsMax);
-						amulet2.baseStats = randomBaseStats(randomStatsMax);
-						boots2.baseStats = randomBaseStats(randomStatsMax);
-						armor2.baseStats = randomBaseStats(randomStatsMax);
-						helmet2.baseStats = randomBaseStats(randomStatsMax);
-					}
-					manualGeneration = true;
+				GUI.backgroundColor = ori;
 
-					ItemGenerator.generateItem(weapon2, itemGenerationMaterial, MapBox.instance.mapStats.year, lastSelectedActor.kingdom.name, "a mod", 1);
-					manualGeneration = true;
-
-					ItemGenerator.generateItem(ring2, itemGenerationMaterial, MapBox.instance.mapStats.year, lastSelectedActor.kingdom.name, "a mod", 1);
-					manualGeneration = true;
-
-					ItemGenerator.generateItem(amulet2, itemGenerationMaterial, MapBox.instance.mapStats.year, lastSelectedActor.kingdom.name, "a mod", 1);
-					manualGeneration = true;
-
-					ItemGenerator.generateItem(armor2, itemGenerationMaterial, MapBox.instance.mapStats.year, lastSelectedActor.kingdom.name, "a mod", 1);
-					manualGeneration = true;
-
-					ItemGenerator.generateItem(boots2, itemGenerationMaterial, MapBox.instance.mapStats.year, lastSelectedActor.kingdom.name, "a mod", 1);
-					manualGeneration = true;
-
-					ItemGenerator.generateItem(helmet2, itemGenerationMaterial, MapBox.instance.mapStats.year, lastSelectedActor.kingdom.name, "a mod", 1);
-					setActorStatsDirty(lastSelectedActor);
-				}
-				bool flag41 = GUILayout.Button("Set city to armor set", new GUILayoutOption[0]);
-				if (flag41)
-				{
-					foreach (Actor actor in lastSelectedActor.city.units)
-					{
-						ItemAsset weapon3 = AssetManager.items.get(itemGenerationWeaponType);
-						weapon3.quality = itemGenerationQuality;
-						ItemAsset ring3 = AssetManager.items.get("ring");
-						ring3.quality = itemGenerationQuality;
-						ItemAsset amulet3 = AssetManager.items.get("amulet");
-						amulet3.quality = itemGenerationQuality;
-						ItemAsset armor3 = AssetManager.items.get("armor");
-						armor3.quality = itemGenerationQuality;
-						ItemAsset boots3 = AssetManager.items.get("boots");
-						boots3.quality = itemGenerationQuality;
-						ItemAsset helmet3 = AssetManager.items.get("helmet");
-						helmet3.quality = itemGenerationQuality;
-						bool flag42 = useRandomBaseStats;
-						if (flag42)
-						{
-							weapon3.baseStats = randomBaseStats(randomStatsMax);
-							ring3.baseStats = randomBaseStats(randomStatsMax);
-							amulet3.baseStats = randomBaseStats(randomStatsMax);
-							boots3.baseStats = randomBaseStats(randomStatsMax);
-							armor3.baseStats = randomBaseStats(randomStatsMax);
-							helmet3.baseStats = randomBaseStats(randomStatsMax);
-						}
-						manualGeneration = true;
-
-						ItemGenerator.generateItem(weapon3, itemGenerationMaterial, MapBox.instance.mapStats.year, lastSelectedActor.kingdom.name, "a mod", 1);
-						manualGeneration = true;
-						ItemGenerator.generateItem(armor3, itemGenerationMaterial, MapBox.instance.mapStats.year, lastSelectedActor.kingdom.name, "a mod", 1);
-						manualGeneration = true;
-						ItemGenerator.generateItem(boots3, itemGenerationMaterial, MapBox.instance.mapStats.year, lastSelectedActor.kingdom.name, "a mod", 1);
-						manualGeneration = true;
-						ItemGenerator.generateItem(helmet3, itemGenerationMaterial, MapBox.instance.mapStats.year, lastSelectedActor.kingdom.name, "a mod", 1);
-						manualGeneration = true;
-						ItemGenerator.generateItem(amulet3, itemGenerationMaterial, MapBox.instance.mapStats.year, lastSelectedActor.kingdom.name, "a mod", 1);
-						manualGeneration = true;
-						ItemGenerator.generateItem(ring3, itemGenerationMaterial, MapBox.instance.mapStats.year, lastSelectedActor.kingdom.name, "a mod", 1);
-						setActorStatsDirty(actor);
-					}
-				}
-				*/
 				GUILayout.BeginHorizontal(new GUILayoutOption[0]);
-				if (GUILayout.Button("Toggle random stats on item"))
-				{
-					useRandomBaseStats = !useRandomBaseStats;
-				}
-				if (useRandomBaseStats)
-				{
-					int newNumber;
-					randomStatsMaxString = GUILayout.TextField(randomStatsMaxString, new GUILayoutOption[0]);
-					try
-					{
-						newNumber = Convert.ToInt32(randomStatsMaxString);
-					}
-					catch (System.Exception exception)
-					{
-						Debug.Log(exception.GetType() + ", resetting stats input");
-						newNumber = 0;
-						randomStatsMaxString = "0";
-					}
-					randomStatsMax = newNumber;
-				}
 				GUILayout.EndHorizontal();
 			}
 			GUI.DragWindow();
 		}
 
-		public static void setActorStatsDirty(Actor target)
+		public static Vector2 scrollPosition;
+
+		public static List<string> notRealItems = new List<string>() { "base", "hands", "jaws", "claws", "snowball", "fire_hands", "bite", "rocks" };
+
+		public static void ItemEquipSelectionWindow(int windowID)
 		{
-			BindingFlags bindFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic
-									| BindingFlags.Static;
-			FieldInfo field = typeof(Actor).GetField("statsDirty", bindFlags);
-			field.SetValue(target, true);
-		}
-		/*
-		public static BaseStats randomBaseStats(int maxRange)
-		{
-			return new BaseStats
-			{
-				accuracy = UnityEngine.Random.Range(-(float)maxRange, (float)maxRange),
-				areaOfEffect = UnityEngine.Random.Range(-(float)maxRange, (float)maxRange),
-				armor = UnityEngine.Random.Range(1, maxRange),
-				attackSpeed = UnityEngine.Random.Range(-(float)maxRange, (float)maxRange),
-				crit = UnityEngine.Random.Range(-(float)maxRange, (float)maxRange),
-				damage = UnityEngine.Random.Range(1, maxRange),
-				damageCritMod = UnityEngine.Random.Range(-(float)maxRange, (float)maxRange),
-				diplomacy = UnityEngine.Random.Range(1, maxRange),
-				dodge = UnityEngine.Random.Range(-(float)maxRange, (float)maxRange),
-				health = UnityEngine.Random.Range(1, maxRange),
-				knockback = UnityEngine.Random.Range(-(float)maxRange, (float)maxRange),
-				knockbackReduction = UnityEngine.Random.Range(-(float)maxRange, (float)maxRange),
-				range = UnityEngine.Random.Range(-(float)maxRange, (float)maxRange),
-				size = UnityEngine.Random.Range(-(float)maxRange, (float)maxRange),
-				speed = UnityEngine.Random.Range(-(float)maxRange, (float)maxRange),
-				targets = UnityEngine.Random.Range(1, maxRange)
-			};
-		}
-		*/
-		public static bool setItem_Prefix(ItemData pData, ActorEquipmentSlot __instance)
-		{
-			if (manualGeneration)
-			{
-				//pData.prefix = itemGenerationPrefix;
-				//pData.suffix = itemGenerationSuffix;
-				__instance.data = pData;
-				manualGeneration = false;
-				return false;
+			ori = GUI.backgroundColor;
+			GuiMain.SetWindowInUse(windowID);
+			scrollPosition = GUILayout.BeginScrollView(
+		  scrollPosition, GUILayout.Height(itemGenerationWindowRect.height - 31.5f));
+			foreach(ItemAsset item in AssetManager.items.list) {
+				// i could use actual equipmentType type, idk if the speed matters
+				// if it does, could also just cache once instead of looping every frame
+				if(notRealItems.Contains(item.id) == false && item.id[0] != '_' && item.equipmentType.ToString() == selectedTypeString) {
+					GUILayout.BeginHorizontal();
+					if(selectedItems.Contains(item.id)) {
+						GUI.backgroundColor = Color.green;
+					}
+					else {
+						GUI.backgroundColor = Color.red;
+					}
+					GUILayout.Label(item.id);
+					GUI.backgroundColor = ori;
+					foreach(string materialForEquipment in item.materials) {
+						string equipString = item.equipmentType.ToString();
+						if(item.materials.Contains(materialForEquipment)) {
+							if(selectedItemMaterials.ContainsKey(item.id) && selectedItemMaterials[item.id] == materialForEquipment) {
+								GUI.backgroundColor = Color.green;
+							}
+							else {
+								GUI.backgroundColor = Color.red;
+							}
+							if(GUILayout.Button(materialForEquipment)) {
+								//does item list already have item?
+								if(selectedItems.Contains(item.id)) {
+									if(selectedItemMaterials[item.id] == materialForEquipment) {
+										//click matches exact item, remove
+										selectedItems.Remove(item.id);
+										selectedTypes.Remove(equipString);
+										selectedItemMaterials.Remove(item.id);
+									}
+									else {
+										//material is different, item is same, update item
+										selectedItemMaterials[item.id] = materialForEquipment;
+									}
+								}
+								//items list did not contain item
+								else {
+									//do we have another item of same type already?
+									if(selectedTypes.ContainsKey(equipString)) {
+										//if yes, remove that item
+										selectedItems.Remove(selectedTypes[equipString]);
+										selectedItemMaterials.Remove(item.id);
+										//then add the new id
+										selectedItems.Add(item.id);
+										selectedItemMaterials.Add(item.id, materialForEquipment);
+										//and update the other list
+										selectedTypes[equipString] = item.id;
+									}
+									else {
+										//no item of same type, add item fresh
+										selectedItems.Add(item.id);
+										selectedTypes.Add(equipString, item.id);
+										selectedItemMaterials.Add(item.id, materialForEquipment);
+									}
+								}
+							}
+							GUI.backgroundColor = ori;
+						}
+						GUI.backgroundColor = ori;
+
+					}
+					GUILayout.EndHorizontal();
+				}
 			}
-			return true;
+			if(lastSelectedItemID != "") {
+				foreach(ItemAsset modifier in AssetManager.items_modifiers.dict.Values) {
+					GUI.backgroundColor = Color.red;
+					if(selectedItemModifiers.ContainsKey(lastSelectedItemID)) {
+						List<string> existingList = selectedItemModifiers[lastSelectedItemID];
+						if(existingList.Contains(modifier.id)) {
+							GUI.backgroundColor = Color.green;
+						}
+					}
+					if(GUILayout.Button("Modifier: " + modifier.id)) {
+						if(selectedItemModifiers.ContainsKey(lastSelectedItemID)) {
+							List<string> existingList = selectedItemModifiers[lastSelectedItemID];
+							if(existingList.Contains(modifier.id)) {
+								existingList.Remove(modifier.id);
+							}
+							else {
+								existingList.Add(modifier.id);
+							}
+						}
+						else {
+							selectedItemModifiers.Add(lastSelectedItemID, new List<string>() { modifier.id });
+						}
+					}
+					GUI.backgroundColor = ori;
+				}
+			}
+			GUILayout.EndScrollView();
+			GUI.DragWindow();
 		}
-		public List<string> allOtherEquipment = new List<string>() { "armor", "boots", "helmet", "ring", "amulet", "base"};
 
-		public List<string> allWeapons = new List<string>();
-		public static int weaponIDPos = 0;
+		public static Color ori;
 
-		public static bool manualGeneration; public static string itemGenerationWeaponType = "sword";
-		public static string itemGenerationPrefix = "perfect";
-		public static string itemGenerationSuffix = "terror";
-		public static string itemGenerationMaterial = "adamantine";
-		public static string itemGenerationSlot = "weapon";
-		public static string itemGenerationQualityString = ItemQuality.Legendary.ToString();
-		public static ItemQuality itemGenerationQuality = ItemQuality.Legendary;
-		public static int itemSuffixPos;
-		public static int itemPrefixPos;
-		public static int itemMaterialPos;
-		public static int itemSlotPos;
-		public static int randomStatsMax = 10;
-		public static string randomStatsMaxString = "10";
-		public static bool useRandomBaseStats;
+		public static List<string> selectedItems = new List<string>();
+		public static Dictionary<string, string> selectedTypes = new Dictionary<string, string>();
+
+		//sorta bad, but whatever works for now
+		public static Dictionary<string, string> selectedItemMaterials = new Dictionary<string, string>();
+		//extra bad, but whatever works for now
+		public static Dictionary<string, List<string>> selectedItemModifiers = new Dictionary<string, List<string>>();
+
+
+		public static string selectedTypeString = "";
+		public static string lastSelectedItemID = "";
+
 		public static Actor lastSelectedActor;
-		public bool showHideItemGeneration;
-		public Rect itemGenerationWindowRect; public static string tempSavedString;
+		public static bool showHideItemGeneration;
+		public static bool itemSelection;
+		public static bool showEquipWindow1;
+		public static bool showEquipWindow2;
+		public static Rect itemGenerationWindowRect;
 
-		public static List<string> simpleAdditionItems = new List<string>() { "blueSword1", "blueSword2", "blueSword3" };
-		
+		public Rect itemGenerationEquipmentWindow1;
+		public Rect itemGenerationEquipmentWindow2;
 	}
 
 }

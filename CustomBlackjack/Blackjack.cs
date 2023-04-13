@@ -4,42 +4,36 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
+using LargeNumbers;
 
-namespace CustomBlackjack
-{
-    public static class Blackjack
-    {
+namespace CustomBlackjack {
+    public static class Blackjack {
 
-        public enum DealerStatus
-        {
+        public enum DealerStatus {
             Waiting,
             Playing
         }
         public static void PlayRound()
         {
-            Debug.Log("Count: " + currentPlayers.Count);
-            Debug.Log("target: " + activePlayer);
-            if (activePlayer < currentPlayers.Count)
-            {
+            //Debug.Log("Count: " + currentPlayers.Count);
+            //Debug.Log("target: " + activePlayer);
+            if(activePlayer < currentPlayers.Count) {
                 BlackjackPlayer target = currentPlayers[activePlayer];
-                if (target.playername == "Human")
-                {
+                if(target.playername == "Human") {
                     activePlayer++;
                     Debug.Log("Moved active player:" + (activePlayer - 1).ToString() + "->" + activePlayer.ToString() + "count:" + currentPlayers.Count.ToString());
                 }
-                else
-                {
+                else {
                     target.DrawCard();
                     midRoundEndTime = Time.realtimeSinceStartup;
-                    if (target.waiting) // will become "waiting for turn to end" during the draw
+                    if(target.waiting) // will become "waiting for turn to end" during the draw
                     {
                         activePlayer++;
                         Debug.Log("Moved active player:" + (activePlayer - 1).ToString() + "->" + activePlayer.ToString() + "count:" + currentPlayers.Count.ToString());
                     }
                 }
             }
-            else
-            {
+            else {
                 Blackjack.DealersTurn();
             }
 
@@ -48,13 +42,17 @@ namespace CustomBlackjack
 
         public static void NewRound()
         {
-
-            foreach (BlackjackPlayer player in currentPlayers)
-            {
-                player.HandlePayout(player.handStatus);
+            foreach(BlackjackPlayer player in currentPlayers) {
+                //player.HandlePayout(player.handStatus);
+                player.waiting = false;
             }
+
             roundEndTime = Time.realtimeSinceStartup;
-            readyToResetDeck = true;
+            readyToResetHands = true;
+            if(currentCardNumber >= 45) {
+                readyToResetDeck = true;
+            }
+            Main.blackjackGames.Value++;
         }
         public static float roundEndTime;
         public static float roundEndDelay = 5f;
@@ -64,7 +62,9 @@ namespace CustomBlackjack
         public static float moneySaveTime;
         public static float moneySaveDelay = 3f;
 
+        public static bool readyToResetHands;
         public static bool readyToResetDeck;
+        public static int currentCardNumber = 0; //shuffle at 45
 
         public static DealerStatus currentDealerStatus = DealerStatus.Waiting;
 
@@ -90,33 +90,26 @@ namespace CustomBlackjack
             GUILayout.BeginHorizontal(new GUILayoutOption[] { GUILayout.MaxWidth(200f), GUILayout.MinWidth(200f) });
             UnityEngine.Color original = GUI.contentColor;
             UnityEngine.Color original2 = GUI.backgroundColor;
-            foreach (Card heldCard in targetHand)
-            {
+            foreach(Card heldCard in targetHand) {
                 string value = heldCard.value.ToString();
-                if (heldCard.stringValue == "Ace")
-                {
+                if(heldCard.stringValue == "Ace") {
                     value = "A";
                 }
-                else if (heldCard.stringValue == "King")
-                {
+                else if(heldCard.stringValue == "King") {
                     value = "K";
                 }
-                else if (heldCard.stringValue == "Queen")
-                {
+                else if(heldCard.stringValue == "Queen") {
                     value = "Q";
                 }
-                else if (heldCard.stringValue == "Jack")
-                {
+                else if(heldCard.stringValue == "Jack") {
                     value = "J";
                 }
                 string color = "";
-                if (heldCard.stringSuit == "Hearts" || heldCard.stringSuit == "Diamonds")
-                {
+                if(heldCard.stringSuit == "Hearts" || heldCard.stringSuit == "Diamonds") {
                     GUI.contentColor = UnityEngine.Color.red;
                     color = "red";
                 }
-                else
-                {
+                else {
                     GUI.contentColor = UnityEngine.Color.black;
                     color = "black";
                 }
@@ -142,113 +135,103 @@ namespace CustomBlackjack
             GUI.contentColor = original;
         }
 
-        public static BlackjackPlayer currentPlayer => currentPlayers[activePlayer];
         public static List<Card> currentPlayerHand => currentPlayers[activePlayer].hand;
 
+        /*
         public static Card PlayerDrawCard(List<Card> targetHand)
         {
             Card drawnCard = blackjackDeck.DrawCard();
             targetHand.Add(drawnCard);
             Debug.Log("Player drew card: " + drawnCard.DisplayString() + ". New total: " + HandTotalValue(targetHand)); //  + ". Cards left in deck: " + officialDeck.cards.Count
             // below removed later
-            if (Player21(targetHand))
-            {
-                Debug.Log("Player won! Resetting.");
-                ResetDeck();
+
+            if(Player21(targetHand)) {
+                Debug.Log("Player 21! Standing.");
+                Main.humanPlayer.TurnEnd();
+                //ResetDeck();
             }
-            if (PlayerBlackjack(targetHand))
-            {
+            if(PlayerBlackjack(targetHand)) {
                 Debug.Log("Blackjack! Player won. Resetting.");
+                Main.blackJackWins.Value += 1;
             }
-            if (PlayerBust(targetHand))
-            {
+            if(PlayerBust(targetHand)) {
                 Debug.Log("Player busted! Resetting.");
+                Main.blackJackLosses.Value += 1;
                 ResetDeck();
             }
             return drawnCard;
         }
+        */
 
         public static void DealersTurn()
         {
             Debug.Log("Players finished. Starting dealers turn.");
-            // this should actually be done before the player makes their turn
-
-
-            Debug.Log("Dealer drawing");
-            DealerDrawCard();
-            if (DealerBlackjack())
-            {
-                Debug.Log("Dealer blackjack");
-
-                foreach (BlackjackPlayer player in currentPlayers)
-                {
-                    if (player.Player21() || player.PlayerBlackjack()) // both end 21
-                    {
-                        player.handStatus = HandStatus.Push;
-                    }
-                    if (player.handTotalValue < HandTotalValue(dealersHand))
-                    {
-                        player.handStatus = HandStatus.Loss;
-                    }
-                }
+            if(currentPlayers[0].handStatus == HandStatus.Bust && currentPlayers.Count == 1) {
+                Debug.Log("Player lost, dealer showing unflipped card");
+                DealerDrawCard();
                 NewRound();
             }
-            if (!DealerBlackjack() && Dealer21())
-            {
-                Debug.Log("Dealer 21");
+			else {
+                Debug.Log("Dealer drawing");
+                DealerDrawCard();
+                if(DealerBlackjack()) {
+                    Debug.Log("Dealer blackjack");
 
-                foreach (BlackjackPlayer player in currentPlayers)
-                {
-                    if (player.Player21())
-                    {
-                        player.handStatus = HandStatus.Push;
+                    foreach(BlackjackPlayer player in currentPlayers) {
+                        if(player.Player21() || player.PlayerBlackjack()) // both end 21
+                        {
+                            player.handStatus = HandStatus.Push;
+                        }
+                        if(player.handTotalValue < HandTotalValue(dealersHand)) {
+                            player.handStatus = HandStatus.Loss;
+                        }
                     }
-                    if (!player.Player21() && player.handTotalValue < 21)
-                    {
-                        player.handStatus = HandStatus.Loss;
-                    }
+                    NewRound();
                 }
-                NewRound();
-            }
-            if (!DealerBlackjack() && !Dealer21() && DealerBust())
-            {
-                Debug.Log("Dealer bust");
-
-                foreach (BlackjackPlayer player in currentPlayers)
-                {
-                    if (player.handStatus == HandStatus.Standing || player.handStatus == HandStatus.Playing)
-                    {
-                        player.handStatus = HandStatus.Win;
+                if(!DealerBlackjack() && Dealer21()) {
+                    Debug.Log("Dealer 21");
+                    // something went wrong here 2/16
+                    // dealer total was off for entire round, ended 20push with dealer count 21, player lost
+                    foreach(BlackjackPlayer player in currentPlayers) {
+                        if(player.Player21()) {
+                            player.handStatus = HandStatus.Push;
+                        }
+                        if(!player.Player21() && player.handTotalValue < 21) {
+                            player.handStatus = HandStatus.Loss;
+                        }
                     }
+                    NewRound();
                 }
-                NewRound();
-            }
-            if (!DealerBlackjack() && !Dealer21() && !DealerBust() && DealerStands())
-            {
-                Debug.Log("Dealer stands");
+                if(!DealerBlackjack() && !Dealer21() && DealerBust()) {
+                    Debug.Log("Dealer bust");
 
-                foreach (BlackjackPlayer player in currentPlayers)
-                {
-                    if (HandTotalValue(dealersHand) > player.handTotalValue)
-                    {
-                        player.handStatus = HandStatus.Loss;
+                    foreach(BlackjackPlayer player in currentPlayers) {
+                        if(player.handStatus == HandStatus.Standing || player.handStatus == HandStatus.Playing) {
+                            player.handStatus = HandStatus.Win;
+                        }
                     }
-                    else if (HandTotalValue(dealersHand) == player.handTotalValue)
-                    {
-                        player.handStatus = HandStatus.Push;
-                    }
-                    else if (player.PlayerBust())
-                    {
-                        player.handStatus = HandStatus.Loss;
-                    }
-                    else
-                    {
-                        player.handStatus = HandStatus.Win;
-                    }
+                    NewRound();
                 }
-                NewRound();
-            }
+                if(!DealerBlackjack() && !Dealer21() && !DealerBust() && DealerStands()) {
+                    Debug.Log("Dealer stands");
 
+                    foreach(BlackjackPlayer player in currentPlayers) {
+                        if(HandTotalValue(dealersHand) > player.handTotalValue) {
+                            player.handStatus = HandStatus.Loss;
+                        }
+                        else if(HandTotalValue(dealersHand) == player.handTotalValue) {
+                            player.handStatus = HandStatus.Push;
+                        }
+                        else if(player.PlayerBust()) {
+                            player.handStatus = HandStatus.Loss;
+                        }
+                        else {
+                            player.handStatus = HandStatus.Win;
+                        }
+                    }
+                    NewRound();
+                }
+            }
         }
         public static int activePlayer = 0;
         public static void DealerDrawCard()
@@ -259,11 +242,11 @@ namespace CustomBlackjack
             Debug.Log("Dealer new total: " + HandTotalValue(dealersHand));
 
             dealersHand.Add(drawnCard);
-            foreach (BlackjackPlayer player in currentPlayers)
-            {
-                if (player.playername == "Human")
-                {
-                    Main.humanMoney.Value = player.money;
+            foreach(BlackjackPlayer player in currentPlayers) {
+                if(player.playername == "Human") {
+                    Main.humanMoneyC.Value = player.money.coefficient;
+                    Main.humanMoneyM.Value = player.money.magnitude;
+
                 }
             } // money saving
         }
@@ -271,32 +254,26 @@ namespace CustomBlackjack
         // need to make individual card references for the displays
         public static int HandTotalValue(List<Card> targetHand)
         {
-            if (targetHand.Count == 1 && targetHand[0].stringValue == "Ace")
-            {
+            if(targetHand.Count == 1 && targetHand[0].stringValue == "Ace") {
                 return 1;
             }
             int totalValue = 0;
-            foreach (Card heldCard in targetHand)
-            {
-                if (heldCard.stringValue != "Ace" && heldCard.stringValue != "King" && heldCard.stringValue != "Queen" && heldCard.stringValue != "Jack")
-                {
+            foreach(Card heldCard in targetHand) {
+                if(heldCard.stringValue != "Ace" && heldCard.stringValue != "King" && heldCard.stringValue != "Queen" && heldCard.stringValue != "Jack") {
                     totalValue += heldCard.value; // adding non-face cards
                 }
-                if (heldCard.stringValue != "Ace" && heldCard.stringValue == "King" || heldCard.stringValue == "Queen" || heldCard.stringValue == "Jack")
-                {
+                if(heldCard.stringValue != "Ace" && heldCard.stringValue == "King" || heldCard.stringValue == "Queen" || heldCard.stringValue == "Jack") {
                     totalValue += 10; // adding non-ace face cards
                 }
             }
-            foreach (Card heldCard in targetHand) // second loop to make sure aces are done last
+            foreach(Card heldCard in targetHand) // second loop to make sure aces are done last
             {
-                if (heldCard.stringValue == "Ace")  // need more logic for "soft X" hands
+                if(heldCard.stringValue == "Ace")  // need more logic for "soft X" hands
                 {
-                    if (totalValue >= 11)
-                    {
+                    if(totalValue >= 11) {
                         totalValue += 1;
                     }
-                    else
-                    {
+                    else {
                         totalValue += 11;
                     }
                 }
@@ -307,17 +284,8 @@ namespace CustomBlackjack
         public static void ResetDeck()
         {
             blackjackDeck = new Deck();
-            foreach (BlackjackPlayer player in currentPlayers) // ai hands reset
-            {
-                player.hand = new List<Card>();
-                lastRoundStatus = player.handStatus;
-                player.handStatus = HandStatus.None;
-            }
-            dealersHand = new List<Card>();
-            activePlayer = 0;
-            Debug.Log("Deck and hands reset");
+            Debug.Log("Deck reset");
         }
-        public static HandStatus lastRoundStatus = HandStatus.None;
         public static bool PlayerBlackjack(List<Card> targetHand)
         {
             return HandTotalValue(targetHand) == 21 && targetHand.Count == 2 && (targetHand[0].stringValue == "Ace" || targetHand[1].stringValue == "Ace");
@@ -341,15 +309,14 @@ namespace CustomBlackjack
         }
         public static bool DealerStands()
         {
-            return HandTotalValue(dealersHand) > 15; // dealer stands on 16
+            return HandTotalValue(dealersHand) > 16; // dealer stands on 17+
         }
         public static bool Dealer21()
         {
             return HandTotalValue(dealersHand) == 21;
         }
 
-        public enum HandStatus
-        {
+        public enum HandStatus {
             None,
             Blackjack,
             Win,
