@@ -1,14 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using ai;
-using ai.behaviours;
-using HarmonyLib;
+﻿using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
-using static System.Net.Mime.MediaTypeNames;
+
+#pragma warning disable CS0649
 
 namespace SimpleGUI
 {
@@ -30,7 +23,7 @@ namespace SimpleGUI
         {
             Config.EVERYTHING_MAGIC_COLOR = true;
             Config.EVERYTHING_FIREWORKS = true;
-            UnityEngine.Application.Quit();
+            Application.Quit();
         }
 
         public static string StringWithFirstUpper(string targetstring)
@@ -46,17 +39,20 @@ namespace SimpleGUI
             if (language == "en")
             {
                 // text tips
-                localizedText.Add("Styderr makes awesome maps, check them out!", "Styderr makes awesome maps, check them out!");
-                localizedText.Add("Nothing to see here guys - KJYhere", "Nothing to see here guys - KJYhere");
-                localizedText.Add("Call up Rajit at 1(800)-911-SCAM   - Ramlord", "Call up Rajit at 1(800)-911-SCAM   - Ramlord");
-                localizedText.Add("10/10 would recommend - boopahead08", "10/10 would recommend - boopahead08");
-                localizedText.Add("Kosovo je srbija!", "Kosovo je srbija!");
-                localizedText.Add("This mod is sponsored by Raid: Shadow Legends - Slime", "This mod is sponsored by Raid: Shadow Legends - Slime");
-                localizedText.Add("The four nations lived in harmony, until the orc nation attacked", "The four nations lived in harmony, until the orc nation attacked");
-                localizedText.Add("Now with raytracing!", "Now with raytracing!");
-                localizedText.Add("Modificating and customizating the game...", "Modificating and customizating the game...");
-                localizedText.Add("Tiempo con Juan Diego makes amazing worldbox videos! - Juanchiz", "Tiempo con Juan Diego makes amazing worldbox videos! - Juanchiz");
-                localizedText.Add("null", "null");
+                if (localizedText != null)
+                {
+                    localizedText.Add("Styderr makes awesome maps, check them out!", "Styderr makes awesome maps, check them out!");
+                    localizedText.Add("Nothing to see here guys - KJYhere", "Nothing to see here guys - KJYhere");
+                    localizedText.Add("Call up Rajit at 1(800)-911-SCAM   - Ramlord", "Call up Rajit at 1(800)-911-SCAM   - Ramlord");
+                    localizedText.Add("10/10 would recommend - boopahead08", "10/10 would recommend - boopahead08");
+                    localizedText.Add("Kosovo je srbija!", "Kosovo je srbija!");
+                    localizedText.Add("This mod is sponsored by Raid: Shadow Legends - Slime", "This mod is sponsored by Raid: Shadow Legends - Slime");
+                    localizedText.Add("The four nations lived in harmony, until the orc nation attacked", "The four nations lived in harmony, until the orc nation attacked");
+                    localizedText.Add("Now with raytracing!", "Now with raytracing!");
+                    localizedText.Add("Modificating and customizating the game...", "Modificating and customizating the game...");
+                    localizedText.Add("Tiempo con Juan Diego makes amazing worldbox videos! - Juanchiz", "Tiempo con Juan Diego makes amazing worldbox videos! - Juanchiz");
+                    localizedText.Add("null", "null");
+                }
             }
             else if (language == "es") // Just an example
             {
@@ -136,35 +132,36 @@ namespace SimpleGUI
         */
         public static void GetObjects(WorldTile pTile, int pRadius, MapObjectType pObjectType)
         {
-            MapBox.instance.CallMethod("getObjects", new object[] { pTile, pRadius, pObjectType });
+            MapBox.instance.CallMethod("getObjects", pTile, pRadius, pObjectType);
         }
 
         public static void ActorRadiusthing(Actor centerActor, int radius)
         {
-            WorldTile currentTile = Reflection.GetField(centerActor.GetType(), centerActor, "currentTile") as WorldTile;
+            WorldTile currentTile = centerActor.currentTile;
             GetObjects(currentTile, radius, MapObjectType.Actor);
-            List<BaseMapObject> tempUnits = Reflection.GetField(MapBox.instance.GetType(), MapBox.instance, "temp_units") as List<BaseMapObject>;
-            foreach (BaseMapObject baseMapObject in tempUnits)
-            {
-                Actor actor = (Actor)baseMapObject;
-                bool flag = !(actor == centerActor);
-                if (flag)
+            List<BaseSimObject> tempUnits = MapBox.instance.temp_map_objects;
+            if (tempUnits != null)
+                foreach (BaseSimObject baseMapObject in tempUnits)
                 {
-                    /* targeted actor stuff
+                    Actor actor = (Actor)baseMapObject;
+                    bool flag = !(actor == centerActor);
+                    if (flag)
+                    {
+                        /* targeted actor stuff
                     actor.restoreHealth(pVal);
                     actor.spawnParticle(Toolbox.color_heal);
                     actor.removeTrait("plague");
                     */
+                    }
                 }
-            }
         }
 
         public static void BuildingRadiusthing(Actor centerActor, int radius)
         {
             WorldTile currentTile = Reflection.GetField(centerActor.GetType(), centerActor, "currentTile") as WorldTile;
             GetObjects(currentTile, radius, MapObjectType.Building);
-            List<BaseMapObject> tempUnits = Reflection.GetField(MapBox.instance.GetType(), MapBox.instance, "temp_units") as List<BaseMapObject>;
-            foreach (BaseMapObject baseMapObject in tempUnits)
+            List<BaseSimObject> tempUnits = MapBox.instance.temp_map_objects;
+            foreach (BaseSimObject baseMapObject in tempUnits)
             {
                 Building building = (Building)baseMapObject;
 
@@ -203,17 +200,17 @@ namespace SimpleGUI
 
         public static void AddShieldToActor(Actor target)
         {
-            target.CallMethod("addStatusEffect", new object[] { "shield", 5000f });
+            target.CallMethod("addStatusEffect", "shield", 5000f);
         }
 
         public static void RemoveShieldFromActor(Actor target)
         {
             if (addingShieldToActor)
             {
-                Dictionary<string, StatusEffectData> activeStatus_dict = Reflection.GetField(target.GetType(), target, "activeStatus_dict") as Dictionary<string, StatusEffectData>;
+                Dictionary<string, StatusEffectData> activeStatus_dict = target.activeStatus_dict;
                 if (activeStatus_dict.ContainsKey("shield"))
                 {
-                    target.CallMethod("removeStatusEffect", new object[] { "shield", null, -1 });
+                    target.CallMethod("removeStatusEffect", "shield", null, -1);
                 }
             }
         }
@@ -235,11 +232,7 @@ namespace SimpleGUI
 
             if (GuiMain.showHideTraitsWindowConfig.Value)
             {
-                traitWindowRect = GUILayout.Window(1006, traitWindowRect, new GUI.WindowFunction(TraitWindow), "Traits", new GUILayoutOption[]
-                {
-                GUILayout.MaxWidth(300f),
-                GUILayout.MinWidth(200f)
-                });
+                traitWindowRect = GUILayout.Window(1006, traitWindowRect, TraitWindow, "Traits", GUILayout.MaxWidth(300f), GUILayout.MinWidth(200f));
 
                 if(lastSelectedActor == null || (lastSelectedActor != null && lastSelectedActor != Config.selectedUnit)) {
                     lastSelectedActor = Config.selectedUnit;
@@ -317,8 +310,7 @@ namespace SimpleGUI
                     }
                     if(addingShieldToActor)
                         AddShieldToActor(lastSelectedActor);
-                    bool statsDirty = (bool)Reflection.GetField(lastSelectedActor.GetType(), lastSelectedActor, "statsDirty");
-                    statsDirty = true;
+                    lastSelectedActor.setStatsDirty();
                    
                 }
                 if (GUILayout.Button("Remove traits to last selected") && lastSelectedActor != null)

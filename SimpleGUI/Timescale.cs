@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace SimpleGUI
 {
@@ -128,11 +123,7 @@ namespace SimpleGUI
 			//
 			if (GuiMain.showHideTimescaleWindowConfig.Value)
 			{
-				timescaleWindowRect = GUILayout.Window(1002, timescaleWindowRect, new GUI.WindowFunction(timescaleWindow), "Timescale", new GUILayoutOption[]
-				{
-				GUILayout.MaxWidth(300f),
-				GUILayout.MinWidth(200f)
-				});
+				timescaleWindowRect = GUILayout.Window(1002, timescaleWindowRect, timescaleWindow, "Timescale", GUILayout.MaxWidth(300f), GUILayout.MinWidth(200f));
 			}
 		}
 

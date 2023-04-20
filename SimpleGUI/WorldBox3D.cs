@@ -6,14 +6,10 @@ using BepInEx;
 using BepInEx.Configuration;
 using HarmonyLib;
 using UnityEngine;
-using UnityEngine.Rendering;
 using UnityEngine.Tilemaps;
 using Random = UnityEngine.Random;
-//using System.Drawing;
 
-//using TextureLoader;
-
-namespace WorldBox3D {
+namespace SimpleGUI {
     [BepInPlugin(pluginGuid, pluginName, pluginVersion)]
     [Obsolete]
     class _3D_Main : BaseUnityPlugin {
@@ -48,12 +44,12 @@ namespace WorldBox3D {
             if(GUILayout.Button("Reset camera")) {
                 Camera.main.transform.rotation = Quaternion.Euler(cameraX, cameraY, cameraZ);
             }
-			try {
+            try {
                 ObjectPositioningButtons();
             }
             catch(Exception e) {
 
-			}
+            }
 
             //ObjectRotationButtons();
             CameraControls();
@@ -202,7 +198,7 @@ namespace WorldBox3D {
                 }
                 if(GUILayout.Button("Thicken tiles")) {
                     foreach(WorldTile tile in MapBox.instance.tilesList) {
-						for(int i = 1; i < 5; i++) {
+                        for(int i = 1; i < 5; i++) {
                             GameObject tileRepresentation = new GameObject();
                             tileRepresentation.AddComponent<SpriteRenderer>().sprite = tile.curGraphics.sprite;
                             tileRepresentation.transform.position = new Vector3(tile.posV3.x, tile.posV3.y - i, -(tile.Height / dividerAmount));
@@ -212,7 +208,7 @@ namespace WorldBox3D {
                 if(GUILayout.Button("Save snapshot")) {
                     foreach(WorldTile tile in MapBox.instance.tilesList) {
                         tileSprites.Add(tile.curGraphics.sprite, new Vector3(tile.posV3.x, tile.posV3.y, -(tile.Height / dividerAmount)));
-					}
+                    }
                     foreach(Building building in MapBox.instance.buildings.ToList()) {
                         WorldTile tile = building.currentTile;
                         buildingSprites.Add(building.spriteRenderer.sprite, new Vector3(building.currentPosition.x, building.currentPosition.y, -(tile.Height / dividerAmount)));
@@ -224,7 +220,7 @@ namespace WorldBox3D {
                         GameObject tileRepresentation = new GameObject();
                         tileRepresentation.AddComponent<SpriteRenderer>().sprite = tileEntry.Key;
                         tileRepresentation.transform.position = tileEntry.Value;
-					}
+                    }
                 }
             }
 
@@ -437,7 +433,7 @@ namespace WorldBox3D {
         public int BuildingThickness(Building target)
         {
             int thickness = thickenCount;
-            BuildingAsset stats = Reflection.GetField(target.GetType(), target, "stats") as BuildingAsset;
+            BuildingAsset stats = target.asset;
             if(buildingCustomThickness.ContainsKey(stats.id)) {
                 thickness = buildingCustomThickness[stats.id];
             }
@@ -447,7 +443,7 @@ namespace WorldBox3D {
         public int BuildingAngle(Building target)
         {
             int angle = 90;
-            BuildingAsset stats = Reflection.GetField(target.GetType(), target, "stats") as BuildingAsset;
+            BuildingAsset stats = target.asset;
             if(buildingCustomAngle.ContainsKey(stats.id)) {
                 angle = buildingCustomAngle[stats.id];
             }
@@ -587,7 +583,7 @@ namespace WorldBox3D {
 
         public void layerActorSprite(Actor targetActor)
         {
-            SpriteRenderer spriteRenderer = Reflection.GetField(targetActor.GetType(), targetActor, "spriteRenderer") as SpriteRenderer;
+            SpriteRenderer spriteRenderer = targetActor.spriteRenderer;
             SpriteRenderer newSprite = Instantiate(spriteRenderer);
             SpriteRenderer newSprite2 = Instantiate(spriteRenderer);
             newSprite2.transform.rotation = Quaternion.Euler(0, 90, -90);
@@ -599,7 +595,7 @@ namespace WorldBox3D {
         {
             float height = 0f;
             SpriteRenderer spriteRenderer = targetBuilding.spriteRenderer;
-			if(twoLayer) {
+            if(twoLayer) {
                 SpriteRenderer newSprite2 = Instantiate(spriteRenderer);
                 newSprite2.transform.rotation = Quaternion.Euler(0, 90, -90);
                 if(tile3Denabled) {
@@ -623,7 +619,7 @@ namespace WorldBox3D {
         {
             Actor newActor = Instantiate(targetActor); // why dont i use the original?? check later
             newActor.transform.parent = targetActor.transform;
-            SpriteRenderer spriteRenderer = Reflection.GetField(newActor.GetType(), newActor, "spriteRenderer") as SpriteRenderer;
+            SpriteRenderer spriteRenderer = targetActor.spriteRenderer;
             /*
             // new stuff
             Sprite actorSprite = spriteRenderer.sprite;
@@ -654,7 +650,7 @@ namespace WorldBox3D {
             Actor newActor = Instantiate(targetActor);
             newActor.transform.parent = targetActor.transform;
             newActor.transform.rotation = Quaternion.Euler(0, 90, -90);
-            SpriteRenderer spriteRenderer = Reflection.GetField(newActor.GetType(), newActor, "spriteRenderer") as SpriteRenderer;
+            SpriteRenderer spriteRenderer = targetActor.spriteRenderer;
             int distanceScaling = 25;
             for(int i = 0; i <= 15; i++) {
                 SpriteRenderer newSprite = Instantiate(spriteRenderer);
@@ -674,12 +670,12 @@ namespace WorldBox3D {
             }
             foreach(Building building in MapBox.instance.buildings) {
                 building.spriteRenderer.enabled = true;
-			}
+            }
         }
         public bool rotateBuildingBecauseAssetLoader(Building target) // assetload rotate buildings
         {
             bool returnBool = false;
-            BuildingAsset stats = Reflection.GetField(target.GetType(), target, "stats") as BuildingAsset;
+            BuildingAsset stats = target.asset;
             if(buildingCustomAngle.ContainsKey(stats.id)) // weird combo to enable rotation, need something better
             {
                 returnBool = true;
@@ -697,7 +693,7 @@ namespace WorldBox3D {
                 thickenBuildingRotated(targetBuilding);
             }
             else {
-                BuildingAsset stats = Reflection.GetField(targetBuilding.GetType(), targetBuilding, "stats") as BuildingAsset;
+                BuildingAsset stats = targetBuilding.asset;
                 layerCount = BuildingThickness(targetBuilding);
                 if(layerCount <= 5) {
                     layerCount = 5;
@@ -705,7 +701,7 @@ namespace WorldBox3D {
                 if(targetBuilding.city != null) {
                     layerCount *= regularThickeningCityMultiplier.Value;
                 }
-                SpriteRenderer spriteRenderer = Reflection.GetField(targetBuilding.GetType(), targetBuilding, "spriteRenderer") as SpriteRenderer;
+                SpriteRenderer spriteRenderer = targetBuilding.spriteRenderer;
                 spriteRenderer.transform.rotation = Quaternion.Euler(-90, 0, 0);
                 for(int i = 0; i <= layerCount; i++) {
                     SpriteRenderer newSprite = Instantiate(spriteRenderer);
@@ -722,7 +718,7 @@ namespace WorldBox3D {
         public void thickenBuildingRotated(Building targetBuilding)
         {
             int layerCount = 0;
-            BuildingAsset stats = Reflection.GetField(targetBuilding.GetType(), targetBuilding, "stats") as BuildingAsset;
+            BuildingAsset stats = targetBuilding.asset;
             layerCount = BuildingThickness(targetBuilding);
             if(layerCount <= 5) {
                 layerCount = 5;
@@ -730,7 +726,7 @@ namespace WorldBox3D {
             if(targetBuilding.city != null) {
                 layerCount *= regularThickeningCityMultiplier.Value;
             }
-            SpriteRenderer spriteRenderer = Reflection.GetField(targetBuilding.GetType(), targetBuilding, "spriteRenderer") as SpriteRenderer;
+            SpriteRenderer spriteRenderer = targetBuilding.spriteRenderer;
             spriteRenderer.transform.rotation = Quaternion.Euler(0, 90, -90);
             for(int i = 0; i <= layerCount; i++) {
                 SpriteRenderer newSprite = Instantiate(spriteRenderer);
@@ -794,13 +790,13 @@ namespace WorldBox3D {
             if(publicBuild == false) {
                 if(GUILayout.Button("Place everything on linedRender")) {
                     foreach(Building building in MapBox.instance.buildings) {
-                        WorldTile currentTile = Reflection.GetField(building.GetType(), building, "currentTile") as WorldTile;
-                        MapObjectShadow shadow = Reflection.GetField(building.GetType(), building, "shadow") as MapObjectShadow;
+                        WorldTile currentTile = building.currentTile;
+                        //MapObjectShadow shadow = building.shadow;
                         if(currentTile != null) {
                             building.transform.position = new Vector3(building.transform.position.x, building.transform.position.y, (-(float)currentTile.Height / 5) - 150f) + new Vector3(0, 0, -10);
                             building.transform.rotation = Quaternion.Euler(-90, 0, 0);
-                            shadow.transform.position = new Vector3(shadow.transform.position.x, shadow.transform.position.y, (-(float)currentTile.Height / 5) - 150f) + new Vector3(0, 0, -10);
-                            shadow.transform.position = new Vector3(shadow.transform.position.x, shadow.transform.position.y, 0f);
+                            //shadow.transform.position = new Vector3(shadow.transform.position.x, shadow.transform.position.y, (-(float)currentTile.Height / 5) - 150f) + new Vector3(0, 0, -10);
+                            //shadow.transform.position = new Vector3(shadow.transform.position.x, shadow.transform.position.y, 0f);
                         }
                     }
                 }
@@ -809,10 +805,10 @@ namespace WorldBox3D {
         public bool hasCreatedNewCopy;
         private void PositionAndRotateBuildings()
         {
-			if(Toolbox.randomChance(manipulationRate)) {
+            if(Toolbox.randomChance(manipulationRate)) {
                 deleteAllExtraLayers();
                 hasCreatedNewCopy = false;
-			}
+            }
             if(autoPlacement) {
                 if(!hasCreatedNewCopy) {
                     foreach(Building building in MapBox.instance.buildings) {
@@ -845,9 +841,9 @@ namespace WorldBox3D {
                             height = (-actor.currentTile.Height) / dividerAmount;
                         }
                         actor.transform.position = new Vector3(actor.transform.position.x, actor.transform.position.y, height);
-                        SpriteRenderer spriteRenderer = Reflection.GetField(actor.GetType(), actor, "spriteRenderer") as SpriteRenderer;
+                        SpriteRenderer spriteRenderer = actor.spriteRenderer;
                         spriteRenderer.transform.rotation = Quaternion.Euler(-90, 0, 0);
-						//actor.transform.rotation = Quaternion.Euler(-90, 0, 0);
+                        //actor.transform.rotation = Quaternion.Euler(-90, 0, 0);
 
                         //Vector3 curAngle = (Vector3)Reflection.GetField(actor.GetType(), actor, "curAngle");
                         //curAngle.(actor.transform.rotation);
@@ -876,14 +872,14 @@ namespace WorldBox3D {
         {
             if(GUILayout.Button("Actor flip")) {
                 foreach(Actor actor in MapBox.instance.units) {
-                    SpriteAnimation spriteAnimation = Reflection.GetField(actor.GetType(), actor, "spriteAnimation") as SpriteAnimation;
+                    SpriteAnimation spriteAnimation = actor.sprite_animation;
                     spriteAnimation.transform.Rotate(-90, 0, 0); // was southup
                     actor.transform.position = new Vector3(actor.transform.position.x, actor.transform.position.y, 0f);
                 }
             }
             if(GUILayout.Button("Building flip")) {
                 foreach(Building building in MapBox.instance.buildings) {
-                    SpriteRenderer spriteRenderer = Reflection.GetField(building.GetType(), building, "spriteRenderer") as SpriteRenderer;
+                    SpriteRenderer spriteRenderer = building.spriteRenderer;
                     spriteRenderer.transform.Rotate(-90, 0, 0);
                 }
             }
@@ -891,7 +887,7 @@ namespace WorldBox3D {
                 foreach(Building building in MapBox.instance.buildings) {
 
                     building.transform.position = new Vector3(building.transform.position.x, building.transform.position.y, 0f);
-                    SpriteRenderer spriteRenderer = Reflection.GetField(building.GetType(), building, "spriteRenderer") as SpriteRenderer;
+                    SpriteRenderer spriteRenderer = building.spriteRenderer;
                     spriteRenderer.transform.Rotate(0, 90, 0);
                 }
             }
@@ -900,7 +896,7 @@ namespace WorldBox3D {
                     if(Toolbox.randomBool()) {
 
                         building.transform.position = new Vector3(building.transform.position.x, building.transform.position.y, 0f);
-                        SpriteRenderer spriteRenderer = Reflection.GetField(building.GetType(), building, "spriteRenderer") as SpriteRenderer;
+                        SpriteRenderer spriteRenderer = building.spriteRenderer;
                         spriteRenderer.transform.Rotate(0, 15, 0);
                     }
 
@@ -910,7 +906,7 @@ namespace WorldBox3D {
                 foreach(Actor building in MapBox.instance.units) {
 
                     building.transform.position = new Vector3(building.transform.position.x, building.transform.position.y, 0f);
-                    SpriteRenderer spriteRenderer = Reflection.GetField(building.GetType(), building, "spriteRenderer") as SpriteRenderer;
+                    SpriteRenderer spriteRenderer = building.spriteRenderer;
                     spriteRenderer.transform.Rotate(0, 90, 0);
                 }
 
@@ -919,7 +915,7 @@ namespace WorldBox3D {
                 foreach(Actor actor in MapBox.instance.units) {
                     if(Toolbox.randomBool()) {
                         actor.transform.position = new Vector3(actor.transform.position.x, actor.transform.position.y, 0f);
-                        SpriteRenderer spriteRenderer = Reflection.GetField(actor.GetType(), actor, "spriteRenderer") as SpriteRenderer;
+                        SpriteRenderer spriteRenderer = actor.spriteRenderer;
                         spriteRenderer.transform.Rotate(0, 15, 0);
                     }
 
@@ -938,7 +934,7 @@ namespace WorldBox3D {
                     float y = rotationRate * -Input.GetAxis("Mouse X");
                     if(lockCameraControl) y = 0;
                     Camera.main.transform.Rotate(x, y, 0);
-                   
+
                 }
                 if(lockCameraControl) {
                     if(Camera.main.transform.eulerAngles.x > 330) {
@@ -960,425 +956,5 @@ namespace WorldBox3D {
         }
     }
 
-    public static class Reflection {
-        // found on https://stackoverflow.com/questions/135443/how-do-i-use-reflection-to-invoke-a-private-method
-        public static object CallMethod(this object o, string methodName, params object[] args)
-        {
-            var mi = o.GetType().GetMethod(methodName, BindingFlags.NonPublic | BindingFlags.Instance);
-            if(mi != null) {
-                return mi.Invoke(o, args);
-            }
-            return null;
-        }
-        // found on: https://stackoverflow.com/questions/3303126/how-to-get-the-value-of-private-field-in-c/3303182
-        public static object GetField(Type type, object instance, string fieldName)
-        {
-            BindingFlags bindFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static;
-            FieldInfo field = type.GetField(fieldName, bindFlags);
-            return field.GetValue(instance);
-        }
-        public static void SetField<T>(object originalObject, string fieldName, T newValue)
-        {
-            BindingFlags bindFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static;
-            FieldInfo field = originalObject.GetType().GetField(fieldName, bindFlags);
-            field.SetValue(originalObject, newValue);
-        }
-    }
 
 }
-
-namespace Voxelizer {
-    public class VoxelMenu //: EditorWindow
-    {
-        private const string VOXEL_NAME_POST_FIX = "_3D";
-        /*
-        [MenuItem("Window/Voxelize Sprite")]
-        public static void ShowWindow()
-        {
-            EditorWindow.GetWindow<VoxelMenu>("Voxelizer Menu");
-        }
-        */
-        private float _scale = 1.0f;
-        private bool _useMeshOptimizer = true;
-        private bool _createNewGameObject = true;
-        /*
-        private void OnGUI()
-        {
-            _sprite = (Texture2D)EditorGUILayout.ObjectField("Selected Sprite", _sprite, typeof(Texture2D), true);
-
-            string debugText = null;
-
-            if (_sprite == null)
-            {
-                GUI.enabled = false;
-                debugText = "Need to Select a Sprite!";
-            }
-            else
-            {
-                if (_sprite.format != TextureFormat.RGBA32)
-                {
-                    debugText = "For best results, set sprite compression format to RGBA32 before converting";
-                }
-            }
-
-            EditorGUILayout.Space();
-
-            _scale = (float)EditorGUILayout.FloatField("Scale", _scale);
-
-            GUILayout.BeginVertical("HelpBox");
-            _useMeshOptimizer = EditorGUILayout.Toggle("Use Mesh Optimizer", _useMeshOptimizer);
-            EditorGUILayout.HelpBox("Unity's mesh optimizer optimizes the Mesh data to improve rendering performance. This operation can take a few seconds or more for complex meshes", MessageType.Info);
-            GUILayout.EndVertical();
-            EditorGUILayout.Space();
-
-
-            _saveMesh = EditorGUILayout.Toggle("Save Mesh To File", _saveMesh);
-            _saveTexture = EditorGUILayout.Toggle("Save Texture To File", _saveTexture);
-            _applyColorPerVertex = EditorGUILayout.Toggle("Apply Per-vertex Colors", _applyColorPerVertex);
-            _createNewGameObject = EditorGUILayout.Toggle("Add Mesh to Scene", _createNewGameObject);
-            EditorGUILayout.Space();
-
-
-            if (_createNewGameObject == false && _saveMesh == false)
-            {
-                GUI.enabled = false;
-            }
-
-            if (GUILayout.Button("Create"))
-            {
-                VoxelizeSprite();
-            }
-            GUI.enabled = true;
-
-            if (debugText != null)
-            {
-                EditorGUILayout.HelpBox(debugText, MessageType.Warning);
-            }
-        }
-        */
-
-        private void CreateVoxelGameObject(Mesh mesh, Texture2D texture)
-        {
-            //var sprite3D = new GameObject(_sprite.name + VOXEL_NAME_POST_FIX);
-
-            // var meshFilter = sprite3D.AddComponent<MeshFilter>();
-            //meshFilter.sharedMesh = mesh;
-
-            //var meshRenderer = sprite3D.AddComponent<MeshRenderer>();
-
-            if(texture != null) {
-                var material = new Material(Shader.Find("Standard"));
-                material.SetTexture("_MainTex", texture);
-                //meshRenderer.sharedMaterial = material;
-            }
-        }
-
-        private void SaveMeshToFile(Mesh mesh)
-        {
-            /*
-            string path = EditorUtility.SaveFilePanel("Save mesh to folder", "Assets/", mesh.name, "asset");
-
-            path = FileUtil.GetProjectRelativePath(path);
-
-            if (string.IsNullOrEmpty(path) == false)
-            {
-                AssetDatabase.CreateAsset(mesh, path);
-                AssetDatabase.SaveAssets();
-            }
-            else
-            {
-                Debug.LogWarning("[Voxelizer] Mesh Export failed: invalid path");
-            }
-            */
-        }
-
-        private void SaveTextureToFile(Texture2D texture)
-        {
-            /*
-            texture.name = _sprite.name + VOXEL_NAME_POST_FIX;
-            string path = EditorUtility.SaveFilePanel("Save texture to folder", "Assets/", texture.name, "PNG");
-
-            path = FileUtil.GetProjectRelativePath(path);
-
-            if (string.IsNullOrEmpty(path) == false)
-            {
-                byte[] _bytes = texture.EncodeToPNG();
-                System.IO.File.WriteAllBytes(path, _bytes);
-            }
-            else
-            {
-                Debug.LogWarning("[Voxelizer] Texture Export failed: invalid path");
-            }
-            */
-        }
-
-        //Read texture independent of Read/Write enabled on the sprite
-        public static Texture2D ReadTexture(Texture2D texture)
-        {
-            Texture2D duplicate = duplicateTexture(texture);
-            Texture2D newTexture = new Texture2D(duplicate.width, duplicate.height, duplicate.format, false);
-            newTexture.LoadRawTextureData(duplicate.GetRawTextureData());
-            newTexture.Apply();
-            return newTexture;
-        }
-
-        // found on https://stackoverflow.com/questions/44733841/how-to-make-texture2d-readable-via-script
-        public static Texture2D duplicateTexture(Texture2D source)
-        {
-            RenderTexture renderTex = RenderTexture.GetTemporary(
-                        source.width,
-                        source.height,
-                        0,
-                        RenderTextureFormat.Default,
-                        RenderTextureReadWrite.Linear);
-
-            Graphics.Blit(source, renderTex);
-            RenderTexture previous = RenderTexture.active;
-            RenderTexture.active = renderTex;
-            Texture2D readableText = new Texture2D(source.width, source.height);
-            readableText.ReadPixels(new Rect(0, 0, renderTex.width, renderTex.height), 0, 0);
-            readableText.Apply();
-            RenderTexture.active = previous;
-            RenderTexture.ReleaseTemporary(renderTex);
-            return readableText;
-        }
-    }
-
-    public static class VoxelUtil {
-        private const int CUBE_INDICES_COUNT = 24;
-
-        /// <summary>
-        /// Create a Mesh object from a Texture2D object
-        /// </summary>
-        public static Mesh VoxelizeTexture2D(Texture2D texture, bool applyColorPerVertex, float scale)
-        {
-            texture.filterMode = FilterMode.Point;
-
-            if(texture.format != TextureFormat.RGBA32) {
-                Debug.LogWarning("For best results, set sprite format to RGBA32 from Import Settings");
-            }
-
-            int height = texture.height;
-            int width = texture.width;
-            Color32[] colorBuffer = texture.GetPixels32();
-
-            var mesh = new Mesh();
-
-            GenerateVertices(ref mesh, colorBuffer, height, width, scale);
-            GenerateNormals(ref mesh);
-
-            if(mesh.vertexCount >= Int16.MaxValue) {
-                mesh.indexFormat = IndexFormat.UInt32;
-            }
-
-            GenerateTriangles(ref mesh, colorBuffer);
-
-            if(applyColorPerVertex) {
-                GenerateVertexColors(ref mesh, colorBuffer);
-            }
-
-            return mesh;
-        }
-
-        /// <summary>
-        /// Generate 24 vertices cube for every pixel in the texture
-        /// </summary>
-        private static void GenerateVertices(ref Mesh mesh, IList<Color32> colorBuffer, int height, int width, float scale)
-        {
-            if(mesh == null || colorBuffer == null) return;
-
-            var vertices = new List<Vector3>(CUBE_INDICES_COUNT * height * width);
-
-            float xStartPosition = -(width * scale / 2f);
-            float yStartPosition = -(height * scale / 2f);
-
-            for(int i = 0; i < height; i++) {
-                float y = yStartPosition + (i * scale);
-
-                for(int j = 0; j < width; j++) {
-                    if(colorBuffer[i * width + j].a == 0)
-                        continue;
-
-                    float x = xStartPosition + (j * scale);
-
-                    Vector3[] cube = new Vector3[8];
-
-                    // bottom
-                    cube[0] = new Vector3(x, y, scale);
-                    cube[1] = new Vector3(x + scale, y, scale);
-                    cube[2] = new Vector3(x + scale, y, -scale);
-                    cube[3] = new Vector3(x, y, -scale);
-
-                    // top
-                    cube[4] = new Vector3(x, y + scale, scale);
-                    cube[5] = new Vector3(x + scale, y + scale, scale);
-                    cube[6] = new Vector3(x + scale, y + scale, -scale);
-                    cube[7] = new Vector3(x, y + scale, -scale);
-
-                    vertices.AddRange(new List<Vector3>
-                    {
-                        cube[0], cube[1], cube[2], cube[3], // Bottom
-                        cube[7], cube[4], cube[0], cube[3], // Left
-                        cube[4], cube[5], cube[1], cube[0], // Front
-                        cube[6], cube[7], cube[3], cube[2], // Back
-                        cube[5], cube[6], cube[2], cube[1], // Right
-                        cube[7], cube[6], cube[5], cube[4]  // Top
-                    });
-                }
-            }
-
-            mesh.SetVertices(vertices);
-        }
-
-        private static void GenerateNormals(ref Mesh mesh)
-        {
-            if(mesh == null || mesh.vertexCount <= 0) return;
-
-            var normals = new List<Vector3>(mesh.vertexCount);
-
-            var up = Vector3.up;
-            var down = Vector3.down;
-            var forward = Vector3.forward;
-            var back = Vector3.back;
-            var left = Vector3.left;
-            var right = Vector3.right;
-
-            for(int j = 0; j < mesh.vertexCount; j += CUBE_INDICES_COUNT) {
-                normals.AddRange(new List<Vector3>
-                {
-                    down, down, down, down,             // Bottom
-                    left, left, left, left,             // Left
-                    forward, forward, forward, forward,	// Front
-                    back, back, back, back,             // Back
-                    right, right, right, right,         // Right
-                    up, up, up, up	                    // Top
-                });
-            }
-
-            mesh.SetNormals(normals);
-        }
-
-        private static void GenerateTriangles(ref Mesh mesh, IList<Color32> colorBuffer)
-        {
-            if(mesh == null || colorBuffer == null) return;
-
-            // triangle values are indices of vertices array
-            var triangles = new List<int>(mesh.vertexCount);
-
-            // colorbuffer pixels are laid out left to right, 
-            // bottom to top (i.e. row after row)
-            int i = 0;
-            for(int j = 0; j < CUBE_INDICES_COUNT * colorBuffer.Count; j += CUBE_INDICES_COUNT) {
-                if(colorBuffer[j / CUBE_INDICES_COUNT].a != 0) {
-                    triangles.AddRange(new[]
-                    {
-                        // Bottom
-                        i + 3, i + 1, i,
-                        i + 3, i + 2, i + 1,
-
-                        // Left     	
-                        i + 7, i + 5, i + 4,
-                        i + 7, i + 6, i + 5,
-
-                        // Front
-                        i + 11, i + 9, i + 8,
-                        i + 11, i + 10, i + 9,
-
-                        // Back
-                        i + 15, i + 13, i + 12,
-                        i + 15, i + 14, i + 13,
-
-                        // Right
-                        i + 19, i + 17, i + 16,
-                        i + 19, i + 18, i + 17,
-
-                        // Top
-                        i + 23, i + 21, i + 20,
-                        i + 23, i + 22, i + 21,
-                    });
-                    i += CUBE_INDICES_COUNT;
-                }
-            }
-
-            mesh.SetTriangles(triangles, 0);
-        }
-
-        /// <summary>
-        /// Assigns color for each vertex
-        /// </summary>
-        private static void GenerateVertexColors(ref Mesh mesh, IList<Color32> colorBuffer)
-        {
-            if(mesh == null || colorBuffer == null) return;
-
-            var vertexColors = new List<Color32>(CUBE_INDICES_COUNT * colorBuffer.Count);
-
-            for(int i = 0; i < colorBuffer.Count; i++) {
-                Color32 color = colorBuffer[i];
-
-                if(color.a == 0) continue;
-
-                for(int k = 0; k < CUBE_INDICES_COUNT; k++) {
-                    vertexColors.Add(color);
-                }
-            }
-
-            mesh.SetColors(vertexColors);
-        }
-
-
-        /// <summary>
-        /// Generates a Texture Map and assigns the mesh UVs accordingly
-        /// </summary>
-        public static Texture2D GenerateTextureMap(ref Mesh mesh, Texture2D inputTexture)
-        {
-            if(mesh == null || inputTexture == null) return null;
-
-            Color32[] colorBuffer = inputTexture.GetPixels32();
-            var colorMap = new Dictionary<Color32, int>();
-
-            for(int i = 0; i < colorBuffer.Length; i++) {
-                Color32 color = colorBuffer[i];
-
-                if(color.a != byte.MinValue && !colorMap.ContainsKey(color)) {
-                    colorMap.Add(color, colorMap.Count);
-                }
-            }
-
-            var textureMap = new Texture2D(1, colorMap.Count);
-
-            if(colorMap.Count == 0) return textureMap;
-
-            Color32[] colors = new Color32[colorMap.Count];
-
-            foreach(var color in colorMap) {
-                colors[color.Value] = color.Key;
-            }
-
-            textureMap.SetPixels32(colors);
-
-            var uvs = new List<Vector2>(mesh.vertexCount);
-            float offset = 1f / (2f * colorMap.Count);
-
-            for(int i = 0; i < colorBuffer.Length; i++) {
-                Color32 color = colorBuffer[i];
-
-                if(color.a == byte.MinValue || !colorMap.ContainsKey(color)) continue;
-
-                int index = colorMap[color];
-                float v = index / (float)colorMap.Count;
-
-                for(int k = 0; k < CUBE_INDICES_COUNT; k++) {
-                    uvs.Add(new Vector2(0, v + offset));
-                }
-            }
-
-            mesh.SetUVs(0, uvs);
-
-            textureMap.filterMode = FilterMode.Point;
-            textureMap.Apply();
-
-            return textureMap;
-        }
-    }
-}
-

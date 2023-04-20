@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using HarmonyLib;
 using UnityEngine;
 
@@ -57,9 +55,6 @@ namespace SimpleGUI {
                 if(GuiMain.disableMinimap.Value) {
                     lowRes = false;
                 }
-                else {
-
-                } 
             }
             if(!GuiMain.disableMouseDrag.Value) {
                 GUI.backgroundColor = Color.green;
@@ -346,22 +341,21 @@ namespace SimpleGUI {
                 }
                 return false;
             }
-            else {
-                foreach(WorldTile worldTile in pRegion.tiles) {
-                    if(Toolbox.DistTile(pBuilding.currentTile, worldTile) <= 9) {
-                        if(worldTile.Type.can_be_farm) {
-                            pCity.calculated_place_for_farms.Add(worldTile);
-                        }
-                        if(worldTile.Type.farm_field) {
-                            pCity.calculated_farm_fields.Add(worldTile);
-                            if(worldTile.building != null && worldTile.building.asset.wheat) {
-                                pCity.calculated_crops.Add(worldTile);
-                            }
+
+            foreach(WorldTile worldTile in pRegion.tiles) {
+                if(Toolbox.DistTile(pBuilding.currentTile, worldTile) <= 9) {
+                    if(worldTile.Type.can_be_farm) {
+                        pCity.calculated_place_for_farms.Add(worldTile);
+                    }
+                    if(worldTile.Type.farm_field) {
+                        pCity.calculated_farm_fields.Add(worldTile);
+                        if(worldTile.building != null && worldTile.building.asset.wheat) {
+                            pCity.calculated_crops.Add(worldTile);
                         }
                     }
                 }
-                return false;
             }
+            return false;
         }
 
         public static bool removeZone_Prefix(TileZone pZone, bool pAbandonBuildings = false)
@@ -496,11 +490,7 @@ namespace SimpleGUI {
 
             //
             if(GuiMain.showHideOtherConfig.Value) {
-                otherWindowRect = GUILayout.Window(50000, otherWindowRect, new GUI.WindowFunction(otherWindow), "Other options", new GUILayoutOption[]
-                {
-                GUILayout.MaxWidth(300f),
-                GUILayout.MinWidth(200f)
-                });
+                otherWindowRect = GUILayout.Window(50000, otherWindowRect, otherWindow, "Other options", GUILayout.MaxWidth(300f), GUILayout.MinWidth(200f));
             }
         }
 
@@ -510,9 +500,8 @@ namespace SimpleGUI {
             if(GuiMain.disableMinimap.Value && !SmoothLoader.isLoading() && Config.gameLoaded) {
                 return false;
             }
-            else {
-                return true;
-            }
+
+            return true;
         }
 
         // last namestuff
@@ -523,7 +512,7 @@ namespace SimpleGUI {
                 returning = fullName;
             }
             else {
-                returning = fullName.Split(new char[] { ' ' }, 2).ToList().Last();
+                returning = fullName.Split(new[] { ' ' }, 2).ToList().Last();
             }
             return returning;
         }
@@ -533,9 +522,8 @@ namespace SimpleGUI {
             if(GuiMain.disableMouseDrag.Value) {
                 return false;
             }
-            else {
-                return true;
-            }
+
+            return true;
         }
 
 
@@ -544,7 +532,7 @@ namespace SimpleGUI {
         public static bool disableMinimap;
         public static bool preventMouseDrag;
         public static bool disableBuildingDestruction;
-        public bool disableLevelCap = false;
+        public bool disableLevelCap;
         public bool showHideOther;
         public Rect otherWindowRect;
         public Actor selectedActor;
@@ -572,9 +560,8 @@ namespace SimpleGUI {
                 __result = false;
                 return false;
             }
-			else {
-                return true;
-			}
+
+            return true;
         }
     }
 
@@ -599,7 +586,7 @@ namespace SimpleGUI {
                     // do nothing
                 }
 				else {
-                    Config.controllableUnit.killHimself(true, AttackType.Other, true, true);
+                    Config.controllableUnit.killHimself(true);
                 }
             }
             if(MoveCamera.focusUnit != null) {

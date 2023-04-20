@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 namespace SimpleGUI
 {
@@ -27,11 +26,7 @@ namespace SimpleGUI
         {
             if (GuiMain.showHidePatreonConfig.Value)
             {
-                patreonWindowRect = GUILayout.Window(1009, patreonWindowRect, new GUI.WindowFunction(patreonWindow), "Patreon", new GUILayoutOption[]
-                {
-                GUILayout.MaxWidth(300f),
-                GUILayout.MinWidth(200f)
-                });
+                patreonWindowRect = GUILayout.Window(1009, patreonWindowRect, patreonWindow, "Patreon", GUILayout.MaxWidth(300f), GUILayout.MinWidth(200f));
             }
             if (nameCount != setCount)
             {
@@ -53,7 +48,7 @@ namespace SimpleGUI
                 if (!SpawnedNames.ContainsKey(name))
                 {
                     data.setName(name);
-                    if (UnityEngine.Random.Range(1, 100) > 90)
+                    if (Random.Range(1, 100) > 90)
                     {
                         __instance.addTrait("burning_feet");
                     }
@@ -65,7 +60,7 @@ namespace SimpleGUI
                 if (race.id == "human" || race.id == "dwarf")
                 {
                     name = "Juanchiz";
-                    if (UnityEngine.Random.Range(1, 100) > 90 && !SpawnedNames.ContainsKey(name))
+                    if (Random.Range(1, 100) > 90 && !SpawnedNames.ContainsKey(name))
                     {
                         data.setName(name);
                         __instance.addTrait("fast");
@@ -85,7 +80,7 @@ namespace SimpleGUI
                     }
                 }
                 name = "Apex";
-                if (UnityEngine.Random.Range(1, 100) > 90 && !SpawnedNames.ContainsKey(name)) // if name hasnt been used yet
+                if (Random.Range(1, 100) > 90 && !SpawnedNames.ContainsKey(name)) // if name hasnt been used yet
                 {
                     data.setName(name); // override the name
                     __instance.addTrait("stupid"); // hehe apex is stupid
@@ -94,7 +89,7 @@ namespace SimpleGUI
                     return;
                 }
                 name = "Nicholas";
-                if (UnityEngine.Random.Range(1, 100) > 90 && !SpawnedNames.ContainsKey(name))
+                if (Random.Range(1, 100) > 90 && !SpawnedNames.ContainsKey(name))
                 {
                     data.setName(name);
                     SpawnedNames.Add(name, true);
@@ -102,7 +97,7 @@ namespace SimpleGUI
                     return;
                 }
                 name = "Hayes";
-                if (UnityEngine.Random.Range(1, 100) > 90 && !SpawnedNames.ContainsKey(name))
+                if (Random.Range(1, 100) > 90 && !SpawnedNames.ContainsKey(name))
                 {
                     data.setName(name);
                     __instance.addTrait("fast");
@@ -112,7 +107,7 @@ namespace SimpleGUI
                     return;
                 }
                 name = "Styderr";
-                if (UnityEngine.Random.Range(1, 100) > 90 && !SpawnedNames.ContainsKey(name))
+                if (Random.Range(1, 100) > 90 && !SpawnedNames.ContainsKey(name))
                 {
                     data.setName(name);
                     __instance.addTrait("fast");
@@ -121,7 +116,7 @@ namespace SimpleGUI
                     return;
                 }
                 name = "Ruma";
-                if (UnityEngine.Random.Range(1, 100) > 90 && !SpawnedNames.ContainsKey(name))
+                if (Random.Range(1, 100) > 90 && !SpawnedNames.ContainsKey(name))
                 {
                     data.setName(name);
                     //ItemData pData = ItemGenerator.generateItem(itemAsset, materialForItem.id, MapBox.instance.mapStats.year, this.kingdom.name, pCreatorName, pTries, pActor);
@@ -135,7 +130,7 @@ namespace SimpleGUI
                     return;
                 }
                 name = "Bill Dipperly";
-                if (UnityEngine.Random.Range(1, 100) > 90 && !SpawnedNames.ContainsKey(name))
+                if (Random.Range(1, 100) > 90 && !SpawnedNames.ContainsKey(name))
                 {
                     data.setName(name);
                     SpawnedNames.Add(name, true);
@@ -145,7 +140,7 @@ namespace SimpleGUI
             if (race.id == "human")
             {
                 name = "Amon";
-                if (UnityEngine.Random.Range(1, 100) > 90 && !SpawnedNames.ContainsKey(name))
+                if (Random.Range(1, 100) > 90 && !SpawnedNames.ContainsKey(name))
                 {
                     data.setName(name);
                     __instance.addTrait("veteran");
@@ -162,7 +157,7 @@ namespace SimpleGUI
             if (stats.race == "cat")
             {
                 name = "PolyMorphik's Lynx";
-                if (UnityEngine.Random.Range(1, 100) > 90 && !SpawnedNames.ContainsKey(name))
+                if (Random.Range(1, 100) > 90 && !SpawnedNames.ContainsKey(name))
                 {
                     data.setName(name);
                     __instance.addTrait("fast");
@@ -178,11 +173,10 @@ namespace SimpleGUI
                     return;
                 }
                 name = "Floppa";
-                if (UnityEngine.Random.Range(1, 100) > 90 && !SpawnedNames.ContainsKey(name))
+                if (Random.Range(1, 100) > 90 && !SpawnedNames.ContainsKey(name))
                 {
                     data.setName(name);
                     SpawnedNames.Add(name, true);
-                    return;
                 }
             }
         }
@@ -190,25 +184,23 @@ namespace SimpleGUI
         public static string getKingdomName_Postfix(string __result)
         {
             //same as above but for kingdom names
-            if (UnityEngine.Random.Range(1, 100) > 90 && !SpawnedNames.ContainsKey("Supra Empire"))
+            if (Random.Range(1, 100) > 90 && !SpawnedNames.ContainsKey("Supra Empire"))
             {
                 SpawnedNames.Add("Supra Empire", true);
                 return "Supra Empire";
             }
-            if (UnityEngine.Random.Range(1, 100) > 90 && !SpawnedNames.ContainsKey("Styderr's Empire"))
+            if (Random.Range(1, 100) > 90 && !SpawnedNames.ContainsKey("Styderr's Empire"))
             {
                 SpawnedNames.Add("Styderr's Empire", true);
                 return "Styderr's Empire";
             }
-            if (UnityEngine.Random.Range(1, 100) > 90 && !SpawnedNames.ContainsKey("Misty's Empire"))
+            if (Random.Range(1, 100) > 90 && !SpawnedNames.ContainsKey("Misty's Empire"))
             {
                 SpawnedNames.Add("Misty's Empire", true);
                 return "Misty's Empire";
             }
-            else
-            {
-                return __result;
-            }
+
+            return __result;
 
         }
 
@@ -280,7 +272,7 @@ namespace SimpleGUI
                 text = "664187111083212804";
             }
             //time stuff
-            DateTime timeNow = System.DateTime.Now;
+            DateTime timeNow = DateTime.Now;
             foreach(KeyValuePair<string, DateTime> birthdayToCheck in birthdays) {
                 if(timeNow.Month == birthdayToCheck.Value.Month) {
                     if(timeNow.Day == birthdayToCheck.Value.Day) {
@@ -296,13 +288,14 @@ namespace SimpleGUI
         }
 
         // years dont matter, i only check month/day
-        public static Dictionary<string, DateTime> birthdays = new Dictionary<string, DateTime>() {
+        public static Dictionary<string, DateTime> birthdays = new Dictionary<string, DateTime>
+        {
             {"Cody", new DateTime(1, 1, 17)},
             //{"Adiniz", new DateTime(1, 9, 11)},
         };
 
         public int nameCount => SpawnedNames.Count;
-        public int setCount = 0;
+        public int setCount;
         public static Dictionary<string, bool> SpawnedNames = new Dictionary<string, bool>();
         public bool showHidePatreon;
         public Rect patreonWindowRect;

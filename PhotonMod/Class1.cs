@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Reflection;
 using BepInEx;
+using ExitGames.Client.Photon;
 using HarmonyLib;
 using Photon.Pun;
 using Photon.Realtime;
@@ -60,11 +56,11 @@ namespace PhotonMod {
                 newSettings.AppIdRealtime = "d4ec138d-d648-4786-ae01-e55b337d3fa4";
                 newSettings.AppVersion = "0.1";
                 newSettings.UseNameServer = true;
-                newSettings.NetworkLogging = ExitGames.Client.Photon.DebugLevel.ALL;
-                newSettings.Protocol = ExitGames.Client.Photon.ConnectionProtocol.Udp;
+                newSettings.NetworkLogging = DebugLevel.ALL;
+                newSettings.Protocol = ConnectionProtocol.Udp;
                 newSettings.FixedRegion = "us";
                 Debug.LogError("About to connect");
-                PhotonNetwork.ConnectUsingSettings(newSettings, false);
+                PhotonNetwork.ConnectUsingSettings(newSettings);
                 PhotonNetwork.GameVersion = "0.1";
             }
         }

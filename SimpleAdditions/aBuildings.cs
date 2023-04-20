@@ -1,15 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 using UnityEngine;
+using Resources = SimpleAdditions.Properties.Resources;
 
 namespace SimpleAdditions {
 	class aBuildings {
 		public static void AddBuildings()
 		{
-			Sprite testSprite = LoadSprite(Properties.Resources.bluesword3, 16, 16, 0f, 0f);
+			Sprite testSprite = LoadSprite(Resources.bluesword3, 16, 16, 0f, 0f);
 
 			BuildingAnimationDataNew newAnimationData = new BuildingAnimationDataNew();
 			newAnimationData.animated = false;
@@ -27,7 +24,8 @@ namespace SimpleAdditions {
 			newBuildingSprites.animationData = new List<BuildingAnimationDataNew>();
 			newBuildingSprites.animationData.Add(newAnimationData);
 
-			BuildingAsset testBuilding = new BuildingAsset() {
+			BuildingAsset testBuilding = new BuildingAsset
+			{
 				id = "testBuilding",
 				sprites = newBuildingSprites,
 				fundament = new BuildingFundament(1, 1, 1, 0),
@@ -46,7 +44,7 @@ namespace SimpleAdditions {
 			if(resizeX != 0) {
 				TextureScale.Point(texture2D, resizeX, resizeY);
 			}
-			return Sprite.Create(texture2D, new Rect(0f, 0f, (float)texture2D.width, (float)texture2D.height), new Vector2(offsetx, offsety), 1f);
+			return Sprite.Create(texture2D, new Rect(0f, 0f, texture2D.width, texture2D.height), new Vector2(offsetx, offsety), 1f);
 		}
 
 	}

@@ -1,12 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
-using UnityEngine.UI;
-
 
 namespace SimpleGUI
 {
@@ -28,19 +22,10 @@ namespace SimpleGUI
 			}
 			if (GuiMain.showHideItemGenerationConfig.Value)
 			{
-				itemGenerationWindowRect = GUILayout.Window(1005, itemGenerationWindowRect, new GUI.WindowFunction(ItemGenerationWindow), "Items", new GUILayoutOption[]
-				{
-				GUILayout.MaxWidth(300f),
-				GUILayout.MinWidth(200f)
-				});
+				itemGenerationWindowRect = GUILayout.Window(1005, itemGenerationWindowRect, ItemGenerationWindow, "Items", GUILayout.MaxWidth(300f), GUILayout.MinWidth(200f));
 			}
 			if(selectedTypeString != "" && itemSelection) {
-				itemGenerationEquipmentWindow1 = GUILayout.Window(95466, itemGenerationEquipmentWindow1, new GUI.WindowFunction(ItemEquipSelectionWindow), "Items1", new GUILayoutOption[]
-				{
-				//this window is expectedly big with many materials in one row
-				GUILayout.MinWidth(600f),
-			    GUILayout.ExpandWidth(false)
-				});
+				itemGenerationEquipmentWindow1 = GUILayout.Window(95466, itemGenerationEquipmentWindow1, ItemEquipSelectionWindow, "Items1", GUILayout.MinWidth(600f), GUILayout.ExpandWidth(false));
 				itemGenerationEquipmentWindow1.position = new Vector2(itemGenerationWindowRect.x + itemGenerationWindowRect.width, (itemGenerationWindowRect.y));
 			}
 		}
@@ -107,7 +92,7 @@ namespace SimpleGUI
 				}
 				GUI.backgroundColor = ori;
 
-				GUILayout.BeginHorizontal(new GUILayoutOption[0]);
+				GUILayout.BeginHorizontal();
 				GUILayout.EndHorizontal();
 			}
 			GUI.DragWindow();
@@ -115,7 +100,7 @@ namespace SimpleGUI
 
 		public static Vector2 scrollPosition;
 
-		public static List<string> notRealItems = new List<string>() { "base", "hands", "jaws", "claws", "snowball", "fire_hands", "bite", "rocks" };
+		public static List<string> notRealItems = new List<string> { "base", "hands", "jaws", "claws", "snowball", "fire_hands", "bite", "rocks" };
 
 		public static void ItemEquipSelectionWindow(int windowID)
 		{
@@ -208,7 +193,7 @@ namespace SimpleGUI
 							}
 						}
 						else {
-							selectedItemModifiers.Add(lastSelectedItemID, new List<string>() { modifier.id });
+							selectedItemModifiers.Add(lastSelectedItemID, new List<string> { modifier.id });
 						}
 					}
 					GUI.backgroundColor = ori;

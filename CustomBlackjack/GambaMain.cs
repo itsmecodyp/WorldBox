@@ -1,16 +1,10 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using BepInEx;
 using BepInEx.Configuration;
-using Proyecto26;
-using SimpleJSON;
+using LargeNumbers;
 using UnityEngine;
 using UnityEngine.Networking;
-using LargeNumbers;
 
 namespace CustomBlackjack
 {
@@ -277,17 +271,17 @@ namespace CustomBlackjack
 
             foreach (BlackjackPlayer player in Blackjack.currentPlayers)
             {
-                player.personalWindowRect = GUILayout.Window(player.windowID, player.personalWindowRect, new GUI.WindowFunction(player.PlayerWindow), "Player: " + player.playername, new GUILayoutOption[] { GUILayout.MaxWidth(200f), GUILayout.MinWidth(200f) });
+                player.personalWindowRect = GUILayout.Window(player.windowID, player.personalWindowRect, player.PlayerWindow, "Player: " + player.playername, GUILayout.MaxWidth(200f), GUILayout.MinWidth(200f));
             }
 
             if(showHideMainWindow)
             {
                 //main window = add ai window
                 //MainWindowRect = GUILayout.Window(4300, MainWindowRect, new GUI.WindowFunction(MainWindow), "Blackjack main", new GUILayoutOption[] { GUILayout.MaxWidth(200f), GUILayout.MinWidth(200f) });
-                Blackjack.dealerWindowRect = GUILayout.Window(4303, Blackjack.dealerWindowRect, new GUI.WindowFunction(Blackjack.DealerWindow), "Dealer", new GUILayoutOption[] { GUILayout.MaxWidth(200f), GUILayout.MinWidth(200f) });
+                Blackjack.dealerWindowRect = GUILayout.Window(4303, Blackjack.dealerWindowRect, Blackjack.DealerWindow, "Dealer", GUILayout.MaxWidth(200f), GUILayout.MinWidth(200f));
 
                 // idle game
-                WorkWindowRect = GUILayout.Window(43011, WorkWindowRect, new GUI.WindowFunction(idleClicker.ClickerWindow), "SimpleIdleClicker", new GUILayoutOption[] { GUILayout.MaxWidth(200f), GUILayout.MinWidth(200f) });
+                WorkWindowRect = GUILayout.Window(43011, WorkWindowRect, idleClicker.ClickerWindow, "SimpleIdleClicker", GUILayout.MaxWidth(200f), GUILayout.MinWidth(200f));
 
             }
 
@@ -312,7 +306,7 @@ namespace CustomBlackjack
                 showHideCrashWindow = !showHideCrashWindow;
             }
 			if(showHideCrashWindow) {
-                crashWindowRect = GUILayout.Window(4605, crashWindowRect, new GUI.WindowFunction(crashGame.CrashWindow), "SimpleCrash", new GUILayoutOption[] { GUILayout.MaxWidth(200f), GUILayout.MinWidth(200f) });
+                crashWindowRect = GUILayout.Window(4605, crashWindowRect, crashGame.CrashWindow, "SimpleCrash", GUILayout.MaxWidth(200f), GUILayout.MinWidth(200f));
                 //crashGame.CrashWindow(4605);
             }
             GUILayout.EndArea();
@@ -362,7 +356,7 @@ namespace CustomBlackjack
         }
 
         public int playerCount = 2;
-        public int activePlayer = 0;
+        public int activePlayer;
 
     }
 

@@ -1,19 +1,18 @@
-﻿using System.Collections.Generic;
-using UnityEngine;
+﻿using System;
+using System.Collections.Generic;
+using System.Reflection;
 using BepInEx;
 using BepInEx.Configuration;
-//using System.Drawing;
-using System.IO;
 using HarmonyLib;
-using System.Reflection;
-using DG.Tweening;
+using UnityEngine;
 using UnityEngine.Tilemaps;
-using TextureLoader;
+using Random = UnityEngine.Random;
+//using System.Drawing;
 
 namespace WorldBox3D
 {
     [BepInPlugin(pluginGuid, pluginName, pluginVersion)]
-    [System.Obsolete]
+    [Obsolete]
     class _3D_Main : BaseUnityPlugin
     {
         public static Dictionary<string, int> buildingCustomHeight = new Dictionary<string, int>();
@@ -46,7 +45,7 @@ namespace WorldBox3D
         bool firstRun;
         static bool finishedLoading;
         public bool autoPlacement;
-        public static bool _3dEnabled = false;
+        public static bool _3dEnabled;
 
         public Vector3 RandomCircle(Vector3 center, float radius, int a)
         {
@@ -362,7 +361,7 @@ namespace WorldBox3D
                 singleLine.SetVertexCount(0);
                 deleteAllExtraLayers(); // sprite thickening reset
             }
-            if (GUILayout.Button("tile3d: " + tile3Denabled.ToString()))
+            if (GUILayout.Button("tile3d: " + tile3Denabled))
             {
                 tile3Denabled = !tile3Denabled;
             }
@@ -385,7 +384,7 @@ namespace WorldBox3D
             {
                 ObjectPositioningButtons();
             }
-            catch (System.Exception e)
+            catch (Exception e)
             {
                 // prevent null error and group repaint error from showing in log.. sloppy but the errors dont mess anything up anyway
             }
@@ -433,8 +432,8 @@ namespace WorldBox3D
                 if (GUILayout.Button("Single line for all tiles"))
                 {
                     int scaleFactor = 5;
-                    Color color1 = new Color(UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f));
-                    Color color2 = new Color(UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f), UnityEngine.Random.Range(0f, 1f));
+                    Color color1 = new Color(Random.Range(0f, 1f), Random.Range(0f, 1f), Random.Range(0f, 1f));
+                    Color color2 = new Color(Random.Range(0f, 1f), Random.Range(0f, 1f), Random.Range(0f, 1f));
                     if (singleLine == null)
                     {
                         singleLine = new GameObject("Line").AddComponent<LineRenderer>();
@@ -541,8 +540,8 @@ namespace WorldBox3D
             GUILayout.EndArea();
             if (showHide3D)
             {
-                GUI.contentColor = UnityEngine.Color.white;
-                window3DRect = GUILayout.Window(11015, window3DRect, new GUI.WindowFunction(window3D), "WorldBox3D", new GUILayoutOption[] { GUILayout.MaxWidth(300f), GUILayout.MinWidth(200f) });
+                GUI.contentColor = Color.white;
+                window3DRect = GUILayout.Window(11015, window3DRect, window3D, "WorldBox3D", GUILayout.MaxWidth(300f), GUILayout.MinWidth(200f));
             }
         }
         // unused thickening test
@@ -564,8 +563,8 @@ namespace WorldBox3D
         public void layerActorSprite(Actor targetActor)
         {
             SpriteRenderer spriteRenderer = Reflection.GetField(targetActor.GetType(), targetActor, "spriteRenderer") as SpriteRenderer;
-            SpriteRenderer newSprite = Instantiate(spriteRenderer) as SpriteRenderer;
-            SpriteRenderer newSprite2 = Instantiate(spriteRenderer) as SpriteRenderer;
+            SpriteRenderer newSprite = Instantiate(spriteRenderer);
+            SpriteRenderer newSprite2 = Instantiate(spriteRenderer);
             newSprite2.transform.rotation = Quaternion.Euler(0, 90, -90);
             extraLayers.Add(newSprite);
             extraLayers.Add(newSprite2);
@@ -574,8 +573,8 @@ namespace WorldBox3D
         public void layerBuildingSprite(Building targetBuilding)
         {
             SpriteRenderer spriteRenderer = Reflection.GetField(targetBuilding.GetType(), targetBuilding, "spriteRenderer") as SpriteRenderer;
-            SpriteRenderer newSprite = Instantiate(spriteRenderer) as SpriteRenderer;
-            SpriteRenderer newSprite2 = Instantiate(spriteRenderer) as SpriteRenderer;
+            SpriteRenderer newSprite = Instantiate(spriteRenderer);
+            SpriteRenderer newSprite2 = Instantiate(spriteRenderer);
             newSprite2.transform.rotation = Quaternion.Euler(0, 90, -90);
             extraLayers.Add(newSprite);
             extraLayers.Add(newSprite2);
@@ -583,40 +582,40 @@ namespace WorldBox3D
         }
         public void thickenActorSprite(Actor targetActor)
         {
-            Actor newActor = Instantiate(targetActor) as Actor;
+            Actor newActor = Instantiate(targetActor);
             newActor.transform.parent = targetActor.transform;
             SpriteRenderer spriteRenderer = Reflection.GetField(newActor.GetType(), newActor, "spriteRenderer") as SpriteRenderer;
             int distanceScaling = 25;
             for (int i = 0; i <= 5; i++)
             {
-                SpriteRenderer newSprite = Instantiate(spriteRenderer) as SpriteRenderer;
-                newSprite.transform.localPosition = spriteRenderer.transform.localPosition + new Vector3(0f, (0f + (float)i) / distanceScaling, 0f);
+                SpriteRenderer newSprite = Instantiate(spriteRenderer);
+                newSprite.transform.localPosition = spriteRenderer.transform.localPosition + new Vector3(0f, (0f + i) / distanceScaling, 0f);
                 extraLayers.Add(newSprite);
             }
             for (int i = 0; i <= 5; i++)
             {
-                SpriteRenderer newSprite = Instantiate(spriteRenderer) as SpriteRenderer;
-                newSprite.transform.localPosition = spriteRenderer.transform.localPosition + new Vector3(0f, -(0f + (float)i) / distanceScaling, 0f);
+                SpriteRenderer newSprite = Instantiate(spriteRenderer);
+                newSprite.transform.localPosition = spriteRenderer.transform.localPosition + new Vector3(0f, -(0f + i) / distanceScaling, 0f);
                 extraLayers.Add(newSprite);
             }
         }
         public void thickenActorSpriteRotated(Actor targetActor)
         {
-            Actor newActor = Instantiate(targetActor) as Actor;
+            Actor newActor = Instantiate(targetActor);
             newActor.transform.parent = targetActor.transform;
             newActor.transform.rotation = Quaternion.Euler(0, 90, -90);
             SpriteRenderer spriteRenderer = Reflection.GetField(newActor.GetType(), newActor, "spriteRenderer") as SpriteRenderer;
             int distanceScaling = 25;
             for (int i = 0; i <= 15; i++)
             {
-                SpriteRenderer newSprite = Instantiate(spriteRenderer) as SpriteRenderer;
-                newSprite.transform.localPosition = spriteRenderer.transform.localPosition + new Vector3((0f + (float)i) / distanceScaling, 0f, 0f);
+                SpriteRenderer newSprite = Instantiate(spriteRenderer);
+                newSprite.transform.localPosition = spriteRenderer.transform.localPosition + new Vector3((0f + i) / distanceScaling, 0f, 0f);
                 extraLayers.Add(newSprite);
             }
             for (int i = 0; i <= 15; i++)
             {
-                SpriteRenderer newSprite = Instantiate(spriteRenderer) as SpriteRenderer;
-                newSprite.transform.localPosition = spriteRenderer.transform.localPosition + new Vector3(-(0f + (float)i) / distanceScaling, 0f, 0f);
+                SpriteRenderer newSprite = Instantiate(spriteRenderer);
+                newSprite.transform.localPosition = spriteRenderer.transform.localPosition + new Vector3(-(0f + i) / distanceScaling, 0f, 0f);
                 extraLayers.Add(newSprite);
             }
         }
@@ -664,14 +663,14 @@ namespace WorldBox3D
                 spriteRenderer.transform.rotation = Quaternion.Euler(-90, 0, 0);
                 for (int i = 0; i <= layerCount; i++)
                 {
-                    SpriteRenderer newSprite = Instantiate(spriteRenderer) as SpriteRenderer;
-                    newSprite.transform.localPosition = targetBuilding.transform.localPosition + new Vector3(0f, (0f + (float)i) / distanceScaling, 0f);
+                    SpriteRenderer newSprite = Instantiate(spriteRenderer);
+                    newSprite.transform.localPosition = targetBuilding.transform.localPosition + new Vector3(0f, (0f + i) / distanceScaling, 0f);
                     extraLayers.Add(newSprite);
                 }
                 for (int i = 0; i <= layerCount; i++)
                 {
-                    SpriteRenderer newSprite = Instantiate(spriteRenderer) as SpriteRenderer;
-                    newSprite.transform.localPosition = targetBuilding.transform.localPosition + new Vector3(0f, -(0f + (float)i) / distanceScaling, 0f);
+                    SpriteRenderer newSprite = Instantiate(spriteRenderer);
+                    newSprite.transform.localPosition = targetBuilding.transform.localPosition + new Vector3(0f, -(0f + i) / distanceScaling, 0f);
                     extraLayers.Add(newSprite);
                 }
             }
@@ -693,14 +692,14 @@ namespace WorldBox3D
             spriteRenderer.transform.rotation = Quaternion.Euler(0, 90, -90);
             for (int i = 0; i <= layerCount; i++)
             {
-                SpriteRenderer newSprite = Instantiate(spriteRenderer) as SpriteRenderer;
-                newSprite.transform.localPosition = spriteRenderer.transform.localPosition + new Vector3((0f + (float)i) / distanceScaling, 0f, 0f);
+                SpriteRenderer newSprite = Instantiate(spriteRenderer);
+                newSprite.transform.localPosition = spriteRenderer.transform.localPosition + new Vector3((0f + i) / distanceScaling, 0f, 0f);
                 extraLayers.Add(newSprite);
             }
             for (int i = 0; i <= layerCount; i++)
             {
-                SpriteRenderer newSprite = Instantiate(spriteRenderer) as SpriteRenderer;
-                newSprite.transform.localPosition = spriteRenderer.transform.localPosition + new Vector3(-(0f + (float)i) / distanceScaling, 0f, 0f);
+                SpriteRenderer newSprite = Instantiate(spriteRenderer);
+                newSprite.transform.localPosition = spriteRenderer.transform.localPosition + new Vector3(-(0f + i) / distanceScaling, 0f, 0f);
                 extraLayers.Add(newSprite);
             }
         }

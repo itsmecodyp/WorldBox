@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using LargeNumbers;
 using UnityEngine;
-using LargeNumbers;
 
 namespace CustomBlackjack {
 	public class Clicker {
@@ -15,19 +10,19 @@ namespace CustomBlackjack {
         public void ClickerWindow(int windowID)
         {
             GUILayout.BeginHorizontal();
-            GUILayout.Button("Money: " + humanPlayer.money.ToString());
+            GUILayout.Button("Money: " + humanPlayer.money);
             GUILayout.EndHorizontal();
             GUILayout.BeginHorizontal();
-            UnityEngine.Color original = GUI.backgroundColor;
+            Color original = GUI.backgroundColor;
             bool plusOneActive = Time.realtimeSinceStartup > plusSlotOneTime + plusSlotOneDelay;
             bool plusTwoActive = Time.realtimeSinceStartup > plusSlotTwoTime + plusSlotTwoDelay;
             bool plusThreeActive = Time.realtimeSinceStartup > plusSlotThreeTime + plusSlotThreeDelay;
 
             if(plusOneActive) {
-                GUI.backgroundColor = UnityEngine.Color.green;
+                GUI.backgroundColor = Color.green;
             }
             else {
-                GUI.backgroundColor = UnityEngine.Color.red;
+                GUI.backgroundColor = Color.red;
             }
             if(GUILayout.Button("+" + plusSlotOne) && plusOneActive) {
                 humanPlayer.money += plusSlotOne;
@@ -35,10 +30,10 @@ namespace CustomBlackjack {
                 plusSlotOneTime = Time.realtimeSinceStartup;
             }
             if(plusTwoActive) {
-                GUI.backgroundColor = UnityEngine.Color.green;
+                GUI.backgroundColor = Color.green;
             }
             else {
-                GUI.backgroundColor = UnityEngine.Color.red;
+                GUI.backgroundColor = Color.red;
             }
             if(GUILayout.Button("+" + plusSlotTwo) && plusTwoActive) {
                 humanPlayer.money += plusSlotTwo;
@@ -47,10 +42,10 @@ namespace CustomBlackjack {
                 plusSlotTwoTime = Time.realtimeSinceStartup;
             }
             if(plusThreeActive) {
-                GUI.backgroundColor = UnityEngine.Color.green;
+                GUI.backgroundColor = Color.green;
             }
             else {
-                GUI.backgroundColor = UnityEngine.Color.red;
+                GUI.backgroundColor = Color.red;
             }
             if(GUILayout.Button("+" + plusSlotThree) && plusThreeActive) {
                 humanPlayer.money += plusSlotThree;
@@ -76,7 +71,7 @@ namespace CustomBlackjack {
             }
             GUILayout.Label("2% total per 10 sec. You have " + Main.printersLevelThree.Value);
             GUILayout.Button("Total printing amount: " + ClickerPurchaseReward());
-            GUILayout.Button("Amount in stash: " + printedStash.ToString());
+            GUILayout.Button("Amount in stash: " + printedStash);
             if(GUILayout.Button("Collect")) {
                 Main.totalIncomeIdle.Value = Main.totalIncomeIdle.Value + printedStash;
                 humanPlayer.money += printedStash;

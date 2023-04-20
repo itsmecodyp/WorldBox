@@ -1,17 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using BepInEx;
+using CustomAssetLoader;
 using HarmonyLib;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 using UnityEngine.UI;
-using static UnityEngine.GraphicsBuffer;
 
 namespace TextureLoader
 {
@@ -36,7 +33,7 @@ namespace TextureLoader
             }
             if (showHideMainMenu)
             {
-                mainWindowRect = GUILayout.Window(50001, mainWindowRect, new GUI.WindowFunction(mainWindow), "Textures", new GUILayoutOption[] { GUILayout.MaxWidth(300f), GUILayout.MinWidth(200f) });
+                mainWindowRect = GUILayout.Window(50001, mainWindowRect, mainWindow, "Textures", GUILayout.MaxWidth(300f), GUILayout.MinWidth(200f));
             }
             GUILayout.EndArea();
         }
@@ -276,23 +273,19 @@ namespace TextureLoader
                     tiles.Add(pGraphic);
                     return false;
                 }
-                else
+
                 {
-                    {
-                        List<Vector3Int> vec = Reflection.GetField(__instance.GetType(), __instance, "vec") as List<Vector3Int>;
-                        List<Tile> tiles = Reflection.GetField(__instance.GetType(), __instance, "tiles") as List<Tile>;
-                        Tile curGraphics = Reflection.GetField(pWorldTile.GetType(), pWorldTile, "curGraphics") as Tile;
-                        curGraphics = pGraphic;
-                        vec.Add(pVec);
-                        tiles.Add(pGraphic);
-                    }
+                    List<Vector3Int> vec = Reflection.GetField(__instance.GetType(), __instance, "vec") as List<Vector3Int>;
+                    List<Tile> tiles = Reflection.GetField(__instance.GetType(), __instance, "tiles") as List<Tile>;
+                    Tile curGraphics = Reflection.GetField(pWorldTile.GetType(), pWorldTile, "curGraphics") as Tile;
+                    curGraphics = pGraphic;
+                    vec.Add(pVec);
+                    tiles.Add(pGraphic);
                 }
                 return true;
             }
-            else
-            {
-                return true;
-            }
+
+            return true;
         }
 
         public TileType selectedCustomType;
@@ -316,15 +309,15 @@ namespace TextureLoader
                 }
             }
             
-            if (CustomAssetLoader.AssetLoader_Main.customSoundControllers != null && CustomAssetLoader.AssetLoader_Main.customSoundControllers.Count >= 1)
+            if (AssetLoader_Main.customSoundControllers != null && AssetLoader_Main.customSoundControllers.Count >= 1)
             {
                 if (GUILayout.Button("Change_NF"))
                 {
-                    CustomAssetLoader.AssetLoader_Main.PlaySound("Change_NF");
+                    AssetLoader_Main.PlaySound("Change_NF");
                 }
                 if (GUILayout.Button("Change_NF.wav"))
                 {
-                    CustomAssetLoader.AssetLoader_Main.PlaySound("Change_NF.wav");
+                    AssetLoader_Main.PlaySound("Change_NF.wav");
                 }
                 if (GUILayout.Button("Test sounds2"))
                 {
@@ -332,18 +325,18 @@ namespace TextureLoader
                     {
                         FileInfo[] files = new DirectoryInfo(Directory.GetCurrentDirectory() + "\\WorldBox_Data//assets//custom//" + "sounds" + "//").GetFiles("*.wav");
 
-                        for (int i = 0; i < files.Count<FileInfo>(); i++)
+                        for (int i = 0; i < files.Count(); i++)
                         {
-                            StartCoroutine(CustomAssetLoader.AssetLoader_Main.LoadAudio(files[i].FullName));
+                            StartCoroutine(AssetLoader_Main.LoadAudio(files[i].FullName));
 
                         }
                     }
                 }
             }
 
-            if (CustomAssetLoader.AssetLoader_Main.addedTileTypes != null && CustomAssetLoader.AssetLoader_Main.addedTileTypes.Count >= 1)
+            if (AssetLoader_Main.addedTileTypes != null && AssetLoader_Main.addedTileTypes.Count >= 1)
             {
-                foreach (KeyValuePair<string, TileType> customTileType in CustomAssetLoader.AssetLoader_Main.addedTileTypes)
+                foreach (KeyValuePair<string, TileType> customTileType in AssetLoader_Main.addedTileTypes)
                 {
                     if (GUILayout.Button(customTileType.Key))
                     {
@@ -391,7 +384,7 @@ namespace TextureLoader
                 texture2D.LoadImage(data);
                 texture2D.filterMode = FilterMode.Point;
                 // TextureScale.Point(texture2D, resizeX, resizeY);
-                Sprite sprite = Sprite.Create(texture2D, new Rect(0f, 0f, (float)texture2D.width, (float)texture2D.height), new Vector2(offsetx, offsety), 1f);
+                Sprite sprite = Sprite.Create(texture2D, new Rect(0f, 0f, texture2D.width, texture2D.height), new Vector2(offsetx, offsety), 1f);
                 return sprite;
             }
             return null;
@@ -547,9 +540,9 @@ namespace TextureLoader
 
                         foreach (string trait in data.traits)
                         {
-                            if (CustomAssetLoader.AssetLoader_Main.addedTraits.Contains(trait)) // detect custom traits
+                            if (AssetLoader_Main.addedTraits.Contains(trait)) // detect custom traits
                             {
-                                ActorTrait foundTrait = CustomAssetLoader.AssetLoader_Main.addedActorTraits.Find(y => y.id == trait); // get actual trait
+                                ActorTrait foundTrait = AssetLoader_Main.addedActorTraits.Find(y => y.id == trait); // get actual trait
                                 if (foundTrait != null)
                                 {
                                     if (foundTrait.icon.Contains("skin"))
@@ -683,11 +676,11 @@ namespace TextureLoader
                 {
                     Transform child = __instance.transform.GetChild(0);
                     child.SetParent(null);
-                    UnityEngine.Object.Destroy(child.gameObject);
+                    Destroy(child.gameObject);
                 }
                 SpriteRenderer spriteRendererBody = Reflection.GetField(pActor.GetType(), pActor, "spriteRenderer") as SpriteRenderer;
                 __instance.transform.localScale = new Vector3(pActor.stats.inspectAvatarScale * __instance.avatarSize, pActor.stats.inspectAvatarScale * __instance.avatarSize, pActor.stats.inspectAvatarScale);
-                __instance.CallMethod("showSpritePart", new object[] { spriteRendererBody.sprite, pActor, new Vector3(0f, 0f) });
+                __instance.CallMethod("showSpritePart", spriteRendererBody.sprite, pActor, new Vector3(0f, 0f));
                 if (pActor.isItemRendered())
                 {
                     AnimationFrameData animationFrameData2 = pActor.getAnimationFrameData();
@@ -700,7 +693,7 @@ namespace TextureLoader
                             pPos2.x = posItem.x;
                             pPos2.y = posItem.y;
                             string textureToRenderInHand = pActor.getTextureToRenderInHand();
-                            __instance.CallMethod("showSpritePart", new object[] { ActorAnimationLoader.getItem(textureToRenderInHand), pActor, pPos2 });
+                            __instance.CallMethod("showSpritePart", ActorAnimationLoader.getItem(textureToRenderInHand), pActor, pPos2);
                         }
                     }
                 }
@@ -927,20 +920,11 @@ namespace TextureLoader
             if (flag)
             {
                 string text = File.ReadAllText(path);
-                string[] array = text.Split(new char[]
-                {
-                "\n"[0]
-                });
+                string[] array = text.Split("\n"[0]);
                 for (int i = 0; i < array.Length; i++)
                 {
-                    string pID = array[i].Split(new char[]
-                    {
-                    ":"[0]
-                    })[0];
-                    string hex = array[i].Split(new char[]
-                    {
-                    ":"[0]
-                    })[1];
+                    string pID = array[i].Split(":"[0])[0];
+                    string hex = array[i].Split(":"[0])[1];
                     TopTileType tileType = AssetManager.topTiles.get(pID);
                     bool flag2 = tileType != null;
                     if (flag2)

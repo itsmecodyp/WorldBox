@@ -11,9 +11,8 @@
 
 using System.Text;
 
-
 namespace LargeNumbers {
-    public static partial class StringBuilderExtensions {
+    public static class StringBuilderExtensions {
         private static readonly long[] _powers = {
             1,
             10,
@@ -33,7 +32,7 @@ namespace LargeNumbers {
             1_000_000_000_000_000
         };
 
-        private static readonly char[] _characters = new char[] { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
+        private static readonly char[] _characters = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
 
 
         // ---------------------------------------------------------------------------- Methods

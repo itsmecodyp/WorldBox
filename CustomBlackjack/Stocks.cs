@@ -4,12 +4,11 @@ using System.Linq;
 using BepInEx;
 using Discord;
 using Firebase.Auth;
+using LargeNumbers;
 using Proyecto26;
 using SimpleJSON;
 using UnityEngine;
-using static Mono.Security.X509.X520;
-using LargeNumbers;
-
+using Random = UnityEngine.Random;
 
 namespace CustomBlackjack
 {
@@ -97,7 +96,7 @@ namespace CustomBlackjack
         {
             if (showHideStocks)
             {
-                stockWindowRect = GUILayout.Window(43031, stockWindowRect, new GUI.WindowFunction(StockWindow), "SimpleStocks", new GUILayoutOption[] { GUILayout.MaxWidth(200f), GUILayout.MinWidth(200f) });
+                stockWindowRect = GUILayout.Window(43031, stockWindowRect, StockWindow, "SimpleStocks", GUILayout.MaxWidth(200f), GUILayout.MinWidth(200f));
             }
         }
         public static bool showHideStocks;
@@ -154,7 +153,7 @@ namespace CustomBlackjack
                 GUILayout.EndHorizontal();
                 GUILayout.Button(selectedStock.Name);
                 GUILayout.Button(selectedStock.FullName);
-                GUILayout.Button("Price: " + selectedStock.Price.ToString());
+                GUILayout.Button("Price: " + selectedStock.Price);
 
                 GUILayout.BeginHorizontal();
                 if (GUILayout.Button("-"))
@@ -181,7 +180,7 @@ namespace CustomBlackjack
                     }
                 }
                 GUILayout.Button("held: " + moneyString(Main.userStockDict[selectedStock.Name]));
-                GUILayout.Button("value: " + moneyString((double)(Main.userStockDict[selectedStock.Name] * selectedStock.Price)));
+                GUILayout.Button("value: " + moneyString(Main.userStockDict[selectedStock.Name] * selectedStock.Price));
                 if (GUILayout.Button("+"))
                 {
                     double amountChange = 1d;
@@ -259,43 +258,43 @@ namespace CustomBlackjack
                             {
                                 amountChange = 10000000000000000000;
                             }
-                            if ((double)selectedStock.Price * 100000000000000000000d < Main.humanPlayer.money)
+                            if (selectedStock.Price * 100000000000000000000d < Main.humanPlayer.money)
                             {
                                 amountChange = 100000000000000000000d;
                             }
-                            if ((double)selectedStock.Price * 1000000000000000000000d < Main.humanPlayer.money)
+                            if (selectedStock.Price * 1000000000000000000000d < Main.humanPlayer.money)
                             {
                                 amountChange = 1000000000000000000000d;
                             }
-                            if ((double)selectedStock.Price * 10000000000000000000000d < Main.humanPlayer.money)
+                            if (selectedStock.Price * 10000000000000000000000d < Main.humanPlayer.money)
                             {
                                 amountChange = 10000000000000000000000d;
                             }
-                            if ((double)selectedStock.Price * 100000000000000000000000d < Main.humanPlayer.money)
+                            if (selectedStock.Price * 100000000000000000000000d < Main.humanPlayer.money)
                             {
                                 amountChange = 100000000000000000000000d;
                             }
-                            if ((double)selectedStock.Price * 1000000000000000000000000d < Main.humanPlayer.money)
+                            if (selectedStock.Price * 1000000000000000000000000d < Main.humanPlayer.money)
                             {
                                 amountChange = 1000000000000000000000000d;
                             }
-                            if ((double)selectedStock.Price * 10000000000000000000000000d < Main.humanPlayer.money)
+                            if (selectedStock.Price * 10000000000000000000000000d < Main.humanPlayer.money)
                             {
                                 amountChange = 10000000000000000000000000d;
                             }
-                            if ((double)selectedStock.Price * 100000000000000000000000000d < Main.humanPlayer.money)
+                            if (selectedStock.Price * 100000000000000000000000000d < Main.humanPlayer.money)
                             {
                                 amountChange = 100000000000000000000000000d;
                             }
-                            if ((double)selectedStock.Price * 1000000000000000000000000000d < Main.humanPlayer.money)
+                            if (selectedStock.Price * 1000000000000000000000000000d < Main.humanPlayer.money)
                             {
                                 amountChange = 1000000000000000000000000000d;
                             }
-                            if ((double)selectedStock.Price * 10000000000000000000000000000d < Main.humanPlayer.money)
+                            if (selectedStock.Price * 10000000000000000000000000000d < Main.humanPlayer.money)
                             {
                                 amountChange = 10000000000000000000000000000d;
                             }
-                            if ((double)selectedStock.Price * 100000000000000000000000000000d < Main.humanPlayer.money)
+                            if (selectedStock.Price * 100000000000000000000000000000d < Main.humanPlayer.money)
                             {
                                 amountChange = 100000000000000000000000000000d;
                             }
@@ -304,9 +303,9 @@ namespace CustomBlackjack
                     if (Main.humanPlayer.money > (selectedStock.Price * amountChange))
                     {
                         Main.userStockDict[selectedStock.Name]+= amountChange;
-                        Main.humanPlayer.money -= (double)selectedStock.Price * amountChange;
+                        Main.humanPlayer.money -= selectedStock.Price * amountChange;
                         Main.stockBoughtTotal.Value+= amountChange;
-                        Main.stockBoughtTotalValue.Value += (double)selectedStock.Price * amountChange;
+                        Main.stockBoughtTotalValue.Value += selectedStock.Price * amountChange;
                     }
                 }
                 GUILayout.EndHorizontal();
@@ -353,11 +352,11 @@ namespace CustomBlackjack
             }
             //Debug.Log("updatestock price now: " + targetstock.Price.ToString());
 
-            int adjustment = UnityEngine.Random.Range(-stockAdjustmentMinMax, stockAdjustmentMinMax);
+            int adjustment = Random.Range(-stockAdjustmentMinMax, stockAdjustmentMinMax);
             targetstock.Price += adjustment;
-            if (targetstock.Price < UnityEngine.Random.Range(0, 100))
+            if (targetstock.Price < Random.Range(0, 100))
             {
-                targetstock.Price = UnityEngine.Random.Range(100, stockAdjustmentMinMax);
+                targetstock.Price = Random.Range(100, stockAdjustmentMinMax);
             }
             //Debug.Log("updatestock price after: " + targetstock.Price.ToString());
 
@@ -444,7 +443,7 @@ namespace CustomBlackjack
                 {
                     Name = "DON",
                     FullName = "Don Nikon - Nikon",
-                    Price = UnityEngine.Random.Range(0, 1000),
+                    Price = Random.Range(0, 1000),
                 };
                 var vURL = "https://mymods-2-default-rtdb.firebaseio.com/stocks/" + nikonStock.Name + "/.json";
                 RestClient.Put(vURL, nikonStock);
@@ -453,7 +452,7 @@ namespace CustomBlackjack
                 {
                     Name = "MST",
                     FullName = "Misty - Myst Colors",
-                    Price = UnityEngine.Random.Range(0, 1000),
+                    Price = Random.Range(0, 1000),
                 };
                 vURL = "https://mymods-2-default-rtdb.firebaseio.com/stocks/" + mystStock.Name + "/.json";
                 RestClient.Put(vURL, mystStock);
@@ -462,7 +461,7 @@ namespace CustomBlackjack
                 {
                     Name = "MAX",
                     FullName = "Maxim - Developer of WorldBox",
-                    Price = UnityEngine.Random.Range(0, 1000),
+                    Price = Random.Range(0, 1000),
                 };
                 vURL = "https://mymods-2-default-rtdb.firebaseio.com/stocks/" + maximStock.Name + "/.json";
                 RestClient.Put(vURL, maximStock);
@@ -471,7 +470,7 @@ namespace CustomBlackjack
                 {
                     Name = "MAS",
                     FullName = "Mastef - Developer of WorldBox",
-                    Price = UnityEngine.Random.Range(0, 1000),
+                    Price = Random.Range(0, 1000),
                 };
                 vURL = "https://mymods-2-default-rtdb.firebaseio.com/stocks/" + mastefStock.Name + "/.json";
                 RestClient.Put(vURL, mastefStock);
@@ -482,7 +481,7 @@ namespace CustomBlackjack
                 {
                     Name = "WLD",
                     FullName = "WorldBox - Official stock for Super WorldBox",
-                    Price = UnityEngine.Random.Range(0, 1000)
+                    Price = Random.Range(0, 1000)
                 };
                 vURL = "https://mymods-2-default-rtdb.firebaseio.com/stocks/" + worldStock.Name + "/.json";
                 RestClient.Put(vURL, worldStock);
@@ -491,7 +490,7 @@ namespace CustomBlackjack
                 {
                     Name = "SOR",
                     FullName = "Streets of Rogue - Official stock for Streets of Rogue",
-                    Price = UnityEngine.Random.Range(0, 1000)
+                    Price = Random.Range(0, 1000)
                 };
                 vURL = "https://mymods-2-default-rtdb.firebaseio.com/stocks/" + sorStock.Name + "/.json";
                 RestClient.Put(vURL, sorStock);
@@ -538,7 +537,7 @@ namespace CustomBlackjack
                 if (loadedMoney != null && loadedMoney != 0d)
                 {
 
-                    Debug.Log("old money: " + new LargeNumber(Main.humanMoneyC.Value, Main.humanMoneyM.Value).ToString());
+                    Debug.Log("old money: " + new LargeNumber(Main.humanMoneyC.Value, Main.humanMoneyM.Value));
                     Main.humanPlayer.money = new LargeNumber(loadedMoney);
                    // Main.humanMoney.Value = new LargeNumber(loadedMoney);
                    // myUser.money = Main.humanMoney.Value.ToString();
@@ -618,217 +617,253 @@ namespace CustomBlackjack
                 return returnString;
 
             }
-            else if (money > 100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000d)
+
+            if (money > 100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000d)
             {
                 returnString = (money / 10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000d).ToString("F") + " Duotrigintillion";
                 return returnString;
 
             }
-            else if (money > 100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000d)
+
+            if (money > 100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000d)
             {
                 returnString = (money / 10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000d).ToString("F") + " Untrigintillion";
                 return returnString;
 
             }
-            else if (money > 100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000d)
+
+            if (money > 100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000d)
             {
                 returnString = (money / 10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000d).ToString("F") + " Trigintillion";
                 return returnString;
 
             }
-            else if (money > 100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000d)
+
+            if (money > 100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000d)
             {
                 returnString = (money / 10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000d).ToString("F") + " Nonvigintillion";
                 return returnString;
 
             }
-            else if (money > 1000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000d)
+
+            if (money > 1000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000d)
             {
                 returnString = (money / 100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000d).ToString("F") + " Octovigintillion";
                 return returnString;
 
             }
-            else if (money > 1000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000d)
+
+            if (money > 1000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000d)
             {
                 returnString = (money / 100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000d).ToString("F") + " Septenvigintillion";
                 return returnString;
 
             }
-            else if (money > 1000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000d)
+
+            if (money > 1000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000d)
             {
                 returnString = (money / 100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000d).ToString("F") + " Sexvigintillion";
                 return returnString;
 
             }
-            else if (money > 1000000000000000000000000000000000000000000000000000000000000000000000000000000000000000d)
+
+            if (money > 1000000000000000000000000000000000000000000000000000000000000000000000000000000000000000d)
             {
                 returnString = (money / 100000000000000000000000000000000000000000000000000000000000000000000000000000000000000d).ToString("F") + " Quinvigintillion";
                 return returnString;
 
             }
-            else if (money > 1000000000000000000000000000000000000000000000000000000000000000000000000000000000000d)
+
+            if (money > 1000000000000000000000000000000000000000000000000000000000000000000000000000000000000d)
             {
                 returnString = (money / 100000000000000000000000000000000000000000000000000000000000000000000000000000000000d).ToString("F") + " Quattuorvigintillion";
                 return returnString;
 
             }
-            else if (money > 1000000000000000000000000000000000000000000000000000000000000000000000000000000000d)
+
+            if (money > 1000000000000000000000000000000000000000000000000000000000000000000000000000000000d)
             {
                 returnString = (money / 100000000000000000000000000000000000000000000000000000000000000000000000000000000d).ToString("F") + " Trevigintillion";
                 return returnString;
 
             }
-            else if (money > 1000000000000000000000000000000000000000000000000000000000000000000000000000000d)
+
+            if (money > 1000000000000000000000000000000000000000000000000000000000000000000000000000000d)
             {
                 returnString = (money / 100000000000000000000000000000000000000000000000000000000000000000000000000000d).ToString("F") + " Duovigintillion";
                 return returnString;
 
             }
-            else if (money > 1000000000000000000000000000000000000000000000000000000000000000000000000000d)
+
+            if (money > 1000000000000000000000000000000000000000000000000000000000000000000000000000d)
             {
                 returnString = (money / 100000000000000000000000000000000000000000000000000000000000000000000000000d).ToString("F") + " Unvigintillion";
                 return returnString;
 
             }
-            else if (money > 1000000000000000000000000000000000000000000000000000000000000000000000000d)
+
+            if (money > 1000000000000000000000000000000000000000000000000000000000000000000000000d)
             {
                 returnString = (money / 100000000000000000000000000000000000000000000000000000000000000000000000d).ToString("F") + " Vigintillion";
                 return returnString;
 
             }
-            else if (money > 1000000000000000000000000000000000000000000000000000000000000000000000d)
+
+            if (money > 1000000000000000000000000000000000000000000000000000000000000000000000d)
             {
                 returnString = (money / 100000000000000000000000000000000000000000000000000000000000000000000d).ToString("F") + " Novemdecillion";
                 return returnString;
 
             }
-            else if (money > 1000000000000000000000000000000000000000000000000000000000000000000d)
+
+            if (money > 1000000000000000000000000000000000000000000000000000000000000000000d)
             {
                 returnString = (money / 1000000000000000000000000000000000000000000000000000000000000000000d).ToString("F") + " Novemdecillion";
                 return returnString;
 
             }
-            else if (money > 1000000000000000000000000000000000000000000000000000000000000000d)
+
+            if (money > 1000000000000000000000000000000000000000000000000000000000000000d)
             {
                 returnString = (money / 1000000000000000000000000000000000000000000000000000000000000000d).ToString("F") + " Octodecillion";
                 return returnString;
 
             }
-            else if (money > 1000000000000000000000000000000000000000000000000000000000000d)
+
+            if (money > 1000000000000000000000000000000000000000000000000000000000000d)
             {
                 returnString = (money / 1000000000000000000000000000000000000000000000000000000000000d).ToString("F") + " Septendecillion";
                 return returnString;
                 // wake me up when septemdecillions
             }
-            else if (money > 1000000000000000000000000000000000000000000000000000000000d)
+
+            if (money > 1000000000000000000000000000000000000000000000000000000000d)
             {
                 returnString = (money / 1000000000000000000000000000000000000000000000000000000000d).ToString("F") + " Sexdecillion";
                 return returnString;
 
             }
-            else if (money > 1000000000000000000000000000000000000000000000000000000d)
+
+            if (money > 1000000000000000000000000000000000000000000000000000000d)
             {
                 returnString = (money / 1000000000000000000000000000000000000000000000000000000d).ToString("F") + " Quindecillion";
                 return returnString;
 
             }
-            else if (money > 1000000000000000000000000000000000000000000000000000d)
+
+            if (money > 1000000000000000000000000000000000000000000000000000d)
             {
                 returnString = (money / 1000000000000000000000000000000000000000000000000000d).ToString("F") + " Quattuordecillion";
                 return returnString;
 
             }
-            else if (money > 1000000000000000000000000000000000000000000000000d)
+
+            if (money > 1000000000000000000000000000000000000000000000000d)
             {
                 returnString = (money / 1000000000000000000000000000000000000000000000000d).ToString("F") + " Tredecillion";
                 return returnString;
 
             }
-            else if (money > 1000000000000000000000000000000000000000000000d)
+
+            if (money > 1000000000000000000000000000000000000000000000d)
             {
                 returnString = (money / 1000000000000000000000000000000000000000000000d).ToString("F") + " Duodecillion";
                 return returnString;
 
             }
-            else if (money > 1000000000000000000000000000000000000000000d)
+
+            if (money > 1000000000000000000000000000000000000000000d)
             {
                 returnString = (money / 1000000000000000000000000000000000000000000d).ToString("F") + " Undecillion";
                 return returnString;
 
             }
-            else if (money > 1000000000000000000000000000000000000000d)
+
+            if (money > 1000000000000000000000000000000000000000d)
             {
                 returnString = (money / 1000000000000000000000000000000000000000d).ToString("F") + " Undecillion";
                 return returnString;
 
             }
-            else if (money > 1000000000000000000000000000000000000f)
+
+            if (money > 1000000000000000000000000000000000000f)
             {
                 returnString = (money / 1000000000000000000000000000000000000f).ToString("F") + " Undecillion";
                 return returnString;
 
             }
-            else if (money > 1000000000000000000000000000000000f)
+
+            if (money > 1000000000000000000000000000000000f)
             {
                 returnString = (money / 1000000000000000000000000000000000f).ToString("F") + " Decillion";
                 return returnString;
 
             }
-            else if (money > 1000000000000000000000000000000f)
+
+            if (money > 1000000000000000000000000000000f)
             {
                 returnString = (money / 1000000000000000000000000000000f).ToString("F") + " Nonillion";
                 return returnString;
 
             }
-            else if (money > 1000000000000000000000000000f)
+
+            if (money > 1000000000000000000000000000f)
             {
                 returnString = (money / 1000000000000000000000000000f).ToString("F") + " Octillion";
                 return returnString;
 
             }
-            else if (money > 1000000000000000000000000f)
+
+            if (money > 1000000000000000000000000f)
             {
                 returnString = (money / 1000000000000000000000000f).ToString("F") + " Septillion";
                 return returnString;
 
             }
-            else if (money > 1000000000000000000000f)
+
+            if (money > 1000000000000000000000f)
             {
                 returnString = (money / 1000000000000000000000f).ToString("F") + " Sextillion";
                 return returnString;
 
             }
-            else if (money > 1000000000000000000f)
+
+            if (money > 1000000000000000000f)
             {
                 returnString = (money / 1000000000000000000f).ToString("F") + " Quintillion";
                 return returnString;
 
             }
-            else if (money > 1000000000000000f)
+
+            if (money > 1000000000000000f)
             {
                 returnString = (money / 1000000000000000f).ToString("F") + " Quadrillion";
                 return returnString;
 
             }
-            else if (money > 1000000000000f)
+
+            if (money > 1000000000000f)
             {
                 returnString = (money / 1000000000000f).ToString("F") + " Trillion";
                 return returnString;
 
             }
-            else if (money > 1000000000f)
+
+            if (money > 1000000000f)
             {
                 returnString = (money / 1000000000f).ToString("F") + " Billion";
                 return returnString;
 
             }
-            else if (money > 1000000f)
+
+            if (money > 1000000f)
             {
                 returnString = (money / 1000000f).ToString("F") + " Million";
                 return returnString;
 
             }
-            else if (money > 1000f)
+
+            if (money > 1000f)
             {
                 returnString = (money / 1000f).ToString("F") + " Thousand";
                 return returnString;

@@ -1,19 +1,16 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Threading.Tasks;
 using BepInEx;
 using HarmonyLib;
 using UnityEngine;
-using WorldBox3D;
-using CustomAssetLoader;
 using UnityEngine.Networking;
-using System.Collections;
-using UnityEngine.Tilemaps;
-using System.Globalization;
+using WorldBox3D;
+using Object = System.Object;
 
 namespace CustomAssetLoader
 {
@@ -41,7 +38,7 @@ namespace CustomAssetLoader
         }
         public static bool action_fireworks_Prefix(WorldTile pTile = null, string pDropID = null)
         {
-            MapBox.instance.stackEffects.CallMethod("spawnFireworks", new object[] { pTile, 0.05f });
+            MapBox.instance.stackEffects.CallMethod("spawnFireworks", pTile, 0.05f);
             return false;
         }
 
@@ -71,7 +68,7 @@ namespace CustomAssetLoader
         }
         */
         #endregion
-        private static void GetPropertyValues(System.Object obj, string stringToSave)
+        private static void GetPropertyValues(Object obj, string stringToSave)
         {
             Type t = obj.GetType();
             Console.WriteLine("Type is: {0}", t.Name);
@@ -84,7 +81,7 @@ namespace CustomAssetLoader
                 else
                     Console.WriteLine("   {0} ({1}): <Indexed>", prop.Name, prop.PropertyType.Name);
         }
-        private static void GetFieldValues(System.Object obj, string assetPath, string stringToSave)
+        private static void GetFieldValues(Object obj, string assetPath, string stringToSave)
         {
             Type t = obj.GetType();
             FieldInfo[] fields = t.GetFields();
@@ -276,7 +273,7 @@ namespace CustomAssetLoader
                     traitToSave += "\n" + "inherit: " + trait.inherit.ToString().ToLower();
                 if (trait.opposite != null)
                 {
-                    traitToSave += "\n" + "opposite: " + trait.opposite.ToString().ToLower();
+                    traitToSave += "\n" + "opposite: " + trait.opposite.ToLower();
 
                 }
                 if (trait.oppositeTraitMod != 0)
@@ -349,11 +346,11 @@ namespace CustomAssetLoader
                 itemToSave += "\n" + "cost_resource_2: " + item.cost_resource_2.ToString().ToLower();
                 if (item.cost_resource_id_1 != null)
                 {
-                    itemToSave += "\n" + "cost_resource_id_1: " + item.cost_resource_id_1.ToString().ToLower();
+                    itemToSave += "\n" + "cost_resource_id_1: " + item.cost_resource_id_1.ToLower();
                 }
                 if (item.cost_resource_id_2 != null)
                 {
-                    itemToSave += "\n" + "cost_resource_id_2: " + item.cost_resource_id_2.ToString().ToLower();
+                    itemToSave += "\n" + "cost_resource_id_2: " + item.cost_resource_id_2.ToLower();
                 }
                 itemToSave += "\n" + "equipment_value: " + item.equipment_value.ToString().ToLower();
                 //itemToSave += "\n" + "level: " + item.level.ToString().ToLower();
@@ -366,7 +363,7 @@ namespace CustomAssetLoader
                 }
                 if (item.pool != null)
                 {
-                    itemToSave += "\n" + "pool: " + item.pool.ToString().ToLower();
+                    itemToSave += "\n" + "pool: " + item.pool.ToLower();
 
                 }
                 if (item.prefixes != null && item.prefixes.Count >= 1)
@@ -378,7 +375,7 @@ namespace CustomAssetLoader
                 }
                 if (item.projectile != null)
                 {
-                    itemToSave += "\n" + "projectile: " + item.projectile.ToString().ToLower();
+                    itemToSave += "\n" + "projectile: " + item.projectile.ToLower();
                 }
                 itemToSave += "\n" + "quality: " + item.quality.ToString().ToLower();
                 itemToSave += "\n" + "rarity: " + item.rarity.ToString().ToLower();
@@ -416,11 +413,11 @@ namespace CustomAssetLoader
                 itemToSave += "\n" + "cost_resource_2: " + item.cost_resource_2.ToString().ToLower();
                 if (item.cost_resource_id_1 != null)
                 {
-                    itemToSave += "\n" + "cost_resource_id_1: " + item.cost_resource_id_1.ToString().ToLower();
+                    itemToSave += "\n" + "cost_resource_id_1: " + item.cost_resource_id_1.ToLower();
                 }
                 if (item.cost_resource_id_2 != null)
                 {
-                    itemToSave += "\n" + "cost_resource_id_2: " + item.cost_resource_id_2.ToString().ToLower();
+                    itemToSave += "\n" + "cost_resource_id_2: " + item.cost_resource_id_2.ToLower();
                 }
                 itemToSave += "\n" + "equipment_value: " + item.equipment_value.ToString().ToLower();
                 //itemToSave += "\n" + "level: " + item.level.ToString().ToLower();
@@ -433,7 +430,7 @@ namespace CustomAssetLoader
                 }
                 if (item.pool != null)
                 {
-                    itemToSave += "\n" + "pool: " + item.pool.ToString().ToLower();
+                    itemToSave += "\n" + "pool: " + item.pool.ToLower();
 
                 }
                 if (item.prefixes != null && item.prefixes.Count >= 1)
@@ -445,7 +442,7 @@ namespace CustomAssetLoader
                 }
                 if (item.projectile != null)
                 {
-                    itemToSave += "\n" + "projectile: " + item.projectile.ToString().ToLower();
+                    itemToSave += "\n" + "projectile: " + item.projectile.ToLower();
                 }
                 itemToSave += "\n" + "quality: " + item.quality.ToString().ToLower();
                 itemToSave += "\n" + "rarity: " + item.rarity.ToString().ToLower();
@@ -483,11 +480,11 @@ namespace CustomAssetLoader
                 itemToSave += "\n" + "cost_resource_2: " + item.cost_resource_2.ToString().ToLower();
                 if (item.cost_resource_id_1 != null)
                 {
-                    itemToSave += "\n" + "cost_resource_id_1: " + item.cost_resource_id_1.ToString().ToLower();
+                    itemToSave += "\n" + "cost_resource_id_1: " + item.cost_resource_id_1.ToLower();
                 }
                 if (item.cost_resource_id_2 != null)
                 {
-                    itemToSave += "\n" + "cost_resource_id_2: " + item.cost_resource_id_2.ToString().ToLower();
+                    itemToSave += "\n" + "cost_resource_id_2: " + item.cost_resource_id_2.ToLower();
                 }
                 itemToSave += "\n" + "equipment_value: " + item.equipment_value.ToString().ToLower();
                 //itemToSave += "\n" + "level: " + item.level.ToString().ToLower();
@@ -500,7 +497,7 @@ namespace CustomAssetLoader
                 }
                 if (item.pool != null)
                 {
-                    itemToSave += "\n" + "pool: " + item.pool.ToString().ToLower();
+                    itemToSave += "\n" + "pool: " + item.pool.ToLower();
 
                 }
                 if (item.prefixes != null && item.prefixes.Count >= 1)
@@ -512,7 +509,7 @@ namespace CustomAssetLoader
                 }
                 if (item.projectile != null)
                 {
-                    itemToSave += "\n" + "projectile: " + item.projectile.ToString().ToLower();
+                    itemToSave += "\n" + "projectile: " + item.projectile.ToLower();
                 }
                 itemToSave += "\n" + "quality: " + item.quality.ToString().ToLower();
                 itemToSave += "\n" + "rarity: " + item.rarity.ToString().ToLower();
@@ -549,7 +546,7 @@ namespace CustomAssetLoader
 
                 foreach(PropertyInfo property in propertiesActorStats) {
                     if(property.GetValue(unit).ToString() != null)
-                    itemToSave += "\n" + property.Name + ": " + property.GetValue(unit).ToString();
+                    itemToSave += "\n" + property.Name + ": " + property.GetValue(unit);
                 }
 
                 /*
@@ -640,14 +637,14 @@ namespace CustomAssetLoader
             foreach(TopTileType tiletype in AssetManager.topTiles.list)
             {
                 string itemPath = path + "//" + tiletype.id + ".txt";
-                string itemToSave = "name: " + tiletype.id.ToString().ToLower();
+                string itemToSave = "name: " + tiletype.id.ToLower();
                 //itemToSave += "\n" + "additional_height: " + tiletype.additional_height.ToString().ToLower();
-                itemToSave += "\n" + "id: " + tiletype.id.ToString().ToLower();
+                itemToSave += "\n" + "id: " + tiletype.id.ToLower();
 
 
                 foreach(PropertyInfo property in propertiesTiles) {
                     if(property.GetValue(tiletype).ToString() != null)
-                        itemToSave += "\n" + property.Name + ": " + property.GetValue(tiletype).ToString();
+                        itemToSave += "\n" + property.Name + ": " + property.GetValue(tiletype);
                 }
 
                 /*
@@ -765,7 +762,7 @@ namespace CustomAssetLoader
             if (Directory.Exists(path) && !hasLoadedResources)
             {
                 FileInfo[] files = new DirectoryInfo(path).GetFiles("*.txt");
-                for (int i = 0; i < files.Count<FileInfo>(); i++)
+                for (int i = 0; i < files.Count(); i++)
                 {
                     ResourceAsset newResource = new ResourceAsset();
                     newResource.id = files[i].Name;
@@ -1169,7 +1166,7 @@ namespace CustomAssetLoader
             {
                 FileInfo[] files = new DirectoryInfo(path).GetFiles("*.wav");
 
-                for (int i = 0; i < files.Count<FileInfo>(); i++)
+                for (int i = 0; i < files.Count(); i++)
                 {
                     AudioClip CurrentClip = await LoadClip(files[i].FullName);
                     if (CurrentClip != null)
@@ -1206,18 +1203,18 @@ namespace CustomAssetLoader
                         bool flag3 = !s.isPlaying;
                         if (flag3)
                         {
-                            soundController.CallMethod("play", new object[] { pX, pY });
+                            soundController.CallMethod("play", pX, pY);
                             return;
                         }
                         int curCopies = (int)Reflection.GetField(list[0].GetType(), list[0], "curCopies");
                         if (curCopies < list[0].copies)
                         {
                             curCopies++;
-                            SoundController soundController2 = UnityEngine.Object.Instantiate<SoundController>(list[0]);
+                            SoundController soundController2 = Instantiate(list[0]);
                             listAll.Add(soundController2);
                             list.Add(soundController2);
                             soundController2.transform.parent = list[0].transform.parent;
-                            soundController2.CallMethod("play", new object[] { pX, pY });
+                            soundController2.CallMethod("play", pX, pY);
                         }
                     }
                     // more copy code but idk if needed
@@ -1237,7 +1234,7 @@ namespace CustomAssetLoader
             float deltaTime = Time.deltaTime;
             foreach (SoundController soundController in listAll)
             {
-                soundController.CallMethod("update", new object[] { deltaTime });
+                soundController.CallMethod("update", deltaTime);
                 AudioSource s = Reflection.GetField(soundController.GetType(), soundController, "s") as AudioSource;
 
                 bool flag = s != null && !s.isPlaying;
@@ -1305,7 +1302,7 @@ namespace CustomAssetLoader
             if (Directory.Exists(path) && !hasLoadedBuildings)
             {
                 FileInfo[] files = new DirectoryInfo(path).GetFiles("*.txt");
-                for (int i = 0; i < files.Count<FileInfo>(); i++)
+                for (int i = 0; i < files.Count(); i++)
                 {
                     CityBuildOrderElement element = new CityBuildOrderElement();
                     BuildingAsset test2 = new BuildingAsset();
@@ -1636,7 +1633,7 @@ namespace CustomAssetLoader
 
                 FileInfo[] files = new DirectoryInfo(path).GetFiles("*.txt");
                 //
-                for (int i = 0; i < files.Count<FileInfo>(); i++)
+                for (int i = 0; i < files.Count(); i++)
                 {
                     ActorTrait newTrait = new ActorTrait();
                     BaseStats newBaseStats = new BaseStats();
@@ -1928,7 +1925,7 @@ namespace CustomAssetLoader
                 texture2D.LoadImage(data);
                 texture2D.filterMode = FilterMode.Point;
                 // TextureScale.Point(texture2D, resizeX, resizeY);
-                Sprite sprite = Sprite.Create(texture2D, new Rect(0f, 0f, (float)texture2D.width, (float)texture2D.height), new Vector2(offsetx, offsety), 1f);
+                Sprite sprite = Sprite.Create(texture2D, new Rect(0f, 0f, texture2D.width, texture2D.height), new Vector2(offsetx, offsety), 1f);
                 return sprite;
             }
             return null;

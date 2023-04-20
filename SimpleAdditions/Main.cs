@@ -1,14 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using BepInEx;
-using BepInEx.Configuration;
-//using System.Drawing;
-using System.IO;
-using HarmonyLib;
+﻿using System.Collections.Generic;
 using ai.behaviours;
+using BepInEx;
+using HarmonyLib;
+using UnityEngine;
+//using System.Drawing;
 
 namespace SimpleAdditions
 {
@@ -36,7 +31,7 @@ namespace SimpleAdditions
             //cant path directly onto mountain tiles, so going to neighbor of mountain.. hopefully
             //no that didnt help, mountains arent being removed at all??
             removeMountains.addBeh(new BehTargetCityNeighborTile());
-            removeMountains.addBeh(new BehGoToTileTarget() { walkOnWater = true, walkOnBlocks = true }); ;
+            removeMountains.addBeh(new BehGoToTileTarget { walkOnWater = true, walkOnBlocks = true }); ;
             removeMountains.addBeh(new BehRandomWait(1f, 3f));
             removeMountains.addBeh(new BehRemoveMountainTile());
 
@@ -46,10 +41,10 @@ namespace SimpleAdditions
             BehaviourTaskActor wallTask = new BehaviourTaskActor();
             wallTask.id = "makeWall";
             wallTask.addBeh(new BehFindBorderTile());
-            wallTask.addBeh(new BehGoToTileTarget() { walkOnWater = true, walkOnBlocks = true });
+            wallTask.addBeh(new BehGoToTileTarget { walkOnWater = true, walkOnBlocks = true });
             wallTask.addBeh(new BehRandomWait(1f, 3f));
             wallTask.addBeh(new BehTargetCityNeighborTile());
-            wallTask.addBeh(new BehGoToTileTarget() { walkOnWater = true, walkOnBlocks = true });
+            wallTask.addBeh(new BehGoToTileTarget { walkOnWater = true, walkOnBlocks = true });
             wallTask.addBeh(new BehTargetNonCityNeighborTile());
             wallTask.addBeh(new BehBuildWallTile());
 
@@ -63,7 +58,7 @@ namespace SimpleAdditions
 
             AssetManager.job_actor.add(newJobMakeWall);
             hasAddedAi = true;
-            UnityEngine.Debug.LogError("Added tasks and jobs");
+            Debug.LogError("Added tasks and jobs");
         }
 
         public static bool hasAddedAi;
@@ -163,7 +158,7 @@ namespace SimpleAdditions
             if(pActor != null && pActor.city != null) {
                 WorldTile tTile = Reflection.GetField(pActor.GetType(), pActor, "beh_tile_target") as WorldTile;
                 if(tTile != null) {
-                    MapAction.terraformTile(tTile, TileLibrary.mountains, null, null);
+                    MapAction.terraformTile(tTile, TileLibrary.mountains, null);
                     // force actors to restart task and whole job forever (bad but its my example ok)
                     return BehResult.RestartTask;
                 }

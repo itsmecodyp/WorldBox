@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace CustomBlackjack
+﻿namespace CustomBlackjack
 {
     public class Card
     {
@@ -16,22 +10,22 @@ namespace CustomBlackjack
         public Card(int value, int suit)
         {
             this.value = value;
-            this.stringValue = StringValue(values[value]);
+            stringValue = StringValue(values[value]);
             this.suit = suit;
-            this.stringSuit = StringSuit(suit);
+            stringSuit = StringSuit(suit);
         }
 
-        public static readonly string[] values = new string[] {
+        public static readonly string[] values = {
             "0", "A", "2", "3", "4", "5",
             "6", "7", "8", "9", "10",
             "J", "Q", "K"
         };
 
-        public static readonly string[] suits = new string[] {
+        public static readonly string[] suits = {
             "C","S","H","D" // "Clubs","Spades","Hearts","Diamonds"
         };
 
-        public static readonly string[] suitSymbols = new string[] {
+        public static readonly string[] suitSymbols = {
             "♣","♠","♥","♦" // "Clubs","Spades","Hearts","Diamonds"
         };
 

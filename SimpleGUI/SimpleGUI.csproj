@@ -42,10 +42,12 @@
     <Compile Include="ActorInteraction.cs" />
     <Compile Include="Construction.cs" />
     <Compile Include="Draggables.cs" />
+    <Compile Include="ModSettingsMenu.cs" />
     <Compile Include="Patreon_Eggs.cs" />
     <Compile Include="SimpleMessages.cs" />
     <Compile Include="StatSetting.cs" />
     <Compile Include="UnitClipboard.cs" />
+    <Compile Include="WorldBox3D.cs" />
     <Compile Include="z_RectTransformExtensions.cs" />
     <Compile Include="World.cs" />
     <Compile Include="FastCities.cs" />

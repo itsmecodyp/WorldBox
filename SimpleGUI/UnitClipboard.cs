@@ -1,15 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Reflection;
 using BepInEx;
 using HarmonyLib;
-using static UnityEngine.UI.Image;
-using UnityEngine;
-using System.Reflection;
-using static UnitClipboard.UnitClipboard_Main;
 using SimpleGUI;
+using UnityEngine;
 
 namespace UnitClipboard {
     [BepInPlugin(pluginGuid, pluginName, pluginVersion)]
@@ -40,7 +35,7 @@ namespace UnitClipboard {
         public static void PasteUnit(WorldTile targetTile, UnitData unitData)
         {
             if(targetTile != null && unitData != null) {
-                Actor pastedUnit = MapBox.instance.units.createNewUnit(unitData.statsID, targetTile, 0f);
+                Actor pastedUnit = MapBox.instance.units.createNewUnit(unitData.statsID, targetTile);
                 if(pastedUnit != null) {
                     if(pastedUnit.data.traits != null && pastedUnit.data.traits.Count >= 1) {
                         pastedUnit.data.traits.Clear();
@@ -128,7 +123,7 @@ namespace UnitClipboard {
             }
             GUILayout.EndArea();
             if(showHideMainWindow) {
-                mainWindowRect = GUILayout.Window(500701, mainWindowRect, new GUI.WindowFunction(UnitClipboardWindow), "Unit Clipboard", new GUILayoutOption[] { GUILayout.MaxWidth(300f), GUILayout.MinWidth(200f) });
+                mainWindowRect = GUILayout.Window(500701, mainWindowRect, UnitClipboardWindow, "Unit Clipboard", GUILayout.MaxWidth(300f), GUILayout.MinWidth(200f));
             }
         }
 
@@ -136,7 +131,7 @@ namespace UnitClipboard {
         {
             Actor returnActor = null;
             foreach(Actor actorToCheck in MapBox.instance.units) {
-                float actorDistanceFromTile = Toolbox.Dist(actorToCheck.currentPosition.x, actorToCheck.currentPosition.y, (float)pTarget.pos.x, (float)pTarget.pos.y);
+                float actorDistanceFromTile = Toolbox.Dist(actorToCheck.currentPosition.x, actorToCheck.currentPosition.y, pTarget.pos.x, pTarget.pos.y);
                 if(actorDistanceFromTile < range && actorToCheck != excludingActor) {
                     range = actorDistanceFromTile;
                     returnActor = actorToCheck;
@@ -220,7 +215,7 @@ namespace UnitClipboard {
 
         }
 
-        public static int unitClipboardDictNum = 0;
+        public static int unitClipboardDictNum;
 
         public static UnitData selectedUnitToPaste;
 

@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using LargeNumbers;
 using UnityEngine;
 using static CustomBlackjack.Blackjack;
-using LargeNumbers;
 
 namespace CustomBlackjack {
     public class BlackjackPlayer {
@@ -19,7 +15,7 @@ namespace CustomBlackjack {
                 money = new LargeNumber(Main.humanMoneyC.Value, Main.humanMoneyM.Value); // or wherever else value is stored / default start value
             }
             else {
-                money = new LargeNumber(UnityEngine.Random.Range(1f, 1000f));
+                money = new LargeNumber(Random.Range(1f, 1000f));
             }
         }
 
@@ -78,8 +74,6 @@ namespace CustomBlackjack {
                                 player.money += player.betAmountDouble; // pay back original bet
                                 Main.blackJackPushes.Value += 1;
                                 break;
-                            default:
-                                break;
                         }
                         player.betAmountDouble = new LargeNumber(0f); // reset bet amount (pointless since overridden by bet button?)
                         player.handStatus = HandStatus.None;
@@ -91,23 +85,23 @@ namespace CustomBlackjack {
                     readyToResetHands = false;
                     //log win stats
                     double winNumber = Main.blackJackWins.Value + Main.blackjackBlackjacks.Value;
-                    Debug.Log("Blackjack win/blackjacks: " + Main.blackJackWins.Value.ToString() + "/" + Main.blackjackBlackjacks.Value.ToString());
-                    Debug.Log("Blackjack win/loss/push: " + winNumber.ToString() + "/" + Main.blackJackLosses.Value.ToString() + "/" + Main.blackJackPushes.Value.ToString());
-                    Debug.Log("Blackjack win/totalGames: " + winNumber.ToString() + "/" + Main.blackjackGames.Value.ToString());
-                    Debug.Log("Blackjack win %: " + ((winNumber / Main.blackjackGames.Value) * 100f).ToString() + "%");
+                    Debug.Log("Blackjack win/blackjacks: " + Main.blackJackWins.Value + "/" + Main.blackjackBlackjacks.Value);
+                    Debug.Log("Blackjack win/loss/push: " + winNumber + "/" + Main.blackJackLosses.Value + "/" + Main.blackJackPushes.Value);
+                    Debug.Log("Blackjack win/totalGames: " + winNumber + "/" + Main.blackjackGames.Value);
+                    Debug.Log("Blackjack win %: " + ((winNumber / Main.blackjackGames.Value) * 100f) + "%");
                 }
 
                 if(readyToResetDeck) {
-                    Blackjack.ResetDeck();
+                    ResetDeck();
                     readyToResetDeck = false;
                 }
             }
-            if(Time.realtimeSinceStartup > midRoundEndTime + UnityEngine.Random.Range(1f, midRoundEndDelay) && currentPlayers[0].waiting) {
-                Blackjack.PlayRound();
+            if(Time.realtimeSinceStartup > midRoundEndTime + Random.Range(1f, midRoundEndDelay) && currentPlayers[0].waiting) {
+                PlayRound();
             }
             GUILayout.BeginHorizontal();
             if(handStatus != HandStatus.None) {
-                GUILayout.Button("Status: " + handStatus.ToString());
+                GUILayout.Button("Status: " + handStatus);
             }
             if(lastRoundStatus != HandStatus.None) {
                 if(lastHandResult == HandStatus.Loss) {
@@ -116,7 +110,7 @@ namespace CustomBlackjack {
                 else if(lastHandResult == HandStatus.Win) {
                     GUI.backgroundColor = Color.green;
                 }
-                GUILayout.Button("LastRound: " + lastRoundStatus.ToString());
+                GUILayout.Button("LastRound: " + lastRoundStatus);
                 GUI.backgroundColor = originalColor;
             }
             GUILayout.EndHorizontal();
@@ -135,7 +129,7 @@ namespace CustomBlackjack {
             }
             */
             GUILayout.BeginHorizontal();
-            GUILayout.Label("Money: " + money.ToString());
+            GUILayout.Label("Money: " + money);
             GUILayout.Label("CurrentBet: " + betAmountDouble);
             GUILayout.EndHorizontal();
             if(playername == "Human") {
@@ -187,16 +181,14 @@ namespace CustomBlackjack {
                             TurnEnd();
                         }
                         break;
-                    default:
-                        break;
                 }
 
 
                 GUILayout.EndHorizontal();
 
             }
-            GUILayout.Button("Current hand total: " + Blackjack.HandTotalValue(this.hand));
-            Blackjack.CardDisplay(this.hand); // neat
+            GUILayout.Button("Current hand total: " + HandTotalValue(hand));
+            CardDisplay(hand); // neat
             GUI.DragWindow();
         }
         public string betAmount = "0";
@@ -204,10 +196,10 @@ namespace CustomBlackjack {
 
         public LargeNumber money = new LargeNumber(0);
         public string playername = "";
-        public int windowID = UnityEngine.Random.Range(31334, 99999);
+        public int windowID = Random.Range(31334, 99999);
         public Rect personalWindowRect = new Rect(0f, 1f, 1f, 1f);
         public List<Card> hand = new List<Card>();
-        public int handTotalValue => Blackjack.HandTotalValue(hand);
+        public int handTotalValue => HandTotalValue(hand);
 
         //dict maybe
         public bool betting = true;
@@ -220,7 +212,7 @@ namespace CustomBlackjack {
             if(betting) {
                 if(playername != "Human") // ai bet set, sloppy
                 {
-                    LargeNumber bet = new LargeNumber(UnityEngine.Random.Range(1f, 1500f));
+                    LargeNumber bet = new LargeNumber(Random.Range(1f, 1500f));
                     betAmountDouble = bet;
                     betAmount = bet.ToString();
                     money -= betAmountDouble;
@@ -242,8 +234,8 @@ namespace CustomBlackjack {
             }
             else {
                 Card drawnCard = blackjackDeck.DrawCard();
-                this.hand.Add(drawnCard);
-                Debug.Log("Player drew card: " + drawnCard.DisplayString() + ". New total: " + HandTotalValue(this.hand)); //  + ". Cards left in deck: " + officialDeck.cards.Count
+                hand.Add(drawnCard);
+                Debug.Log("Player drew card: " + drawnCard.DisplayString() + ". New total: " + HandTotalValue(hand)); //  + ". Cards left in deck: " + officialDeck.cards.Count
 
                 if(PlayerBlackjack()) {
                     Debug.Log("Player Blackjack!");
@@ -281,15 +273,15 @@ namespace CustomBlackjack {
 
         public bool PlayerBlackjack()
         {
-            return HandTotalValue(this.hand) == 21 && this.hand.Count == 2 && (this.hand[0].stringValue == "Ace" || this.hand[1].stringValue == "Ace");
+            return HandTotalValue(hand) == 21 && hand.Count == 2 && (hand[0].stringValue == "Ace" || hand[1].stringValue == "Ace");
         }
         public bool PlayerBust()
         {
-            return HandTotalValue(this.hand) > 21;
+            return HandTotalValue(hand) > 21;
         }
         public bool Player21()
         {
-            return HandTotalValue(this.hand) == 21;
+            return HandTotalValue(hand) == 21;
         }
         /*
         public void HandlePayout(HandStatus status)

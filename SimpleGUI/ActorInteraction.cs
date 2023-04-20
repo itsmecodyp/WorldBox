@@ -1,9 +1,5 @@
-﻿using ai.behaviours;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using ai.behaviours;
 using UnityEngine;
 
 namespace SimpleGUI {
@@ -13,28 +9,14 @@ namespace SimpleGUI {
         {
             if(GuiMain.showHideActorInteractConfig.Value) {
                 if(showTaskWindow) {
-                    actorTaskListWindowRect = GUILayout.Window(43095, actorTaskListWindowRect, new GUI.WindowFunction(actorTaskWindow), "Actor Tasks", new GUILayoutOption[]
-                {
-                GUILayout.MaxWidth(300f),
-                GUILayout.MinWidth(200f)
-                });
-
+                    actorTaskListWindowRect = GUILayout.Window(43095, actorTaskListWindowRect, actorTaskWindow, "Actor Tasks", GUILayout.MaxWidth(300f), GUILayout.MinWidth(200f));
                 }
 
                 if(showJobWindow) {
-                    actorJobListWindowRect = GUILayout.Window(43096, actorJobListWindowRect, new GUI.WindowFunction(actorJobWindow), "Actor Jobs", new GUILayoutOption[]
-                {
-                GUILayout.MaxWidth(300f),
-                GUILayout.MinWidth(200f)
-                });
-
+                    actorJobListWindowRect = GUILayout.Window(43096, actorJobListWindowRect, actorJobWindow, "Actor Jobs", GUILayout.MaxWidth(300f), GUILayout.MinWidth(200f));
                 }
 
-                actorInteractionWindowRect = GUILayout.Window(41094, actorInteractionWindowRect, new GUI.WindowFunction(actorWindow), "Actor Interaction", new GUILayoutOption[]
-                {
-                GUILayout.MaxWidth(300f),
-                GUILayout.MinWidth(200f)
-                });
+                actorInteractionWindowRect = GUILayout.Window(41094, actorInteractionWindowRect, actorWindow, "Actor Interaction", GUILayout.MaxWidth(300f), GUILayout.MinWidth(200f));
                 if(showTaskWindow) {
                     actorTaskListWindowRect.position = new Vector2(actorInteractionWindowRect.x + actorInteractionWindowRect.width, (actorInteractionWindowRect.y));
                 }
@@ -147,7 +129,7 @@ namespace SimpleGUI {
                 // dej did it first in collectionbox, fits here too
                 if(GUILayout.Button("Force join city unit is standing on")) {
                     if(lastSelected.city != lastSelected.currentTile.zone.city) {
-                        lastSelected.currentTile.zone.city.addNewUnit(lastSelected, true);
+                        lastSelected.currentTile.zone.city.addNewUnit(lastSelected);
                     }
                 }
                 if(GUILayout.Button("Force to city leader") && lastSelected.city != null) {
@@ -242,7 +224,7 @@ namespace SimpleGUI {
                     ActorJob job = lastSelected.ai.job;
                     if(job != null) {
                         GUILayout.Button("Current job: " + job.id);
-                        GUILayout.Button("Is job locked: " + lockedActorJobs.ContainsKey(lastSelected).ToString());
+                        GUILayout.Button("Is job locked: " + lockedActorJobs.ContainsKey(lastSelected));
                         if(GUILayout.Button("Force job: " + selectedJob)) {
                             lastSelected.ai.setJob(selectedJob);
                             if(lockActorJob) {
@@ -263,7 +245,7 @@ namespace SimpleGUI {
                             showTaskWindow = false;
                         }
                     }
-                    if(GUILayout.Button("Lock job after forced: " + lockActorJob.ToString())) {
+                    if(GUILayout.Button("Lock job after forced: " + lockActorJob)) {
                         lockActorJob = !lockActorJob;
                         if(lockActorJob == false) {
                             lockedActorJobs = new Dictionary<Actor, string>();
@@ -285,17 +267,14 @@ namespace SimpleGUI {
                             pair.Key.ai.setJob(pair.Value);
 						}
                     }
-					else {
-
-					}
-				}
+                }
 			}
 
             //set task/behaviour?
             if(GUILayout.Button("Reset inspection")) {
                 lastSelected = null;
             }
-            if(GUILayout.Button("Select using hover: " + selectUsingHover.ToString())) {
+            if(GUILayout.Button("Select using hover: " + selectUsingHover)) {
                 selectUsingHover = !selectUsingHover;
             }
             //basic control? or leave that for superrpg?
@@ -314,7 +293,7 @@ namespace SimpleGUI {
         Dictionary<Actor, string> lockedActorJobs = new Dictionary<Actor, string>();
 
 
-        public List<string> moods = new List<string>() { "happy", "normal", "sad", "angry" };
+        public List<string> moods = new List<string> { "happy", "normal", "sad", "angry" };
 
         public static Actor lastSelected;
 

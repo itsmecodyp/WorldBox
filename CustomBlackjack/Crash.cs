@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using LargeNumbers;
+﻿using LargeNumbers;
 using UnityEngine;
 
 namespace CustomBlackjack {
@@ -13,7 +8,7 @@ namespace CustomBlackjack {
 		public bool hasCrashed = true;
 		public float currentCrashValue = 1.0f;
 		public float currentCrash = 1f;
-		public float lastTimeAtRoundEnd = 0f;
+		public float lastTimeAtRoundEnd;
 
 		public LargeNumber currentBuyIn = new LargeNumber(1f);
 		public LargeNumber lastWinAmount = new LargeNumber(1f);
@@ -24,17 +19,17 @@ namespace CustomBlackjack {
 		public void CrashWindow(int windowID)
 		{
 			//put currentCrash into largenumber only for display pretty-ing
-			GUILayout.Button("Current crash: " + new LargeNumber(currentCrashValue).ToString());
+			GUILayout.Button("Current crash: " + new LargeNumber(currentCrashValue));
 			if(hasBoughtIn) {
 				if(hasRoundStarted) {
 					//user clicks payout button to.. payout
 					//round continues after user is done
-					if(GUILayout.Button("Payout: " + (new LargeNumber(currentBuyIn.Standard() * currentCrashValue)).ToString())) {
+					if(GUILayout.Button("Payout: " + (new LargeNumber(currentBuyIn.Standard() * currentCrashValue)))) {
 						double winAsDouble = currentBuyIn.Standard() * currentCrashValue;
 						LargeNumber winAmount = new LargeNumber(winAsDouble);
 						lastWinAmount = winAmount;
 						lastWinCrashAmount = currentCrashValue;
-						Debug.Log("Won " + lastWinAmount.ToString() + "in crash");
+						Debug.Log("Won " + lastWinAmount + "in crash");
 						Main.humanPlayer.money += winAmount;
 						if(winAmount > Main.crashLargestWin) {
 							Main.crashLargestWinC.Value = winAmount.coefficient;
@@ -55,7 +50,7 @@ namespace CustomBlackjack {
 					hasRoundStarted = false;
 					if(hasBoughtIn) {
 						lastLossAmount = currentBuyIn;
-						Debug.Log("Lost " + lastLossAmount.ToString() + "to crash");
+						Debug.Log("Lost " + lastLossAmount + "to crash");
 						currentBuyIn = new LargeNumber(0f);
 						hasBoughtIn = false;
 					}
@@ -67,8 +62,8 @@ namespace CustomBlackjack {
 				if(Time.realtimeSinceStartup > lastTimeAtRoundEnd + 5f) {
 					// round is starting
 					currentCrashValue = 1f;
-					currentCrash = UnityEngine.Random.Range(1f, 1001f);
-					Debug.Log("Next crash happen on " + currentCrash.ToString());
+					currentCrash = Random.Range(1f, 1001f);
+					Debug.Log("Next crash happen on " + currentCrash);
 					hasCrashed = false;
 					hasRoundStarted = true;
 				}
@@ -85,9 +80,9 @@ namespace CustomBlackjack {
 				}
 				betAmount = GUILayout.TextField(betAmount);
 			}
-			GUILayout.Button("Last win: " + lastWinAmount.ToString() + " at " + lastWinCrashAmount +"x");
-			GUILayout.Button("Last loss: " + lastLossAmount.ToString());
-			if(GUILayout.Button("Record win: " + Main.crashLargestWin.ToString() + " at " + Main.crashLargestWinMult.Value + "x")) {
+			GUILayout.Button("Last win: " + lastWinAmount + " at " + lastWinCrashAmount +"x");
+			GUILayout.Button("Last loss: " + lastLossAmount);
+			if(GUILayout.Button("Record win: " + Main.crashLargestWin + " at " + Main.crashLargestWinMult.Value + "x")) {
 				//reset if button is clicked
 				Main.crashLargestWinM.Value = 0;
 				Main.crashLargestWinC.Value = 0d;

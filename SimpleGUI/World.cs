@@ -2,8 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-
-
+#pragma warning disable CS0649
 
 namespace SimpleGUI
 {
@@ -34,20 +33,20 @@ namespace SimpleGUI
 		public static void undoLastReplaceInList()
 		{
 			if(listOfUndos.Count < 1) {
-				UnityEngine.Debug.Log("no undo to replace");
+				Debug.Log("no undo to replace");
 				return;
 			}
-			if (listOfUndos.Last<List<WorldTile>>() == null)
+			if (listOfUndos.Last() == null)
 			{
-				UnityEngine.Debug.Log("no undo to replace");
+				Debug.Log("no undo to replace");
 				return;
 			}
-			foreach (WorldTile pTile in listOfUndos.Last<List<WorldTile>>()) // each tile inside the last list
+			foreach (WorldTile pTile in listOfUndos.Last()) // each tile inside the last list
 			{
-				MapAction.terraformMain(pTile, AssetManager.tiles.get(listOfUndoTypes.Last<string>()), AssetManager.terraform.get("flash"));
+				MapAction.terraformMain(pTile, AssetManager.tiles.get(listOfUndoTypes.Last()), AssetManager.terraform.get("flash"));
 			}
-			listOfUndoTypes.Remove(listOfUndoTypes.Last<string>()); // remove type from end of list
-			listOfUndos.Remove(listOfUndos.Last<List<WorldTile>>()); // remove list of undo tiles
+			listOfUndoTypes.Remove(listOfUndoTypes.Last()); // remove type from end of list
+			listOfUndos.Remove(listOfUndos.Last()); // remove list of undo tiles
 		}
 
 		public void replaceAllTilesOnMap(string oldType, string newType)
@@ -77,9 +76,9 @@ namespace SimpleGUI
 			string[] typeArray = listOfUndoTypes.ToArray();
 			List<WorldTile> list = new List<WorldTile>();
 			List<WorldTile> list2 = MapBox.instance.tilesList.ToList();
-			if (oldType == "last" && listOfUndos.Last<List<WorldTile>>() != null)
+			if (oldType == "last" && listOfUndos.Last() != null)
 			{
-				list2 = listOfUndos.Last<List<WorldTile>>();
+				list2 = listOfUndos.Last();
 			}
 			if (lastSelectedTiles != null)
 			{
@@ -94,7 +93,7 @@ namespace SimpleGUI
 				}
 				if (oldType != "last")
 				{
-					if (worldTile.Type.id.ToString() == oldType)
+					if (worldTile.Type.id == oldType)
 					{
 						list.Add(worldTile);
 						MapAction.terraformMain(worldTile, AssetManager.tiles.get(newType), AssetManager.terraform.get("flash"));
@@ -127,7 +126,7 @@ namespace SimpleGUI
 			Vector2Int pos2 = target2.pos;
 			float distanceBetween = Toolbox.DistTile(target1, target2);
 			int pSize = (int)distanceBetween;
-			PixelFlashEffects flashEffects = Reflection.GetField(MapBox.instance.GetType(), MapBox.instance, "flashEffects") as PixelFlashEffects;
+			PixelFlashEffects flashEffects = MapBox.instance.flashEffects;
 			if (dragCircular == false)
 			{
 				int difx = dif(pos1.x, pos2.x) + 1;
@@ -184,11 +183,11 @@ namespace SimpleGUI
 				}
 				foreach (WorldTile tile in tilesToCheck)
 				{
-					flashEffects.flashPixel(tile, 10, ColorType.White);
+					flashEffects.flashPixel(tile, 10);
 				}
 				return tilesToCheck;
 			}
-			else
+
 			{
 				int x = pos1.x;
 				int y = pos1.y;
@@ -203,7 +202,7 @@ namespace SimpleGUI
 							WorldTile tile = MapBox.instance.GetTile(i, j);
 							if (tile != null)
 							{
-								flashEffects.flashPixel(tile, 10, ColorType.White);
+								flashEffects.flashPixel(tile, 10);
 								tilesToCheck.Add(tile);
 							}
 						}
@@ -417,12 +416,12 @@ namespace SimpleGUI
 					firstRunT();
 				}
 				DragSelectionUpdate();
-				PixelFlashEffects flashEffects = Reflection.GetField(MapBox.instance.GetType(), MapBox.instance, "flashEffects") as PixelFlashEffects;
+				PixelFlashEffects flashEffects = MapBox.instance.flashEffects;
 				if (lastSelectedTiles != null)
 				{
 					foreach (WorldTile tile in lastSelectedTiles)
 					{
-						flashEffects.flashPixel(tile, 10, ColorType.White);
+						flashEffects.flashPixel(tile, 10);
 					}
 				}
 				//wip
@@ -434,7 +433,7 @@ namespace SimpleGUI
 						{
 							if (activeFill != null)
 							{
-								UnityEngine.Debug.Log("active fill in progress, stopping");
+								Debug.Log("active fill in progress, stopping");
 								return;
 							}
 							activeFill = new List<WorldTile>();
@@ -466,12 +465,8 @@ namespace SimpleGUI
 			}
 			if (GuiMain.showHideWorldOptionsConfig.Value)
 			{
-				GUI.contentColor = UnityEngine.Color.white;
-				worldOptionsRect = GUILayout.Window(1010, worldOptionsRect, new GUI.WindowFunction(worldOptionsWindow), "World Options", new GUILayoutOption[]
-				{
-				GUILayout.MaxWidth(300f),
-				GUILayout.MinWidth(200f)
-				});
+				GUI.contentColor = Color.white;
+				worldOptionsRect = GUILayout.Window(1010, worldOptionsRect, worldOptionsWindow, "World Options", GUILayout.MaxWidth(300f), GUILayout.MinWidth(200f));
 				
 			}
 			
@@ -490,7 +485,7 @@ namespace SimpleGUI
 				List<Building> buildingList = MapBox.instance.buildings.ToList();
 				for (int i = buildingList.Count - 2; i > buildingLimit; i--)
 				{
-					buildingList[i].CallMethod("startDestroyBuilding", new object[] { true });
+					buildingList[i].CallMethod("startDestroyBuilding", true);
 				}
 			}
 		}
@@ -547,7 +542,7 @@ namespace SimpleGUI
 			{
 				foreach (Actor actor in MapBox.instance.units)
 				{
-					actor.killHimself(false, AttackType.Other, true);
+					actor.killHimself();
 				}
 			}
 			GUILayout.BeginHorizontal();
@@ -556,11 +551,10 @@ namespace SimpleGUI
 			{
 				foreach (Actor actor2 in MapBox.instance.units)
 				{
-					Race actorRace = Reflection.GetField(actor2.GetType(), actor2, "race") as Race;
-
-					if (actorRace.id.ToString() == raceIDToPurge || actorRace.id.ToString().ToLower() == raceIDToPurge)
+					Race actorRace = actor2.race;
+					if (actorRace.id == raceIDToPurge || actorRace.id.ToLower() == raceIDToPurge)
 					{
-						actor2.killHimself(false, AttackType.Other, true);
+						actor2.killHimself();
 					}
 				}
 			}
@@ -571,11 +565,10 @@ namespace SimpleGUI
 			{
 				foreach (Actor actor3 in MapBox.instance.units)
 				{
-					Race actorRace = Reflection.GetField(actor3.GetType(), actor3, "race") as Race;
-
+					Race actorRace = actor3.race;
 					if (actorRace.civilization)
 					{
-						actor3.killHimself(false, AttackType.Other, true);
+						actor3.killHimself();
 					}
 				}
 			}
@@ -583,11 +576,10 @@ namespace SimpleGUI
 			{
 				foreach (Actor actor4 in MapBox.instance.units)
 				{
-					Race actorRace = Reflection.GetField(actor4.GetType(), actor4, "race") as Race;
-
+					Race actorRace = actor4.race;
 					if (!actorRace.civilization)
 					{
-						actor4.killHimself(false, AttackType.Other, true);
+						actor4.killHimself();
 					}
 				}
 			}
@@ -673,64 +665,69 @@ namespace SimpleGUI
 			if (GUILayout.Button("Replace buildings in selection with construction"))
 			{
 				string buildingName = GuiMain.Construction.selectedBuildingAssetName;
-				foreach (WorldTile tile in lastSelectedTiles)
-				{
-					if (tile.building != null)
+				if (lastSelectedTiles != null)
+					foreach (WorldTile tile in lastSelectedTiles)
 					{
-						BuildingAsset selectedBuildingAsset = AssetManager.buildings.get(buildingName);
-						if (selectedBuildingAsset != null)
+						if (tile.building != null)
 						{
-
-							Building building = MapBox.instance.CallMethod("addBuilding", new object[] { buildingName, tile.building.getConstructionTile(), null, false, true, BuildPlacingType.New }) as Building;
-							/*
+							BuildingAsset selectedBuildingAsset = AssetManager.buildings.get(buildingName);
+							if (selectedBuildingAsset != null)
+							{
+								Building building = MapBox.instance.buildings.addBuilding(buildingName,
+									tile.building.getConstructionTile());
+							
+								/*
 							if (AssetManager.buildings.get(buildingName).construction_site_texture != null)
 							{
 								building.CallMethod("updateBuild", new object[] { 100 });
 							}
 							*/
-							WorldTile currentTile = Reflection.GetField(building.GetType(), building, "currentTile") as WorldTile;
-							if (currentTile.zone.city != null)
-							{
-								building.CallMethod("setCity", new object[] { currentTile.zone.city, false });
-							}
-							if (building.city != null)
-							{
-								building.city.addBuilding(building);
-								building.city.status.housingTotal += selectedBuildingAsset.housing * (selectedBuildingAsset.upgradeLevel + 1);
-								if (building.city.status.population > building.city.status.housingTotal)
+								WorldTile currentTile = building.currentTile;
+								if (currentTile.zone.city != null)
 								{
-									building.city.status.housingOccupied = building.city.status.housingTotal;
+									building.CallMethod("setCity", currentTile.zone.city, false);
 								}
-								else
+
+								if (building.city != null)
 								{
-									building.city.status.housingOccupied = building.city.status.population;
+									building.city.addBuilding(building);
+									building.city.status.housingTotal += selectedBuildingAsset.housing *
+									                                     (selectedBuildingAsset.upgradeLevel + 1);
+									if (building.city.status.population > building.city.status.housingTotal)
+									{
+										building.city.status.housingOccupied = building.city.status.housingTotal;
+									}
+									else
+									{
+										building.city.status.housingOccupied = building.city.status.population;
+									}
+
+									building.city.status.housingFree = building.city.status.housingTotal -
+									                                   building.city.status.housingOccupied;
 								}
-								building.city.status.housingFree = building.city.status.housingTotal - building.city.status.housingOccupied;
 							}
 						}
 					}
-				}
 			}
 			if (GUILayout.Button("Power on every tile in selection"))
 			{
-				foreach (WorldTile tile in lastSelectedTiles)
-				{
-					if (selectedPower().id != null)
+				if (lastSelectedTiles != null)
+					foreach (WorldTile tile in lastSelectedTiles)
 					{
-						if (selectedPower().tileType != null && selectedPower().tileType != "")
+						if (selectedPower().id != null)
 						{
-							MapAction.terraformMain(tile, AssetManager.tiles.get(selectedPower().tileType), AssetManager.terraform.get("flash"));
-						}
-						else if (selectedPower().dropID != null && selectedPower().dropID != "")
-						{
-							Drop newPixel = MapBox.instance.dropManager.spawn(tile, selectedPower().dropID, 5f);
-						}
-						else
-						{
+							if (string.IsNullOrEmpty(selectedPower().tileType) == false)
+							{
+								MapAction.terraformMain(tile, AssetManager.tiles.get(selectedPower().tileType),
+									AssetManager.terraform.get("flash"));
+							}
+							else if (string.IsNullOrEmpty(selectedPower().dropID) == false)
+							{
+								Drop newPixel = MapBox.instance.dropManager.spawn(tile, selectedPower().dropID, 5f);
+							}
 							//UsePower(tile, selectedPower().id);
 						}
 					}
-				}
 			}
 			GUILayout.BeginHorizontal();
 			if (GUILayout.Button("Clear all buildings"))
@@ -750,7 +747,7 @@ namespace SimpleGUI
 				}
 				foreach (Building building in buildingsToClear)
 				{
-					building.CallMethod("startDestroyBuilding", new object[] { true });
+					building.CallMethod("startDestroyBuilding", true);
 				}
 			}
 			if (GUILayout.Button("Clear natural buildings"))
@@ -798,7 +795,7 @@ namespace SimpleGUI
 			GUILayout.EndHorizontal();
 			*/
 			GUILayout.BeginHorizontal();
-			if (GUILayout.Button("Fill/PaintBucket: " + fillToolEnabled.ToString()))
+			if (GUILayout.Button("Fill/PaintBucket: " + fillToolEnabled))
 			{
 				fillToolEnabled = !fillToolEnabled;
 			}
@@ -909,16 +906,14 @@ namespace SimpleGUI
 			{
 				return selectedButton;
 			}
-			else
-			{
-				return null;
-			}
+
+			return null;
 		}
 		public GodPower selectedPower()
 		{
 			if (selectedButton() != null)
 			{
-				GodPower godPower = Reflection.GetField(selectedButton().GetType(), selectedButton(), "godPower") as GodPower;
+				GodPower godPower = selectedButton().godPower;
 				if (godPower != null)
 				{
 					return godPower;
@@ -936,10 +931,10 @@ namespace SimpleGUI
 			int num3 = tileArea.Count / 2;
 			for (int i = 0; i < num3; i++)
 			{
-				WorldTile random = tileArea.GetRandom<WorldTile>();
+				WorldTile random = tileArea.GetRandom();
 				if (random.Type.ground && random.zone.trees.Count < 3)
 				{
-					MapBox.instance.CallMethod("tryGrowPlant", new object[] { random, true, false, true, null });
+					MapBox.instance.CallMethod("tryGrowPlant", random, true, false, true, null);
 				}
 			}
 		}
@@ -955,10 +950,10 @@ namespace SimpleGUI
 			int num5 = num4 / 2;
 			int num6 = num5 / 2;
 			int num7 = num6;
-			MapBox.instance.CallMethod("spawnResource", new object[] { num4, "stone", true });
-			MapBox.instance.CallMethod("spawnResource", new object[] { num5, "ore_deposit", true });
-			MapBox.instance.CallMethod("spawnResource", new object[] { num6, "gold", true });
-			MapBox.instance.CallMethod("spawnBeehives", new object[] { num7 / 2 });
+			MapBox.instance.CallMethod("spawnResource", num4, "stone", true);
+			MapBox.instance.CallMethod("spawnResource", num5, "ore_deposit", true);
+			MapBox.instance.CallMethod("spawnResource", num6, "gold", true);
+			MapBox.instance.CallMethod("spawnBeehives", num7 / 2);
 		}
 
 		public static bool spawnResource_Prefix(int pAmount, string pType, bool pRandomSize = true)
@@ -970,10 +965,10 @@ namespace SimpleGUI
 			}
 			for (int i = 0; i < pAmount; i++)
 			{
-				WorldTile random = targetTileList.GetRandom<WorldTile>();
+				WorldTile random = targetTileList.GetRandom();
 				if (random.Type.ground)
 				{
-					MapBox.instance.buildings.addBuilding(pType, random, true, false, BuildPlacingType.New);
+					MapBox.instance.buildings.addBuilding(pType, random, true);
 				}
 			}
 			return false;
@@ -1001,24 +996,23 @@ namespace SimpleGUI
 			int num5 = num4 / 2;
 			int num6 = num5 / 2;
 			int num7 = num6;
-			MapBox.instance.CallMethod("spawnResource", new object[] { num4, "stone", true });
-			MapBox.instance.CallMethod("spawnResource", new object[] { num5, "ore_deposit", true });
-			MapBox.instance.CallMethod("spawnResource", new object[] { num6, "gold", true });
-			MapBox.instance.CallMethod("spawnResource", new object[] { num7, "fruit_bush", false });
-			MapBox.instance.CallMethod("spawnBeehives", new object[] { num7 / 2 });
+			MapBox.instance.CallMethod("spawnResource", num4, "stone", true);
+			MapBox.instance.CallMethod("spawnResource", num5, "ore_deposit", true);
+			MapBox.instance.CallMethod("spawnResource", num6, "gold", true);
+			MapBox.instance.CallMethod("spawnResource", num7, "fruit_bush", false);
+			MapBox.instance.CallMethod("spawnBeehives", num7 / 2);
 		}
 
 		public void FillBenchmark()
 		{
 			if (lastBenchedTime > maxTimeToWait)
 			{
-				UnityEngine.Debug.Log("ERROR: Fill stopping due to timer, last benched time: " + lastBenchedTime.ToString());
+				Debug.Log("ERROR: Fill stopping due to timer, last benched time: " + lastBenchedTime);
 				ResetFill();
-				return;
 			}
 		}
 
-		public bool tileActionComplete = false;
+		public bool tileActionComplete;
 		public void tileChangingUpdate() // fill over time
 		{
 			if (Time.realtimeSinceStartup - lastUpdate <= timerBetweenFill)
@@ -1031,7 +1025,7 @@ namespace SimpleGUI
 			{
 				if (selectedPower() == null)
 				{
-					UnityEngine.Debug.Log("Fill has no power, stopping");
+					Debug.Log("Fill has no power, stopping");
 					ResetFill();
 					return;
 				}
@@ -1064,12 +1058,12 @@ namespace SimpleGUI
 										tileActionComplete = true;
 									}
 								}
-								else if (!GuiMain.Construction.placingToggleEnabled && selectedPower().tileType != null && selectedPower().tileType != "")
+								else if (!GuiMain.Construction.placingToggleEnabled && !string.IsNullOrEmpty(selectedPower().tileType))
 								{
                                     MapAction.terraformMain(activeTile, AssetManager.tiles.get(selectedPower().tileType), AssetManager.terraform.get("flash"));
 									tileActionComplete = true;
 								}
-								else if (!GuiMain.Construction.placingToggleEnabled && (selectedPower().dropID != null && selectedPower().dropID != ""))
+								else if (!GuiMain.Construction.placingToggleEnabled && !string.IsNullOrEmpty(selectedPower().dropID))
 								{
                                     Drop newPixel = MapBox.instance.dropManager.spawn(activeTile, selectedPower().dropID, 5f);
 									tileActionComplete = true;
@@ -1092,13 +1086,11 @@ namespace SimpleGUI
 					else
 					{
 						ResetFill();
-						return;
 					}
 				}
 				else
 				{
 					ResetFill();
-					return;
 				}
 			}
 		}
@@ -1168,22 +1160,21 @@ namespace SimpleGUI
 		{
 			if (Config.paused)
 			{
-				return;
 			}
 		}
 		public static void undoLastFillInList()
 		{
-			if (listOfFills.Last<List<WorldTile>>() == null)
+			if (listOfFills.Last() == null)
 			{
-				UnityEngine.Debug.Log("no fill to replace");
+				Debug.Log("no fill to replace");
 				return;
 			}
-			foreach (WorldTile pTile in listOfFills.Last<List<WorldTile>>())
+			foreach (WorldTile pTile in listOfFills.Last())
 			{
-				MapAction.terraformMain(pTile, AssetManager.tiles.get(listOfFillTypes.Last<string>()), AssetManager.terraform.get("flash"));
+				MapAction.terraformMain(pTile, AssetManager.tiles.get(listOfFillTypes.Last()), AssetManager.terraform.get("flash"));
 			}
-			listOfFillTypes.Remove(listOfFillTypes.Last<string>());
-			listOfFills.Remove(listOfFills.Last<List<WorldTile>>());
+			listOfFillTypes.Remove(listOfFillTypes.Last());
+			listOfFills.Remove(listOfFills.Last());
 		}
 
 		public static bool disableClouds;
@@ -1199,9 +1190,11 @@ namespace SimpleGUI
 		public static List<string> listOfUndoTypes;
 		public static List<List<WorldTile>> listOfFills = new List<List<WorldTile>>();
 		public static List<string> listOfFillTypes = new List<string>();
-		public float lastNumberOfTilesFilledOrReplaced = 0f;
+		public float lastNumberOfTilesFilledOrReplaced;
 		public int fillToolIterations;
+#pragma warning disable CS0414
 		public float lastFillOrReplace = 0f;
+#pragma warning restore CS0414
 		public List<WorldTile> activeFill;
 		public List<WorldTile> alreadyChanged;
 		public WorldTile fillOriginalTile;
@@ -1209,11 +1202,8 @@ namespace SimpleGUI
 		public float lastUpdate;
 		public int fillTileCount;
 		public int fillIterationPosition;
-		public float maxTimeToWait
-		{
-			get => GuiMain.maxTimeToWait.Value;
-		}
-		public static bool dragSelection = false;
+		public float maxTimeToWait => GuiMain.maxTimeToWait.Value;
+		public static bool dragSelection;
 		public static bool dragCircular = true;
 		public bool temp;
 		public List<WorldTile> tileListDragSelection = new List<WorldTile>();

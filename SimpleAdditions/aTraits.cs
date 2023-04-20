@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 using HarmonyLib;
-using UnityEngine;
 
 namespace SimpleAdditions {
 
@@ -29,7 +24,7 @@ namespace SimpleAdditions {
 			Actor a = Reflection.GetField(pTarget.GetType(), pTarget, "a") as Actor;
 
 			if(Toolbox.randomChance(0.25f)) {
-				MapBox.instance.stackEffects.CallMethod("spawnFireworks", new object[] { a.currentTile, 0.5f });
+				MapBox.instance.stackEffects.CallMethod("spawnFireworks", a.currentTile, 0.5f);
 			}
 
 			return true;

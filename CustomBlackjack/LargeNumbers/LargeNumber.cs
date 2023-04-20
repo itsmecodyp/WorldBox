@@ -93,7 +93,7 @@ namespace LargeNumbers {
         static internal readonly Prefix[][] _prefixes =
         {
             // Units
-            new Prefix [] {
+            new[] {
                 new Prefix ( string.Empty, UnitPrefixModifiers.None  ),
                 new Prefix ( "Un", UnitPrefixModifiers.None  ),
                 new Prefix ( "Duo", UnitPrefixModifiers.None  ),
@@ -106,7 +106,7 @@ namespace LargeNumbers {
                 new Prefix ( "Nove", UnitPrefixModifiers.MN  )
             },
             // Tens
-            new Prefix [] {
+            new[] {
                 new Prefix ( string.Empty, UnitPrefixModifiers.None  ),
                 new Prefix ( "Deci", UnitPrefixModifiers.N  ),
                 new Prefix ( "Viginti", UnitPrefixModifiers.SM  ),
@@ -119,7 +119,7 @@ namespace LargeNumbers {
                 new Prefix ( "Nonaginta", UnitPrefixModifiers.None  )
             },
             // Hundreds
-            new Prefix [] {
+            new[] {
                 new Prefix ( string.Empty, UnitPrefixModifiers.None  ),
                 new Prefix ( "Centi", UnitPrefixModifiers.XN  ),
                 new Prefix ( "Ducenti", UnitPrefixModifiers.N  ),

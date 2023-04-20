@@ -1,16 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SimpleAdditions {
     public static class Reflection {
         // found on https://stackoverflow.com/questions/135443/how-do-i-use-reflection-to-invoke-a-private-method
         public static object CallMethod(this object o, string methodName, params object[] args)
         {
-            var mi = o.GetType().GetMethod(methodName, System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            var mi = o.GetType().GetMethod(methodName, BindingFlags.NonPublic | BindingFlags.Instance);
             if(mi != null) {
                 return mi.Invoke(o, args);
             }

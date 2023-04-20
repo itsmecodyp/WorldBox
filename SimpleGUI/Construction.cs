@@ -80,7 +80,7 @@ namespace SimpleGUI
             }
             else
             {
-                Building building = MapBox.instance.buildings.addBuilding(selectedBuildingAssetName, MapBox.instance.getMouseTilePos(), false, false, BuildPlacingType.New); //CallMethod("addBuilding", new object[] { selectedBuildingAssetName, MapBox.instance.getMouseTilePos(), null, false, true, BuildPlacingType.New }) as Building;
+                Building building = MapBox.instance.buildings.addBuilding(selectedBuildingAssetName, MapBox.instance.getMouseTilePos()); //CallMethod("addBuilding", new object[] { selectedBuildingAssetName, MapBox.instance.getMouseTilePos(), null, false, true, BuildPlacingType.New }) as Building;
                 building.updateBuild(100); //CallMethod("updateBuild", new object[] { 100 });
                 WorldTile currentTile = building.currentTile; //Reflection.GetField(building.GetType(), building, "currentTile") as WorldTile;
                 if (currentTile.zone.city != null)
@@ -111,7 +111,7 @@ namespace SimpleGUI
                 if (MapBox.instance.getMouseTilePos() != null)
                 {
                     PixelFlashEffects flashEffects = MapBox.instance.flashEffects; //Reflection.GetField(MapBox.instance.GetType(), MapBox.instance, "flashEffects") as PixelFlashEffects;
-                    flashEffects.flashPixel(MapBox.instance.getMouseTilePos(), 10, ColorType.White);
+                    flashEffects.flashPixel(MapBox.instance.getMouseTilePos(), 10);
                 }
             }
             else // placing buildings
@@ -134,7 +134,7 @@ namespace SimpleGUI
                             WorldTile tile = MapBox.instance.GetTile(num + j, num2 + k);
                             if (tile != null)
                             {
-                                flashEffects.flashPixel(tile, 10, ColorType.White);
+                                flashEffects.flashPixel(tile, 10);
                             }
                         }
                     }
@@ -287,11 +287,7 @@ namespace SimpleGUI
             }
             if (GuiMain.showHideConstructionConfig.Value)
             {
-                ConstructionWindowRect = GUILayout.Window(1007, ConstructionWindowRect, new GUI.WindowFunction(constructionWindow), "Construction", new GUILayoutOption[]
-                {
-                GUILayout.MaxWidth(300f),
-                GUILayout.MinWidth(200f)
-                });
+                ConstructionWindowRect = GUILayout.Window(1007, ConstructionWindowRect, constructionWindow, "Construction", GUILayout.MaxWidth(300f), GUILayout.MinWidth(200f));
             }
             if(placingToggleEnabled) {
                 constructionPreviewUpdate();
@@ -300,15 +296,12 @@ namespace SimpleGUI
 
         public bool showHideConstruction;
         public Rect ConstructionWindowRect;
-        public BuildingAsset selectedBuildingAsset = null;
+        public BuildingAsset selectedBuildingAsset;
         public bool placingToggleEnabled;
         public bool filterEnabled;
         public string filterString = "human";
         public static bool placingRoad;
         public static bool placingField;
-        public string selectedBuildingAssetName
-        {
-            get => buildingAssetName();
-        }
+        public string selectedBuildingAssetName => buildingAssetName();
     }
 }

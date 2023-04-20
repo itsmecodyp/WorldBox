@@ -247,7 +247,8 @@ namespace LargeNumbers {
                 alphabeticNotation = default;
                 return false;
             }
-            else if(spaces == 0) {
+
+            if(spaces == 0) {
                 var i = 0;
                 for(; i < count; ++i) {
                     if((alphabeticNotationString[i] >= '0' && alphabeticNotationString[i] <= '9') || alphabeticNotationString[i] == '.' || alphabeticNotationString[i] == ',' || alphabeticNotationString[i] == '-')

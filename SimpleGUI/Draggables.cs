@@ -1,17 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
+using BepInEx;
 using HarmonyLib;
 using Newtonsoft.Json;
 using UnityEngine;
-using UnityEngine.UIElements;
-using static UnityEngine.GraphicsBuffer;
-using ai;
-using BepInEx;
 
 namespace SimpleGUI {
     [BepInPlugin(pluginGuid, pluginName, pluginVersion)]
@@ -38,16 +32,15 @@ namespace SimpleGUI {
             //Debug.Log(harmony.Id + ": Harmony patch finished: " + patch.Name);
         }
 
-        public static bool isEnabled => SimpleGUI.GuiOther.canDragCreaturesWithMouse;
+        public static bool isEnabled => GuiOther.canDragCreaturesWithMouse;
 
         public static bool updateMouseCameraDrag_Prefix()
         {
-			if(isEnabled) {
+            if(isEnabled) {
                 return false;
             }
-			else {
-                return true;
-            }
+
+            return true;
         }
 
         public static void addForce_Prefix(float pX, float pY, float pZ, ActorBase __instance)
@@ -64,18 +57,17 @@ namespace SimpleGUI {
             __instance.forceVector.x = pX * 0.6f;
             __instance.forceVector.y = pY * 0.6f;
             __instance.forceVector.z = pZ * 2f;
-            return;
         }
 
 
-        public bool dragSelection = false;
+        public bool dragSelection;
         public bool temp;
         public WorldTile startTile;
         public WorldTile endTile;
         public List<WorldTile> lastSelectedTiles;
         List<Actor> allActors => MapBox.instance.units.ToList();
 
-        public float lastClickTime = 0f;
+        public float lastClickTime;
 
         public void Update()
         {
@@ -138,7 +130,7 @@ namespace SimpleGUI {
                     }
 
                     if(Input.GetMouseButtonUp(0)) {
-                        Debug.Log("MouseX Vel:" + Input.GetAxis("Mouse X").ToString() + "; " + "MouseY Vel:" + Input.GetAxis("Mouse Y").ToString());
+                        Debug.Log("MouseX Vel:" + Input.GetAxis("Mouse X") + "; " + "MouseY Vel:" + Input.GetAxis("Mouse Y"));
                         isDraggingUnits = false;
                         Vector3 force = new Vector3(Input.GetAxis("Mouse X"), Input.GetAxis("Mouse Y"), 0.5f + z);
                         foreach(Actor actor in lastSelectedActorList) {
@@ -202,11 +194,12 @@ namespace SimpleGUI {
                     }
                 }
                 foreach(WorldTile tile in tilesToCheck) {
-                    flashEffects.flashPixel(tile, 10, ColorType.White);
+                    flashEffects.flashPixel(tile, 10);
                 }
                 return tilesToCheck;
             }
-            else {
+
+            {
                 int x = pos1.x;
                 int y = pos1.y;
                 int radius = (int)distanceBetween;
@@ -216,7 +209,7 @@ namespace SimpleGUI {
                         if(Vector2.Distance(center, new Vector2(i, j)) <= radius) {
                             WorldTile tile = MapBox.instance.GetTile(i, j);
                             if(tile != null) {
-                                flashEffects.flashPixel(tile, 10, ColorType.White);
+                                flashEffects.flashPixel(tile, 10);
                                 tilesToCheck.Add(tile);
                             }
                         }

@@ -25,11 +25,11 @@ namespace SimpleAI {
 		}
 		public static Engine selectedEngine = Engine.Ada;
 
-		public string[] descriptor1List = new string[] { "grumpy", "wicked", "delirious", "sarcastic", "smelly", "happy", "wounded", "scarred" };
+		public string[] descriptor1List = { "grumpy", "wicked", "delirious", "sarcastic", "smelly", "happy", "wounded", "scarred" };
 
-		public string[] descriptor2List = new string[] { "clever and helpful, yet rude", "young and stylish", "a little too ", "a bit ", "strangely ", "kinda ", "dressed nakedly", "breathing heavily", "really sweaty"};
-		public string[] descriptor2Suffix = new string[] { "calm", "loud", "nervous", "excited", "giddy", "cautious", "touchy"};
-		public string[] descriptor2SuffixPart2 = new string[] { "for your taste", "to be feeling safe", "compared to usual", "since the last time you met"};
+		public string[] descriptor2List = { "clever and helpful, yet rude", "young and stylish", "a little too ", "a bit ", "strangely ", "kinda ", "dressed nakedly", "breathing heavily", "really sweaty"};
+		public string[] descriptor2Suffix = { "calm", "loud", "nervous", "excited", "giddy", "cautious", "touchy"};
+		public string[] descriptor2SuffixPart2 = { "for your taste", "to be feeling safe", "compared to usual", "since the last time you met"};
 
 		public void GenerateNewAI()
 		{
@@ -39,7 +39,8 @@ namespace SimpleAI {
 				try {
 					randomStats = AssetManager.unitStats.list.GetRandom();
 					string race = randomStats.id;
-					aiPerson = new AIPersonality() {
+					aiPerson = new AIPersonality
+					{
 						pName = NameGenerator.generateNameFromTemplate(AssetManager.nameGenerator.get(race + "_name")),
 						pDescriptor1 = descriptor1List.GetRandom(),
 						pRace = randomStats.nameLocale,
@@ -105,10 +106,10 @@ namespace SimpleAI {
 			}
 			GUILayout.EndArea();
 			if(showHideInputWindow) {
-				inputWindowRect = GUILayout.Window(139021, inputWindowRect, new GUI.WindowFunction(InputWindow), "OpenAI WorldBox", new GUILayoutOption[] { GUILayout.MaxWidth(300f), GUILayout.MinWidth(200f) });
+				inputWindowRect = GUILayout.Window(139021, inputWindowRect, InputWindow, "OpenAI WorldBox", GUILayout.MaxWidth(300f), GUILayout.MinWidth(200f));
 			}
 			if(showHideCustomPersonWindow) {
-				customPersonWindowRect = GUILayout.Window(139022, customPersonWindowRect, new GUI.WindowFunction(CustomPersonWindow), "OpenAI WorldBox", new GUILayoutOption[] { GUILayout.MaxWidth(300f), GUILayout.MinWidth(200f) });
+				customPersonWindowRect = GUILayout.Window(139022, customPersonWindowRect, CustomPersonWindow, "OpenAI WorldBox", GUILayout.MaxWidth(300f), GUILayout.MinWidth(200f));
 			}
 			SetWindowInUse(-1);
 		}
@@ -152,7 +153,8 @@ namespace SimpleAI {
 			customQuestion = GUILayout.TextField(customQuestion);
 			GUILayout.EndHorizontal();
 			if(GUILayout.Button("Set personality")) {
-				aiPerson = new AIPersonality() {
+				aiPerson = new AIPersonality
+				{
 					pName = customName,
 					pDescriptor1 = customDescriptor1,
 					pRace = customRace,
@@ -236,9 +238,10 @@ namespace SimpleAI {
 					string fullPrompt = newFullPrompt + "\nYou: " + input + "\n" + aiPerson.pName + ":";
 					tlastprompt = fullPrompt;
 					//Debug.Log("(db)full prompt2: " + fullPrompt);
-					CompletionRequest newRequest = new CompletionRequest() {
+					CompletionRequest newRequest = new CompletionRequest
+					{
 						Temperature = 1.0,
-						MultipleStopSequences = new string[] { "\n", " You:", " " + aiPerson.pName + ":" },
+						MultipleStopSequences = new[] { "\n", " You:", " " + aiPerson.pName + ":" },
 						MaxTokens = 150,
 						TopP = 1,
 						FrequencyPenalty = 0,
@@ -256,9 +259,10 @@ namespace SimpleAI {
 					string fullPrompt = "The following is a conversation with a " + aiPerson.pDescriptor1 + " " + aiPerson.pRace + ". The " + aiPerson.pRace + " is " + aiPerson.pDescriptor2 + "\n\nYou: Hello, who are you?\n" + aiPerson.pName + ": I am " + aiPerson.pName + ", a " + aiPerson.pRace + ". How can I help you today?\nYou: " + input + "\n" + aiPerson.pName + ":";
 					tlastprompt = fullPrompt;
 					//Debug.Log("(db)full prompt: " + fullPrompt);
-					CompletionRequest newRequest = new CompletionRequest() {
+					CompletionRequest newRequest = new CompletionRequest
+					{
 						Temperature = 1.0,
-						MultipleStopSequences = new string[] { "\n", " You:", " " + aiPerson.pName + ":" },
+						MultipleStopSequences = new[] { "\n", " You:", " " + aiPerson.pName + ":" },
 						MaxTokens = 150,
 						TopP = 1,
 						FrequencyPenalty = 0,

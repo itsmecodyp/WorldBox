@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 using UnityEngine;
-using LargeNumbers;
 
 namespace CustomBlackjack {
     public static class Blackjack {
@@ -21,7 +16,7 @@ namespace CustomBlackjack {
                 BlackjackPlayer target = currentPlayers[activePlayer];
                 if(target.playername == "Human") {
                     activePlayer++;
-                    Debug.Log("Moved active player:" + (activePlayer - 1).ToString() + "->" + activePlayer.ToString() + "count:" + currentPlayers.Count.ToString());
+                    Debug.Log("Moved active player:" + (activePlayer - 1) + "->" + activePlayer + "count:" + currentPlayers.Count);
                 }
                 else {
                     target.DrawCard();
@@ -29,12 +24,12 @@ namespace CustomBlackjack {
                     if(target.waiting) // will become "waiting for turn to end" during the draw
                     {
                         activePlayer++;
-                        Debug.Log("Moved active player:" + (activePlayer - 1).ToString() + "->" + activePlayer.ToString() + "count:" + currentPlayers.Count.ToString());
+                        Debug.Log("Moved active player:" + (activePlayer - 1) + "->" + activePlayer + "count:" + currentPlayers.Count);
                     }
                 }
             }
             else {
-                Blackjack.DealersTurn();
+                DealersTurn();
             }
 
 
@@ -73,8 +68,8 @@ namespace CustomBlackjack {
         public static void DealerWindow(int windowID)
         {
             GUILayout.Button("Dealer status: " + currentDealerStatus);
-            Blackjack.CardDisplay(dealersHand); // neat
-            GUILayout.Button("Current hand total: " + Blackjack.HandTotalValue(dealersHand));
+            CardDisplay(dealersHand); // neat
+            GUILayout.Button("Current hand total: " + HandTotalValue(dealersHand));
             GUI.DragWindow();
         }
 
@@ -86,10 +81,10 @@ namespace CustomBlackjack {
 
         public static void CardDisplay(List<Card> targetHand)
         {
-            GUILayout.Button("Total value: " + Blackjack.HandTotalValue(targetHand));
-            GUILayout.BeginHorizontal(new GUILayoutOption[] { GUILayout.MaxWidth(200f), GUILayout.MinWidth(200f) });
-            UnityEngine.Color original = GUI.contentColor;
-            UnityEngine.Color original2 = GUI.backgroundColor;
+            GUILayout.Button("Total value: " + HandTotalValue(targetHand));
+            GUILayout.BeginHorizontal(GUILayout.MaxWidth(200f), GUILayout.MinWidth(200f));
+            Color original = GUI.contentColor;
+            Color original2 = GUI.backgroundColor;
             foreach(Card heldCard in targetHand) {
                 string value = heldCard.value.ToString();
                 if(heldCard.stringValue == "Ace") {
@@ -106,14 +101,14 @@ namespace CustomBlackjack {
                 }
                 string color = "";
                 if(heldCard.stringSuit == "Hearts" || heldCard.stringSuit == "Diamonds") {
-                    GUI.contentColor = UnityEngine.Color.red;
+                    GUI.contentColor = Color.red;
                     color = "red";
                 }
                 else {
-                    GUI.contentColor = UnityEngine.Color.black;
+                    GUI.contentColor = Color.black;
                     color = "black";
                 }
-                GUI.backgroundColor = UnityEngine.Color.white;
+                GUI.backgroundColor = Color.white;
                 GUILayout.Button("-------\n" +
                                  "|    <color=white>" + value + "</color>|\n" +
                                  "|  <color=" + color + "> " + Card.suitSymbols[heldCard.suit] + "</color>  |\n" +
@@ -233,7 +228,7 @@ namespace CustomBlackjack {
                 }
             }
         }
-        public static int activePlayer = 0;
+        public static int activePlayer;
         public static void DealerDrawCard()
         {
             midRoundEndTime = Time.realtimeSinceStartup;

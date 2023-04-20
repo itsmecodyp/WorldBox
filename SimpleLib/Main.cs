@@ -1,13 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using BepInEx;
-using UnityEngine;
-using SimpleMessages;
 using System.Reflection;
-using EpPathFinding.cs;
+using BepInEx;
+using SimpleMessages;
+using UnityEngine;
 
 namespace SimpleLib
 {
@@ -54,7 +50,7 @@ namespace SimpleLib
             Messages.ActorSay(targetActor, messageText, titleText, duration);
         }
 
-        public float lastTimer = 0f;
+        public float lastTimer;
 
     }
 
@@ -71,7 +67,7 @@ namespace SimpleMessages
         public const string pluginVersion = "0.0.0.1";
         public static int windowInUse = 0;
         public static List<ModMessage> listOfMessages = new List<ModMessage>();
-        public static int messageID = 0;
+        public static int messageID;
 
         public static void ActorSay(Actor targetActor, string messageText, float duration = 3f)
         {
@@ -122,17 +118,13 @@ namespace SimpleMessages
                             screenPos = Camera.main.WorldToScreenPoint(pos);
                             screenPos.y = (Screen.height - screenPos.y);
                             // adding a random number (3536) to make sure theres no conflict with window id in other mods
-                            Rect window = GUILayout.Window(activeMessage.id + 3536, new Rect(new Vector2(screenPos.x - 100, screenPos.y - 115), new Vector2()), new GUI.WindowFunction(ActorMessageDisplayWindow), activeMessage.TitleText, new GUILayoutOption[] { GUILayout.MaxWidth(activeMessage.MessageText.Length), GUILayout.MinWidth(200f) });
+                            Rect window = GUILayout.Window(activeMessage.id + 3536, new Rect(new Vector2(screenPos.x - 100, screenPos.y - 115), new Vector2()), ActorMessageDisplayWindow, activeMessage.TitleText, GUILayout.MaxWidth(activeMessage.MessageText.Length), GUILayout.MinWidth(200f));
                             //window.width = 5f;
                         }
                     }
-                    else
-                    {
-                        //listOfMessages.Remove(activeMessage);
-                        // i feel like removing them saves performance
-                        // but it causes an error..
-                    }
-
+                    //listOfMessages.Remove(activeMessage);
+                    // i feel like removing them saves performance
+                    // but it causes an error..
                 }
             }
            
@@ -157,7 +149,7 @@ namespace SimpleMessages
     [Serializable]
     public class ModMessage
     {
-        public int id = 0;
+        public int id;
         public Actor assignedActor;
         public string TitleText = "";
         public string MessageText = "";
@@ -170,7 +162,7 @@ namespace SimpleMessages
         // found on https://stackoverflow.com/questions/135443/how-do-i-use-reflection-to-invoke-a-private-method
         public static object CallMethod(this object o, string methodName, params object[] args)
         {
-            var mi = o.GetType().GetMethod(methodName, System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            var mi = o.GetType().GetMethod(methodName, BindingFlags.NonPublic | BindingFlags.Instance);
             if (mi != null)
             {
                 return mi.Invoke(o, args);

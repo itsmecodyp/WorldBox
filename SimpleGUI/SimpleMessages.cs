@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using BepInEx;
-using UnityEngine;
 using System.Reflection;
+using BepInEx;
+using UnitClipboard;
+using UnityEngine;
 
 namespace SimpleMessages {
     [BepInPlugin(pluginGuid, pluginName, pluginVersion)]
@@ -14,7 +15,7 @@ namespace SimpleMessages {
         public void Update()
         {
             if(Input.GetKeyDown(KeyCode.M)) {
-                Actor potentialStarter = UnitClipboard.UnitClipboard_Main.ClosestActorToTile(MapBox.instance.getMouseTilePos(), 5f, null);
+                Actor potentialStarter = UnitClipboard_Main.ClosestActorToTile(MapBox.instance.getMouseTilePos(), 5f);
                 if(potentialStarter != null) {
                     string id = potentialStarter.asset.id;
                     Debug.Log("actor found with id:" + id);
@@ -63,7 +64,7 @@ namespace SimpleMessages {
             Messages.ActorSay(targetActor, messageText, duration);
         }
 
-        public float lastTimer = 0f;
+        public float lastTimer;
 
     }
 
@@ -78,7 +79,7 @@ namespace SimpleMessages {
         public const string pluginVersion = "0.0.0.3";
         public static int windowInUse = 0;
         public static List<ModMessage> listOfMessages = new List<ModMessage>();
-        public static int messageID = 0;
+        public static int messageID;
 
         public void Awake()
 		{
@@ -105,7 +106,7 @@ namespace SimpleMessages {
             replyString = null;
 
 			//potential replier to the message being said right now
-			Actor potentialReplier = UnitClipboard.UnitClipboard_Main.ClosestActorToTile(targetActor.currentTile, 5f, targetActor);
+			Actor potentialReplier = UnitClipboard_Main.ClosestActorToTile(targetActor.currentTile, 5f, targetActor);
             if(potentialReplier != null) {
                 if(actorResponses.ContainsKey(messageText)) {
                     ResponseData responseDict = actorResponses[messageText];
@@ -165,7 +166,7 @@ namespace SimpleMessages {
 
                     //if reply string was found before, say it now
                     if(replyString != null) {
-                        ActorSay(replyActor, replyString, 3f);
+                        ActorSay(replyActor, replyString);
                     }
                 }
             }
@@ -178,13 +179,13 @@ namespace SimpleMessages {
 
 
         //change to list or dict of multiple conversations?
-        public static Actor replyActor = null;
-        public static Actor actorReplyActorIsRespondingTo = null;
-        public static string replyString = null;
-        public static string stringToReplyTo = null;
-        public static ResponseData reply = null;
+        public static Actor replyActor;
+        public static Actor actorReplyActorIsRespondingTo;
+        public static string replyString;
+        public static string stringToReplyTo;
+        public static ResponseData reply;
 
-        public static float timeAtLastMessage = 0f;
+        public static float timeAtLastMessage;
 
 
         public void OnGUI()
@@ -204,15 +205,10 @@ namespace SimpleMessages {
                             // adding a random number (3536) to make sure theres no conflict with window id in other mods
                             Rect window = GUILayout.Window(activeMessage.id + 3536,
                                 new Rect(position.x - (textDimensions.x / 2), Screen.height - position.y - (textDimensions.y * 2), textDimensions.x, textDimensions.y),
-                                new GUI.WindowFunction(ActorMessageDisplayWindow),
-                                activeMessage.TitleText,
-                                new GUILayoutOption[] { });
+                                ActorMessageDisplayWindow,
+                                activeMessage.TitleText);
                         }
                     }
-                    else {
-                     
-                    }
-
                 }
             }
 
@@ -237,7 +233,7 @@ namespace SimpleMessages {
         public void CreateStartPhrases(){
             string[] starterPhrases;
             //humans
-            starterPhrases = new string[] { "Howdy!", "What's up?", "Good day to you.", "Hello!" };
+            starterPhrases = new[] { "Howdy!", "What's up?", "Good day to you.", "Hello!" };
             actorStartPhrases.Add("unit_human", starterPhrases);
         }
 
@@ -254,7 +250,7 @@ namespace SimpleMessages {
             example2.actorAssetID = new List<string> { "unit_human" };
             example2.actorReply = new List<string> { "Bring it on!", "Let's go!" };
             //actor will respond with one of the above, and also attempt to attack whoever asked
-            example2.responseAction = new ResponseAction(startFight);
+            example2.responseAction = startFight;
 
             actorResponses.Add(example1.inputToRespondTo, example1);
             actorResponses.Add(example2.inputToRespondTo, example2);
@@ -297,7 +293,7 @@ namespace SimpleMessages {
 
     [Serializable]
     public class ModMessage {
-        public int id = 0;
+        public int id;
         public Actor assignedActor;
         public string TitleText = "";
         public string MessageText = "";
@@ -309,7 +305,7 @@ namespace SimpleMessages {
         // found on https://stackoverflow.com/questions/135443/how-do-i-use-reflection-to-invoke-a-private-method
         public static object CallMethod(this object o, string methodName, params object[] args)
         {
-            var mi = o.GetType().GetMethod(methodName, System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+            var mi = o.GetType().GetMethod(methodName, BindingFlags.NonPublic | BindingFlags.Instance);
             if(mi != null) {
                 return mi.Invoke(o, args);
             }

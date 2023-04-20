@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using UnityEngine;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 using System.Globalization;
-using ai;
-using ai.behaviours;
+using UnityEngine;
 
 namespace SimpleGUI {
     class GuiDiplomacy {
@@ -126,7 +120,7 @@ namespace SimpleGUI {
 					if(selectedCity1Kingdom.hasAlliance()) {
                         Alliance city1Alliance = selectedCity1Kingdom.getAlliance();
                         //MapBox.instance.alliances.
-                        city1KingdomAlliance.join(selectedCity2Kingdom, true); // selectedCity2Kingdom.allianceJoin(city1Alliance);
+                        city1KingdomAlliance.join(selectedCity2Kingdom); // selectedCity2Kingdom.allianceJoin(city1Alliance);
                         //selectedCity2Kingdom.allianceJoin(city1Alliance);
                     }
                     else {
@@ -142,7 +136,7 @@ namespace SimpleGUI {
                 }
                 if(GUILayout.Button("Start war") && isEnemy == false) {
 					if(isAlly == false) {
-                        MapBox.instance.diplomacy.startWar(selectedCity1Kingdom, selectedCity2Kingdom, WarTypeLibrary.whisper_of_war, true);
+                        MapBox.instance.diplomacy.startWar(selectedCity1Kingdom, selectedCity2Kingdom, WarTypeLibrary.whisper_of_war);
                     }
 					else {
                         selectedCity2Kingdom.allianceLeave(city1KingdomAlliance);
@@ -441,18 +435,10 @@ namespace SimpleGUI {
             }
             */
             if(GuiMain.showHideDiplomacyConfig != null && GuiMain.showHideDiplomacyConfig.Value) {
-                diplomacyWindowRect = GUILayout.Window(96850, diplomacyWindowRect, new GUI.WindowFunction(diplomacyWindow), "Diplomacy", new GUILayoutOption[]
-                {
-                GUILayout.MaxWidth(300f),
-                GUILayout.MinWidth(200f)
-                });
+                diplomacyWindowRect = GUILayout.Window(96850, diplomacyWindowRect, diplomacyWindow, "Diplomacy", GUILayout.MaxWidth(300f), GUILayout.MinWidth(200f));
             }
 			if(showCultureSelectionWindow) {
-                cultureSelectWindowRect = GUILayout.Window(96851, cultureSelectWindowRect, new GUI.WindowFunction(diplomacyCultureSelectWindow), "Select culture", new GUILayoutOption[]
-               {
-               GUILayout.MinWidth(400f),
-               GUILayout.ExpandWidth(false)
-               });
+                cultureSelectWindowRect = GUILayout.Window(96851, cultureSelectWindowRect, diplomacyCultureSelectWindow, "Select culture", GUILayout.MinWidth(400f), GUILayout.ExpandWidth(false));
             }
             if(showCultureSelectionWindow) {
                 cultureSelectWindowRect.position = new Vector2(diplomacyWindowRect.x + diplomacyWindowRect.width, (diplomacyWindowRect.y));

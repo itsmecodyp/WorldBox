@@ -48,11 +48,7 @@ namespace SimpleGUI
             }
             if (GuiMain.showHideFastCitiesConfig.Value)
             {
-                fastCitiesWindowRect = GUILayout.Window(1003, fastCitiesWindowRect, new GUI.WindowFunction(fastCitiesWindow), "Fast Cities", new GUILayoutOption[]
-                {
-                GUILayout.MaxWidth(300f),
-                GUILayout.MinWidth(200f)
-                });
+                fastCitiesWindowRect = GUILayout.Window(1003, fastCitiesWindowRect, fastCitiesWindow, "Fast Cities", GUILayout.MaxWidth(300f), GUILayout.MinWidth(200f));
             }
         }
 

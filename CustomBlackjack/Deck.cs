@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
+using Random = System.Random;
 
 namespace CustomBlackjack
 {
@@ -11,11 +9,11 @@ namespace CustomBlackjack
     {
         public List<Card> cards;
 
-        private System.Random random;
+        private Random random;
 
         public Deck()
         {
-            random = new System.Random();
+            random = new Random();
             cards = new List<Card>();
 
             // add cards to deck

@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CustomBlackjack
 {
@@ -27,7 +24,7 @@ namespace CustomBlackjack
             int count = list.Count;
             for (int i = 0; i < num; i++)
             {
-                list.Swap(i, ListExtensions.rnd.Next(i, count));
+                list.Swap(i, rnd.Next(i, count));
             }
         }
 
@@ -41,7 +38,7 @@ namespace CustomBlackjack
             int count2 = list.Count;
             for (int i = 0; i < count; i++)
             {
-                list.Swap(i, ListExtensions.rnd.Next(i, count2));
+                list.Swap(i, rnd.Next(i, count2));
             }
         }
 
@@ -51,7 +48,7 @@ namespace CustomBlackjack
             {
                 return;
             }
-            list.Swap(0, ListExtensions.rnd.Next(0, list.Count));
+            list.Swap(0, rnd.Next(0, list.Count));
         }
 
         public static void ShuffleRandomOne<T>(this IList<T> list)
@@ -61,7 +58,7 @@ namespace CustomBlackjack
                 return;
             }
             int num = UnityEngine.Random.Range(0, list.Count - 1);
-            list.Swap(num, ListExtensions.rnd.Next(num, list.Count));
+            list.Swap(num, rnd.Next(num, list.Count));
         }
 
         public static void Swap<T>(this IList<T> list, int i, int j)
@@ -73,7 +70,7 @@ namespace CustomBlackjack
 
         public static T GetRandom<T>(this IList<T> list)
         {
-            return list[ListExtensions.rnd.Next(0, list.Count)];
+            return list[rnd.Next(0, list.Count)];
         }
 
         public static void RemoveAtSwapBack<T>(this List<T> list, T pObject)
@@ -95,6 +92,6 @@ namespace CustomBlackjack
 
         }
 
-        private static System.Random rnd = new System.Random();
+        private static Random rnd = new Random();
     }
 }
