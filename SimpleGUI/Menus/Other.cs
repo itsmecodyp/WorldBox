@@ -4,7 +4,7 @@ using System.Linq;
 using HarmonyLib;
 using UnityEngine;
 
-namespace SimpleGUI {
+namespace SimpleGUI.Menus {
     class GuiOther {
         public void otherWindow(int windowID)
         {
@@ -132,13 +132,14 @@ namespace SimpleGUI {
             if(GUILayout.Button("Allow powers during CrabZilla")) {
                 powersDuringCrab = !powersDuringCrab;
             }
+            
+            /* became vanilla feature in 0.15+
             if(kingdomZonesMoreVisible) {
                 GUI.backgroundColor = Color.green;
             }
             else {
                 GUI.backgroundColor = Color.red;
             }
-            /* became vanilla feature in 0.15+
             if(GUILayout.Button("Kingdom zones more visible")) {
                 kingdomZonesMoreVisible = !kingdomZonesMoreVisible;
                 // change visibility of existing kingdoms
@@ -248,9 +249,47 @@ namespace SimpleGUI {
             else {
                 GUI.backgroundColor = Color.red;
             }
-            if(GUILayout.Button("Drag creatures: ")) {
+            if(GUILayout.Button("Drag creatures")) {
                 canDragCreaturesWithMouse = !canDragCreaturesWithMouse;
             }
+            
+            if(hideGameGUI) {
+                GUI.backgroundColor = Color.green;
+            }
+            else {
+                GUI.backgroundColor = Color.red;
+            }
+            if(GUILayout.Button("Hide GUI")) {
+                hideGameGUI = !hideGameGUI;
+                //reposition kingbox ui
+                if (hideGameGUI == false)
+                {
+                    GameObject kingboxUI = GameObject.Find("DebugConfig");
+                    if (kingboxUI != null)
+                    {
+                        kingboxUI.transform.position = new Vector3(0, 1194f, 0f);
+                    }
+                }
+                if (hideGameGUI == true)
+                {
+                    GameObject kingboxUI = GameObject.Find("DebugConfig");
+                    if (kingboxUI != null)
+                    {
+                        kingboxUI.transform.position = new Vector3(0, 1017, 0);
+                    }
+                }
+            }
+            
+            if(fogOfWarTest) {
+                GUI.backgroundColor = Color.green;
+            }
+            else {
+                GUI.backgroundColor = Color.red;
+            }
+            if(GUILayout.Button("fogOfWarTest")) {
+                fogOfWarTest = !fogOfWarTest;
+            }
+            
             GUI.backgroundColor = original;
 
             /* was for blueskye
@@ -272,8 +311,26 @@ namespace SimpleGUI {
             //re-add generator with edited parts
             AssetManager.nameGenerator.add(sheepNames);
             */
+            
             GUI.DragWindow();
         }
+
+        public static void isBottomBarShowing_Postfix(ref bool __result)
+        {
+            if (hideGameGUI == false)
+            {
+                __result = true;
+            }
+
+            if (hideGameGUI == true)
+            {
+                __result = false;
+            }
+        }
+        
+        public static bool fogOfWarTest;
+
+        public static bool hideGameGUI;
 
         public static bool canDragCreaturesWithMouse;
 
@@ -317,9 +374,9 @@ namespace SimpleGUI {
 
       
 
-        private static bool checkZone_Prefix(MapRegion pRegion, Building pBuilding, City pCity)
+        private static bool checkZone_Prefix(TileZone pZone, Building pBuilding, City pCity)
         {
-            if(pRegion.zone.city != pCity) {
+            if(!pZone.isSameCityHere(pCity)) {
                 return false;
             }
             // (expandedFarmRange && Toolbox.DistTile(pBuilding.currentTile, worldTile) <= GuiMain.farmsNewRange.Value)
@@ -342,7 +399,7 @@ namespace SimpleGUI {
                 return false;
             }
 
-            foreach(WorldTile worldTile in pRegion.tiles) {
+            foreach(WorldTile worldTile in pZone.tiles) {
                 if(Toolbox.DistTile(pBuilding.currentTile, worldTile) <= 9) {
                     if(worldTile.Type.can_be_farm) {
                         pCity.calculated_place_for_farms.Add(worldTile);
@@ -529,25 +586,23 @@ namespace SimpleGUI {
 
 
         public bool allowMultipleSameTrait;
-        public static bool disableMinimap;
-        public static bool preventMouseDrag;
+        public static bool disableMinimap = false; // needs to be used instead of bepinex config
+        //public static bool preventMouseDrag;
         public static bool disableBuildingDestruction;
         public bool disableLevelCap;
-        public bool showHideOther;
+        //public bool showHideOther;
         public Rect otherWindowRect;
-        public Actor selectedActor;
-        public bool selectActor;
+        //public Actor selectedActor;
+        //public bool selectActor;
         public Actor lastActor {
             get => GuiItemGeneration.lastSelectedActor;
         }
         public ActorData lastActorData {
             get => lastActor.data;
         }
-        public static Color originalColor;
+        //public static Color originalColor;
         public bool multiCrab;
         public bool powersDuringCrab;
-        public static bool kingdomZonesMoreVisible;
-
     }
 
     // allow multiple crabs

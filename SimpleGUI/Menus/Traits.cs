@@ -3,7 +3,7 @@ using UnityEngine;
 
 #pragma warning disable CS0649
 
-namespace SimpleGUI
+namespace SimpleGUI.Menus
 {
     class GuiTraits
     {

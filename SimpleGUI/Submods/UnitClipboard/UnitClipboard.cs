@@ -1,12 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using BepInEx;
-using HarmonyLib;
-using SimpleGUI;
+using SimpleGUI.Menus;
 using UnityEngine;
 
-namespace UnitClipboard {
+namespace SimpleGUI.Submods.UnitClipboard {
     [BepInPlugin(pluginGuid, pluginName, pluginVersion)]
     public class UnitClipboard_Main : BaseUnityPlugin {
         public const string pluginGuid = "cody.worldbox.unit.clipboard";
@@ -106,7 +104,7 @@ namespace UnitClipboard {
                    
                     pastedUnit.restoreHealth(10 ^ 9); //lazy
                     ActorInteraction.lastSelected = pastedUnit;
-                    Debug.Log("Pasted " + unitData.data.name);
+                    if (unitData.data != null) Debug.Log("Pasted " + unitData.data.name);
                 }
             }
                
@@ -117,11 +115,10 @@ namespace UnitClipboard {
 
         public void OnGUI()
         {
-            GUILayout.BeginArea(new Rect(Screen.width - 120, 100, 120, 30));
-            if(GUILayout.Button("UnitClipboard")) {
+            if (GUI.Button(new Rect(Screen.width - 120, 60, 120, 20), "Clipboard"))
+            {
                 showHideMainWindow = !showHideMainWindow;
             }
-            GUILayout.EndArea();
             if(showHideMainWindow) {
                 mainWindowRect = GUILayout.Window(500701, mainWindowRect, UnitClipboardWindow, "Unit Clipboard", GUILayout.MaxWidth(300f), GUILayout.MinWidth(200f));
             }
@@ -176,34 +173,34 @@ namespace UnitClipboard {
                 newSavedUnit.statsID = targetActor.asset.id;
                 newSavedUnit.equipment = targetActor.equipment;
 
-                ActorData data0 = new ActorData();
-                data0.traits = data.traits;
-                data0.created_time = data.created_time;
-                data0.culture = data.culture;
-                data0.children = data.children;
-                data0.diplomacy = data.diplomacy;
-                data0.experience = data.experience;
-                // data0.favorite = data.favorite;
-                data0.favoriteFood = data.favoriteFood;
-                data0.name = data.name;
-                data0.gender = data.gender;
-                data0.head = data.head;
-                data0.homeBuildingID = data.homeBuildingID;
-                data0.hunger = data.hunger;
-                data0.intelligence = data.intelligence;
-                data0.kills = data.kills;
-                data0.level = data.level;
-                data0.mood = data.mood;
-                data0.profession = data.profession;
-                data0.skin_set = data.skin_set;
-                data0.skin = data.skin;
-                data0.asset_id = data.asset_id;
-                data0.stewardship = data.stewardship;
-                data0.warfare = data.warfare;
-                data0.culture = data.culture;
-                data0.inventory = data.inventory;
-                data0.items = data.items;
-                data0.clan = data.clan;
+                ActorData data0 = new ActorData
+                {
+                    traits = data.traits,
+                    created_time = data.created_time,
+                    culture = data.culture,
+                    children = data.children,
+                    diplomacy = data.diplomacy,
+                    experience = data.experience,
+                    // data0.favorite = data.favorite;
+                    favoriteFood = data.favoriteFood,
+                    name = data.name,
+                    gender = data.gender,
+                    head = data.head,
+                    homeBuildingID = data.homeBuildingID,
+                    hunger = data.hunger,
+                    intelligence = data.intelligence,
+                    kills = data.kills,
+                    level = data.level,
+                    mood = data.mood,
+                    profession = data.profession,
+                    skin_set = data.skin_set,
+                    skin = data.skin,
+                    asset_id = data.asset_id,
+                    stewardship = data.stewardship,
+                    warfare = data.warfare,
+                    inventory = data.inventory,
+                    clan = data.clan
+                };
                 newSavedUnit.customData = targetActor.data;
                 newSavedUnit.data = data0;
                 unitClipboardDict.Add(unitClipboardDictNum.ToString(), newSavedUnit);
@@ -229,9 +226,11 @@ namespace UnitClipboard {
 
         public void HarmonyPatchSetup()
         {
+            /*
             Harmony harmony;
             MethodInfo original;
             MethodInfo patch;
+            */
         }
     }
 

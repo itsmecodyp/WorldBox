@@ -2,7 +2,7 @@
 using System.Globalization;
 using UnityEngine;
 
-namespace SimpleGUI {
+namespace SimpleGUI.Menus {
     class GuiDiplomacy {
 
         public Dictionary<Kingdom, List<Kingdom>> eternalAllies = new Dictionary<Kingdom, List<Kingdom>>();
@@ -159,7 +159,7 @@ namespace SimpleGUI {
                 GUI.backgroundColor = Color.grey;
                 if(GUILayout.Button("Send settler out")) {
                     Actor selectedNewSettler = selectedCity1.units.GetRandom();
-                    selectedNewSettler.removeFromCity();
+                    //selectedNewSettler.removeFromCity(); //missing method exception?
                     selectedNewSettler.ai.setTask("nomad_try_build_city", true, true);
                 }
                 Culture city1Culture = selectedCity1.getCulture();
@@ -204,7 +204,7 @@ namespace SimpleGUI {
                 GUI.backgroundColor = Color.grey;
                 if(GUILayout.Button("Send settler out")) {
                     Actor selectedNewSettler = selectedCity2.units.GetRandom();
-                    selectedNewSettler.removeFromCity();
+                    //selectedNewSettler.removeFromCity(); missing method exception?
                     selectedNewSettler.ai.setTask("nomad_try_build_city", true, true);
                 }
                 if(selectedCity1 == null) {
@@ -295,12 +295,6 @@ namespace SimpleGUI {
             if(GUILayout.Button("Toggle constant war")) {
                 EnableConstantWar = !EnableConstantWar;
             }
-            if(EnableWarOfTheWorld) {
-                GUI.backgroundColor = Color.green;
-            }
-            else {
-                GUI.backgroundColor = Color.red;
-            }
             GUI.backgroundColor = Color.grey;
             if(GUILayout.Button("World War")) {
                 foreach(Kingdom kingdom in MapBox.instance.kingdoms.list_civs) {
@@ -336,8 +330,10 @@ namespace SimpleGUI {
                 if(GuiMain.showHideDiplomacyConfig != null && GuiMain.showHideDiplomacyConfig.Value) {
                     buttontext = "-";
                 }
-                if(GUI.Button(new Rect(diplomacyWindowRect.x + diplomacyWindowRect.width - 25f, diplomacyWindowRect.y - 25, 25, 25), buttontext)) {
-                    GuiMain.showHideDiplomacyConfig.Value = !GuiMain.showHideDiplomacyConfig.Value;
+                if(GUI.Button(new Rect(diplomacyWindowRect.x + diplomacyWindowRect.width - 25f, diplomacyWindowRect.y - 25, 25, 25), buttontext))
+                {
+                    if (GuiMain.showHideDiplomacyConfig != null)
+                        GuiMain.showHideDiplomacyConfig.Value = !GuiMain.showHideDiplomacyConfig.Value;
                 }
             }
             //
@@ -459,32 +455,26 @@ namespace SimpleGUI {
             byte b = byte.Parse(hex.Substring(4, 2), NumberStyles.HexNumber);
             return new Color32(r, g, b, byte.MaxValue);
         }
-
-
-        public static bool cityMergeConfirmation;
-        public static bool kingdomMergeConfirmation;
-        public static bool paintTilezoneColor;
+        
         public static Color32 targetColorForZone = Color.white; 
         public static Rect diplomacyWindowRect;
         public static City selectedCity1;
         public static City selectedCity2;
-        public static Kingdom selectedCity1Kingdom {
-            get => selectedCity1.kingdom;
-        }
-        public static Kingdom selectedCity2Kingdom {
-            get => selectedCity2.kingdom;
-        }
+        public static Kingdom selectedCity1Kingdom => selectedCity1.kingdom;
+
+        public static Kingdom selectedCity2Kingdom => selectedCity2.kingdom;
+
         public bool EnableConstantWar;
-        public bool EnableWarOfTheWorld;
-        public static Kingdom selectedKingdom1;
-        public static Kingdom selectedKingdom2;
+        //public bool EnableWarOfTheWorld;
+        //public static Kingdom selectedKingdom1;
+        //public static Kingdom selectedKingdom2;
         public static bool selectingCity1;
         public static bool selectingCity2;
-        public static bool selectingKingdom1;
-        public static bool selectingKingdom2;
+        //public static bool selectingKingdom1;
+        //public static bool selectingKingdom2;
         public static bool city1PaintZone;
         public static bool city2PaintZone;
-        public static bool city1PaintColor;
-        public static bool city2PaintColor;
+        //public static bool city1PaintColor;
+        //public static bool city2PaintColor;
     }
 }

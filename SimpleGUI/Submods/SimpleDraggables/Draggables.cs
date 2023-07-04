@@ -1,13 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using BepInEx;
 using HarmonyLib;
-using Newtonsoft.Json;
+using SimpleGUI.Menus;
 using UnityEngine;
 
-namespace SimpleGUI {
+namespace SimpleGUI.Submods.SimpleDraggables {
     [BepInPlugin(pluginGuid, pluginName, pluginVersion)]
     public class Draggables_Main : BaseUnityPlugin {
         public const string pluginGuid = "cody.worldbox.draggables";
@@ -288,15 +287,5 @@ namespace SimpleGUI {
             return returnList;
         }
 
-    }
-
-    [JsonObject(MemberSerialization.OptIn)]
-    public class ModSettings {
-        // excluded from serialization
-        // does not have JsonPropertyAttribute
-        public Guid Id { get; set; }
-
-        [JsonProperty]
-        public string Name = "test";
     }
 }

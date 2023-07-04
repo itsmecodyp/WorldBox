@@ -29,35 +29,54 @@
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
+    <Optimize>false</Optimize>
     <OutputPath>..\..\..\..\..\0wbwb\207\Modded\BepInEx\plugins\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup>
     <SignAssembly>false</SignAssembly>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="ActorInteraction.cs" />
-    <Compile Include="Construction.cs" />
-    <Compile Include="Draggables.cs" />
+    <Compile Include="Menus\ActorControl.cs" />
+    <Compile Include="Menus\ActorInteraction.cs" />
+    <Compile Include="Menus\Construction.cs" />
+    <Compile Include="Menus\Diplomacy.cs" />
+    <Compile Include="Menus\ItemGeneration.cs" />
+    <Compile Include="Menus\Other.cs" />
+    <Compile Include="Menus\StatSetting.cs" />
+    <Compile Include="Menus\Timescale.cs" />
+    <Compile Include="Menus\Traits.cs" />
+    <Compile Include="Menus\World.cs" />
     <Compile Include="ModSettingsMenu.cs" />
     <Compile Include="Patreon_Eggs.cs" />
-    <Compile Include="SimpleMessages.cs" />
-    <Compile Include="StatSetting.cs" />
-    <Compile Include="UnitClipboard.cs" />
-    <Compile Include="WorldBox3D.cs" />
+    <Compile Include="Submods\MapSizes\MapSizes.cs" />
+    <Compile Include="Submods\SimpleAI\SimpleAI.cs" />
+    <Compile Include="Submods\SimpleDraggables\Draggables.cs" />
+    <Compile Include="Submods\SimpleGamba\Blackjack.cs" />
+    <Compile Include="Submods\SimpleGamba\BlackjackPlayer.cs" />
+    <Compile Include="Submods\SimpleGamba\Card.cs" />
+    <Compile Include="Submods\SimpleGamba\Clicker.cs" />
+    <Compile Include="Submods\SimpleGamba\Crash.cs" />
+    <Compile Include="Submods\SimpleGamba\Deck.cs" />
+    <Compile Include="Submods\SimpleGamba\GambaMain.cs" />
+    <Compile Include="Submods\SimpleGamba\LargeNumbers\AlphabeticNotation.cs" />
+    <Compile Include="Submods\SimpleGamba\LargeNumbers\LargeNumber.cs" />
+    <Compile Include="Submods\SimpleGamba\LargeNumbers\ScientificNotation.cs" />
+    <Compile Include="Submods\SimpleGamba\LargeNumbers\StringBuilderExtensions.cs" />
+    <Compile Include="Submods\SimpleGamba\ListExtensions.cs" />
+    <Compile Include="Submods\SimpleGamba\Mines.cs" />
+    <Compile Include="Submods\SimpleGamba\Slot.cs" />
+    <Compile Include="Submods\SimpleGamba\Stocks.cs" />
+    <Compile Include="Submods\SimpleMessages\SimpleCultists.cs" />
+    <Compile Include="Submods\SimpleMessages\SimpleMessages.cs" />
+    <Compile Include="Submods\UnitClipboard\UnitClipboard.cs" />
+    <Compile Include="Submods\WorldBox3D\WorldBox3D.cs" />
     <Compile Include="z_RectTransformExtensions.cs" />
-    <Compile Include="World.cs" />
-    <Compile Include="FastCities.cs" />
-    <Compile Include="Diplomacy.cs" />
-    <Compile Include="ItemGeneration.cs" />
     <Compile Include="Main.cs" />
-    <Compile Include="Other.cs" />
     <Compile Include="zz_Reflection.cs" />
-    <Compile Include="Timescale.cs" />
-    <Compile Include="Traits.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -74,7 +93,7 @@
   <ItemGroup>
     <None Include="app.config" />
     <None Include="Resources\ricardo.bin" />
-    <None Include="Resources\unleashed" />
+    <None Include="Submods\SimpleGamba\.editorconfig" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="0Harmony">
@@ -200,8 +219,8 @@
       <HintPath>..\..\..\..\..\0wbwb\206\WorldBox\WorldBox_Data\Managed\Mono.Security.dll</HintPath>
     </Reference>
     <Reference Include="netstandard, Version=2.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51" />
-    <Reference Include="Newtonsoft.Json">
-      <HintPath>..\..\..\..\..\0wbwb\206\WorldBox\WorldBox_Data\Managed\Newtonsoft.Json.dll</HintPath>
+    <Reference Include="OpenAI_API">
+      <HintPath>..\..\..\..\..\..\openai\OpenAI_API.dll</HintPath>
     </Reference>
     <Reference Include="Purchasing.Common, Version=1.0.6801.26088, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>

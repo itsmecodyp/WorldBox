@@ -2,9 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+
 #pragma warning disable CS0649
 
-namespace SimpleGUI
+namespace SimpleGUI.Menus
 {
 	class GUIWorld
 	{
@@ -856,7 +857,7 @@ namespace SimpleGUI
 			return true;
 		}
 
-		public static bool destroyActor_Prefix(Actor pActor)
+		public static bool destroyObject_Prefix(Actor pActor)
 		{
 			if(!enabledPopulationCap) { return true; }
 			if(pActor == null) { return false; }

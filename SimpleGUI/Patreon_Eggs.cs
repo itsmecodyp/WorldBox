@@ -297,7 +297,7 @@ namespace SimpleGUI
         public int nameCount => SpawnedNames.Count;
         public int setCount;
         public static Dictionary<string, bool> SpawnedNames = new Dictionary<string, bool>();
-        public bool showHidePatreon;
+        //public bool showHidePatreon;
         public Rect patreonWindowRect;
     }
 }

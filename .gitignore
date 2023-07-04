@@ -71,3 +71,12 @@ TestMod1/Resources/Square.png
 TestMod1/TestMod.sln
 TestMod1/TestMod1.cs
 TestMod1/TestMod1.csproj
+gmpv3/gmpv3.csproj
+SimpleGUI/packages/*
+WorldBox3D/obj/Debug/.NETFramework,Version=v4.0.AssemblyAttributes.cs
+WorldBox3D/obj/Debug/.NETFramework,Version=v4.7.1.AssemblyAttributes.cs
+WorldBox3D/obj/Debug/.NETFramework,Version=v4.8.AssemblyAttributes.cs
+*.csproj
+*.config
+*.csproj
+SimpleLib/SimpleLib.csproj

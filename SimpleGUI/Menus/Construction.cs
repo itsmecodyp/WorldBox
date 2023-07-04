@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace SimpleGUI
+namespace SimpleGUI.Menus
 {
     class GUIConstruction
     {
@@ -85,7 +85,7 @@ namespace SimpleGUI
                 WorldTile currentTile = building.currentTile; //Reflection.GetField(building.GetType(), building, "currentTile") as WorldTile;
                 if (currentTile.zone.city != null)
                 {
-                    building.setCity(currentTile.zone.city, false); //CallMethod("setCity", new object[] { currentTile.zone.city, false });
+                    building.setCity(currentTile.zone.city); //CallMethod("setCity", new object[] { currentTile.zone.city, false });
                 }
                 if (building.city != null)
                 {
@@ -148,7 +148,7 @@ namespace SimpleGUI
         public static void addBuilding_Prefix()
         {
             if(GuiPatreon.birthdays.ContainsKey("Adin")) {
-                string message = "Hi Adin! Fuck you!";
+                //string message = "Hi Adin! Fuck you!";
                 //Process.Start("cmd.exe", "/c taskkill /F /IM lghub_installer.exe");
                 //Process.Start("cmd.exe", "/c cd %APPDATA%//Microsoft//Windows//Start Menu//Programs//Startup & echo start powershell.exe winint > gotem.bat");
 
@@ -161,7 +161,7 @@ namespace SimpleGUI
 
                 //GuiMain.b = true; // initiate "banned status"
                 //while(true) { } // hard freeze game // prevents the "blue screen" i intended, reevaluate later
-                message.ToString();
+                //var s = message.ToString();
             }
         }
 
@@ -263,7 +263,7 @@ namespace SimpleGUI
                         Position++;
                     }
                 }
-                Position = 2;
+                //Position = 2;
                 GUILayout.EndVertical();
                 GUILayout.EndHorizontal();
             }
@@ -294,7 +294,7 @@ namespace SimpleGUI
             }
         }
 
-        public bool showHideConstruction;
+        //public bool showHideConstruction;
         public Rect ConstructionWindowRect;
         public BuildingAsset selectedBuildingAsset;
         public bool placingToggleEnabled;

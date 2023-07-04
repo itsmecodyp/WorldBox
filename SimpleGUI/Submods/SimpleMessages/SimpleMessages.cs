@@ -1,11 +1,12 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
-using System.Reflection;
 using BepInEx;
-using UnitClipboard;
+using SimpleGUI.Submods.UnitClipboard;
 using UnityEngine;
 
-namespace SimpleMessages {
+namespace SimpleGUI.Submods.SimpleMessages
+{
     [BepInPlugin(pluginGuid, pluginName, pluginVersion)]
     public class Main : BaseUnityPlugin {
         public const string pluginGuid = "cody.worldbox.simple.lib";
@@ -19,20 +20,20 @@ namespace SimpleMessages {
                 if(potentialStarter != null) {
                     string id = potentialStarter.asset.id;
                     Debug.Log("actor found with id:" + id);
-                    if(Messages.actorStartPhrases.ContainsKey(id)) {
-                        string phraseToSay = Messages.actorStartPhrases[id].GetRandom();
-                        ActorSay(potentialStarter, phraseToSay, 3);
+                    if(Messages.actorStartPhrases.TryGetValue(id, out var phrase)) {
+                        string phraseToSay = phrase.GetRandom();
+                        Messages.ActorSay(potentialStarter, phraseToSay, 3);
                     }
-					else {
+                    else {
                         Debug.Log("No conversation starter found for actor ID");
-					}
+                    }
                 }
-				else {
+                else {
                     Debug.Log("No actor found near cursor");
                 }
             }
 
-            if(Input.GetKeyDown(KeyCode.L)) { foreach(Actor actor in MapBox.instance.units) { ActorSay(actor, "Hi, my name is " + actor.data.name, 3f); } }
+            //if(Input.GetKeyDown(KeyCode.L)) { foreach(Actor actor in MapBox.instance.units) { ActorSay(actor, "Hi, my name is " + actor.data.name, 3f); } }
 
 
             /*
@@ -54,26 +55,14 @@ namespace SimpleMessages {
             Messages.replyUpdate();
         }
 
-        public void OnGUI()
-        {
-
-        }
-
-        public static void ActorSay(Actor targetActor, string messageText, float duration)
-        {
-            Messages.ActorSay(targetActor, messageText, duration);
-        }
-
         public float lastTimer;
 
     }
 
-
-}
-
-namespace SimpleMessages {
     [BepInPlugin(pluginGuid, pluginName, pluginVersion)]
     public class Messages : BaseUnityPlugin {
+
+
         public const string pluginGuid = "cody.worldbox.simple.messages";
         public const string pluginName = "SimpleMessages";
         public const string pluginVersion = "0.0.0.3";
@@ -81,9 +70,12 @@ namespace SimpleMessages {
         public static List<ModMessage> listOfMessages = new List<ModMessage>();
         public static int messageID;
 
+        public static Messages self;
+
         public void Awake()
-		{
+        {
             Debug.Log("Messages awake");
+            self = this;
             CreateStartPhrases();
             CreateResponseDicts();
             Debug.Log("Messages awake end");
@@ -91,8 +83,13 @@ namespace SimpleMessages {
 
         public static void ActorSay(Actor targetActor, string messageText, float duration = 3f)
         {
-            ModMessage newMessage = new ModMessage();
-            newMessage.id = messageID; // id starts at 0, random start addition to make sure no conflict with other mod menu ids
+			if(actorsOnCooldown.Contains(targetActor)) {
+                return;
+			}
+            ModMessage newMessage = new ModMessage
+            {
+                id = messageID // id starts at 0, random start addition to make sure no conflict with other mod menu ids
+            };
             messageID++; // and increments upwards each time
             newMessage.assignedActor = targetActor;
             newMessage.duration = duration;
@@ -105,26 +102,33 @@ namespace SimpleMessages {
             replyActor = null; // reset to be sure
             replyString = null;
 
-			//potential replier to the message being said right now
-			Actor potentialReplier = UnitClipboard_Main.ClosestActorToTile(targetActor.currentTile, 5f, targetActor);
-            if(potentialReplier != null) {
-                if(actorResponses.ContainsKey(messageText)) {
-                    ResponseData responseDict = actorResponses[messageText];
-                    //make sure response has assigned actor asset id, and includes the replier's id
-                    if(responseDict.actorAssetID != null && responseDict.actorAssetID.Contains(potentialReplier.asset.id)) {
-                        reply = responseDict;
+            //potential replier to the message being said right now
+            Actor potentialReplier = UnitClipboard_Main.ClosestActorToTile(targetActor.currentTile, 5f, targetActor);
+            if(potentialReplier != null && !actorsOnCooldown.Contains(potentialReplier /*do this part different*/)) {
+                if(actorResponses.TryGetValue(messageText, out ResponseData response)) {
+                    //make sure response has assigned actor asset id
+                    if(response.actorAssetID != null) {
+                        //and potential replier matches that id
+                        if(response.actorAssetID.Contains(potentialReplier.asset.id)){
+                            reply = response;
+                            replyActor = potentialReplier;
+                            actorReplyActorIsRespondingTo = targetActor;
+                            stringToReplyTo = messageText;
+                        }
+                    }
+                    //actorAssetId is null, use any actor nearby
+                    else {
+                        Debug.Log("Actor asset ID for reply not in list or list is null, choosing any available");
+                        reply = response;
                         replyActor = potentialReplier;
                         actorReplyActorIsRespondingTo = targetActor;
                         stringToReplyTo = messageText;
-                    }
-                    //if not, assign null
-                    else {
-                        Debug.Log("Actor ID for reply not in list or list is null");
+                        /*
                         reply = null;
                         replyActor = null;
                         actorReplyActorIsRespondingTo = null;
                         replyString = null;
-                        stringToReplyTo = null;
+                        stringToReplyTo = null;*/
                     }
                 }
                 //if no replies, assign null
@@ -137,11 +141,25 @@ namespace SimpleMessages {
                     stringToReplyTo = null;
                 }
             }
-			else {
+            else {
                 Debug.Log("No potential replier found");
             }
 
+            //handle cooldown so actors dont say multiple things at once
+            actorsOnCooldown.Add(targetActor);
+            IEnumerator coroutine = WaitAndRemoveActorFromCooldown(duration, targetActor);
+            self.StartCoroutine(coroutine);
         }
+
+        public static IEnumerator WaitAndRemoveActorFromCooldown(float time, Actor target)
+        {
+            yield return new WaitForSeconds(time);
+			if(actorsOnCooldown.Contains(target)) {
+                actorsOnCooldown.Remove(target);
+            }
+        }
+
+        public static List<Actor> actorsOnCooldown = new List<Actor>();
 
         public static void replyUpdate()
         {
@@ -198,20 +216,21 @@ namespace SimpleMessages {
                         ActorData data = null;
                         if(actor != null)
                             data = actor.data;
-                        Vector3 screenPos = new Vector3();
                         if(data != null && data.alive) {
                             Vector2 textDimensions = GUI.skin.window.CalcSize(new GUIContent(activeMessage.MessageText));
-                            Vector3 position = Camera.main.WorldToScreenPoint(actor.gameObject.transform.position);
-                            // adding a random number (3536) to make sure theres no conflict with window id in other mods
-                            Rect window = GUILayout.Window(activeMessage.id + 3536,
-                                new Rect(position.x - (textDimensions.x / 2), Screen.height - position.y - (textDimensions.y * 2), textDimensions.x, textDimensions.y),
-                                ActorMessageDisplayWindow,
-                                activeMessage.TitleText);
+                            if (Camera.main != null)
+                            {
+                                Vector3 position = Camera.main.WorldToScreenPoint(actor.gameObject.transform.position);
+                                // adding a random number (3536) to make sure theres no conflict with window id in other mods
+                                Rect window = GUILayout.Window(activeMessage.id + 3536,
+                                    new Rect(position.x - (textDimensions.x / 2), Screen.height - position.y - (textDimensions.y * 2), textDimensions.x, textDimensions.y),
+                                    ActorMessageDisplayWindow,
+                                    activeMessage.TitleText);
+                            }
                         }
                     }
                 }
             }
-
         }
 
         public void Update()
@@ -233,24 +252,28 @@ namespace SimpleMessages {
         public void CreateStartPhrases(){
             string[] starterPhrases;
             //humans
-            starterPhrases = new[] { "Howdy!", "What's up?", "Good day to you.", "Hello!" };
+            starterPhrases = new string[] { "Howdy!", "What's up?", "Good day to you.", "Hello!" };
             actorStartPhrases.Add("unit_human", starterPhrases);
         }
 
         public void CreateResponseDicts(){
-            ResponseData example1 = new ResponseData();
-            example1.inputToRespondTo = "Howdy!";
-            //actor types that can respond to this message
-            example1.actorAssetID = new List<string> { "unit_human" };
-            example1.actorReply = new List<string> { "Hows it going?", "Hello.", "Wanna fight?" };
-            //no response action here
-
-            ResponseData example2 = new ResponseData();
-            example2.inputToRespondTo = "Wanna fight?";
-            example2.actorAssetID = new List<string> { "unit_human" };
-            example2.actorReply = new List<string> { "Bring it on!", "Let's go!" };
-            //actor will respond with one of the above, and also attempt to attack whoever asked
-            example2.responseAction = startFight;
+            ResponseData example1 = new ResponseData
+            {
+                inputToRespondTo = "Howdy!",
+                //actor types that can respond to this message
+                actorAssetID = new List<string> { "unit_human" },
+                actorReply = new List<string> { "Hows it going?", "Hello.", "Wanna fight?" }
+                //no response action here
+            };
+            
+            ResponseData example2 = new ResponseData
+            {
+                inputToRespondTo = "Wanna fight?",
+                actorAssetID = new List<string> { "unit_human" },
+                actorReply = new List<string> { "Bring it on!", "Let's go!" },
+                //actor will respond with one of the above, and also attempt to attack whoever asked
+                responseAction = startFight
+            };
 
             actorResponses.Add(example1.inputToRespondTo, example1);
             actorResponses.Add(example2.inputToRespondTo, example2);
@@ -291,6 +314,12 @@ namespace SimpleMessages {
         public ResponseAction responseAction;
     }
 
+    //?
+    public class StarterData {
+        //list of actor ids that can use this starter
+        public List<string> actorAssetID;
+    }
+
     [Serializable]
     public class ModMessage {
         public int id;
@@ -300,31 +329,4 @@ namespace SimpleMessages {
         public float duration = 3.0f;
         public float startTime;
     }
-
-    public static class Reflection {
-        // found on https://stackoverflow.com/questions/135443/how-do-i-use-reflection-to-invoke-a-private-method
-        public static object CallMethod(this object o, string methodName, params object[] args)
-        {
-            var mi = o.GetType().GetMethod(methodName, BindingFlags.NonPublic | BindingFlags.Instance);
-            if(mi != null) {
-                return mi.Invoke(o, args);
-            }
-            return null;
-        }
-        // found on: https://stackoverflow.com/questions/3303126/how-to-get-the-value-of-private-field-in-c/3303182
-        public static object GetField(Type type, object instance, string fieldName)
-        {
-            BindingFlags bindFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static;
-            FieldInfo field = type.GetField(fieldName, bindFlags);
-            return field.GetValue(instance);
-        }
-        public static void SetField<T>(object originalObject, string fieldName, T newValue)
-        {
-            BindingFlags bindFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static;
-            FieldInfo field = originalObject.GetType().GetField(fieldName, bindFlags);
-            field.SetValue(originalObject, newValue);
-        }
-    }
-
 }
-

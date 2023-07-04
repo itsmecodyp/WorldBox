@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace SimpleGUI
+namespace SimpleGUI.Menus
 {
 	class GuiItemGeneration
 	{
@@ -74,9 +74,9 @@ namespace SimpleGUI
 						string materialForItem = selectedItemMaterials[itemID];
 						//check if kingdom isnt null, then add more data about item using more param
 						ItemData pData = ItemGenerator.generateItem(asset, materialForItem, World.world.mapStats.year);
-						if(selectedItemModifiers.ContainsKey(itemID)) {
+						if(selectedItemModifiers.TryGetValue(itemID, out var modifier)) {
 							pData.modifiers.Clear();
-							foreach(string mod in selectedItemModifiers[itemID]) {
+							foreach(string mod in modifier) {
 								pData.modifiers.Add(mod);
 							}
 						}
@@ -176,15 +176,13 @@ namespace SimpleGUI
 			if(lastSelectedItemID != "") {
 				foreach(ItemAsset modifier in AssetManager.items_modifiers.dict.Values) {
 					GUI.backgroundColor = Color.red;
-					if(selectedItemModifiers.ContainsKey(lastSelectedItemID)) {
-						List<string> existingList = selectedItemModifiers[lastSelectedItemID];
-						if(existingList.Contains(modifier.id)) {
+					if(selectedItemModifiers.TryGetValue(lastSelectedItemID, out var itemModifier)) {
+						if(itemModifier.Contains(modifier.id)) {
 							GUI.backgroundColor = Color.green;
 						}
 					}
 					if(GUILayout.Button("Modifier: " + modifier.id)) {
-						if(selectedItemModifiers.ContainsKey(lastSelectedItemID)) {
-							List<string> existingList = selectedItemModifiers[lastSelectedItemID];
+						if(selectedItemModifiers.TryGetValue(lastSelectedItemID, out var existingList)) {
 							if(existingList.Contains(modifier.id)) {
 								existingList.Remove(modifier.id);
 							}
@@ -218,10 +216,10 @@ namespace SimpleGUI
 		public static string lastSelectedItemID = "";
 
 		public static Actor lastSelectedActor;
-		public static bool showHideItemGeneration;
+		//public static bool showHideItemGeneration;
 		public static bool itemSelection;
-		public static bool showEquipWindow1;
-		public static bool showEquipWindow2;
+		//public static bool showEquipWindow1;
+		//public static bool showEquipWindow2;
 		public static Rect itemGenerationWindowRect;
 
 		public Rect itemGenerationEquipmentWindow1;

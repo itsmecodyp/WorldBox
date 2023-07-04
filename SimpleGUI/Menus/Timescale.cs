@@ -1,6 +1,8 @@
 ﻿using UnityEngine;
 
-namespace SimpleGUI
+#pragma warning disable CS0649
+
+namespace SimpleGUI.Menus
 {
     class GuiTimescale
     {

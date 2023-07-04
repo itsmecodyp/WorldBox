@@ -9,6 +9,9 @@ using BepInEx.Configuration;
 using BepInEx.Logging;
 using HarmonyLib;
 using Proyecto26;
+using SimpleGUI.Menus;
+using SimpleGUI.Submods;
+using SimpleGUI.Submods.SimpleMessages;
 using SimpleJSON;
 using Steamworks;
 using UnityEngine;
@@ -20,7 +23,7 @@ namespace SimpleGUI {
     class GuiMain : BaseUnityPlugin {
         public const string pluginGuid = "cody.worldbox.simple.gui";
         public const string pluginName = "SimpleGUI";
-        public const string pluginVersion = "0.1.6.3";
+        public const string pluginVersion = "0.1.6.7";
 
         public static ManualLogSource logger;
 
@@ -32,13 +35,32 @@ namespace SimpleGUI {
             HarmonyPatchSetup();
             InvokeRepeating("SaveMenuPositions", 10, 3);
             InvokeRepeating("ConstantWarCheck", 10, 10);
-            InvokeRepeating("DiscordStuff", 10, 10);
+            //discord stuff hard crashes if discord is half-logged in
+            //(client open, not signed into account)
+            
+            //disabled 1.6.6, patreon exclusivity means data collection isnt important now
+            //InvokeRepeating("DiscordStuff", 10, 10);
             logger = Logger;
         }
 
+        public bool hasInitAssets;
+        public SimpleCultists cultistsManager = new SimpleCultists();
+        public Messages messageManager = new Messages();
+
         public void Update()
         {
+            //init cultist stuff
+			if(global::Config.gameLoaded) {
+                if(hasInitAssets == false) {
+                    cultistsManager.init();
+                    hasInitAssets = true;
+                }
+			}
 			if(Input.GetKeyDown(KeyCode.L)) {
+				Actor closest = Toolbox.getClosestActor(MapBox.instance.units.getSimpleList(), MapBox.instance.getMouseTilePos());
+                SimpleCultists.cultsDict.Add(closest, new List<Actor>());
+                closest.ai.setJob("cultLeader");
+
                 //ScrollWindow.get("settings");
                 //GuiStatSetting.updateAllElements_Postfix();
 			}
@@ -65,10 +87,22 @@ namespace SimpleGUI {
 					}
 				}
 			}
+            if(showHideActorInteractConfig.Value) {
+                ActorInteraction.actorDragSelectionUpdate(); // advertise everything not just patreon
+            }
         }
 
         public void OnGUI()
         {
+            // swapped to gui.button at Key's request
+            if (GUI.Button(new Rect(Screen.width - 120, 0, 120, 20), "SimpleGUI"))
+            {
+                showHideMainWindowConfig.Value = !showHideMainWindowConfig.Value;
+                if(showHideMainWindowConfig.Value == false) {
+                    CloseAllWindows();
+                }
+            }
+            /*
             GUILayout.BeginArea(new Rect(Screen.width - 120, 0, 120, 30));
             if(GUILayout.Button("SimpleGUI")) {
                 showHideMainWindowConfig.Value = !showHideMainWindowConfig.Value;
@@ -77,6 +111,7 @@ namespace SimpleGUI {
                 }
             }
             GUILayout.EndArea();
+            */
             if(showHideMainWindowConfig.Value == true) {
                 updateWindows();
             }
@@ -85,7 +120,6 @@ namespace SimpleGUI {
         public void CloseAllWindows()
         {
             showHideTimescaleWindowConfig.Value = false;
-            showHideFastCitiesConfig.Value = false;
             showHideItemGenerationConfig.Value = false;
             showHideTraitsWindowConfig.Value = false;
             showHideDiplomacyConfig.Value = false;
@@ -174,6 +208,12 @@ namespace SimpleGUI {
             harmony.Patch(original, null, new HarmonyMethod(patch));
             Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
 
+            /*
+            original = AccessTools.Method(typeof(ActorBase), "nextJobActor");
+            patch = AccessTools.Method(typeof(SimpleCultists), "nextJobActor_postfix");
+            harmony.Patch(original, null, new HarmonyMethod(patch));
+            Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
+            */
 
             original = AccessTools.Method(typeof(PowerLibrary), "drawDivineLight");
             patch = AccessTools.Method(typeof(GuiTraits), "drawDivineLight_Postfix");
@@ -216,6 +256,13 @@ namespace SimpleGUI {
             original = AccessTools.Method(typeof(TraitButton), "load");
             patch = AccessTools.Method(typeof(GuiTraits), "load_Prefix");
             harmony.Patch(original, new HarmonyMethod(patch));
+			Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
+
+
+            //example patch extending actorsay functionality
+            original = AccessTools.Method(typeof(Submods.SimpleMessages.Messages), "ActorSay");
+            patch = AccessTools.Method(typeof(Submods.SimpleCultists), "ActorSay_postfix");
+            harmony.Patch(original, null, new HarmonyMethod(patch));
             Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
 
 
@@ -302,8 +349,8 @@ namespace SimpleGUI {
             harmony.Patch(original, new HarmonyMethod(patch));
             Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
 
-            original = AccessTools.Method(typeof(ActorManager), "destroyActor");
-            patch = AccessTools.Method(typeof(GUIWorld), "destroyActor_Prefix");
+            original = AccessTools.Method(typeof(ActorManager), "destroyObject");
+            patch = AccessTools.Method(typeof(GUIWorld), "destroyObject_Prefix");
             harmony.Patch(original, new HarmonyMethod(patch));
             Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
 
@@ -376,6 +423,11 @@ namespace SimpleGUI {
             harmony.Patch(original, null, new HarmonyMethod(patch));
             Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
 
+            original = AccessTools.Method(typeof(PowerButtonSelector), "isBottomBarShowing");
+            patch = AccessTools.Method(typeof(GuiOther), "isBottomBarShowing_Postfix");
+            harmony.Patch(original, null, new HarmonyMethod(patch));
+            Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
+
 
             /* tired of messing with this
             harmony = new Harmony(pluginName);
@@ -413,34 +465,24 @@ namespace SimpleGUI {
             return false; // prevent error from random localized texts
         }
 
-        public static bool addTrait_Prefix(string pTrait, ActorBase __instance)
+        public static bool addTrait_Prefix(string pTrait, bool pRemoveOpposites, ActorBase __instance)
         {
             ActorData data = __instance.data; //Reflection.GetField(__instance.GetType(), __instance, "data") as ActorStatus;
             if(__instance.hasTrait(pTrait) && Other.allowMultipleSameTrait == false) {
                 return false;
             }
 
-            ActorTrait trait = AssetManager.traits.get(pTrait);
-            if(trait != null) {
-                if(trait.oppositeArr == null) {
-                    //return false;
-                }
-                else {
-                    for(int i = 0; i < trait.oppositeArr.Length; i++) {
-                        string pTrait2 = trait.oppositeArr[i];
-                        if(__instance.hasTrait(pTrait2)) {
-                            return false;
-                        }
-                    }
-                }
-                data.traits.Add(pTrait);
-                __instance.setStatsDirty();
+            if(AssetManager.traits.get(pTrait) == null) {
+                return false;
             }
-            if(pTrait == "madness") {
-                foreach(BaseActionActor baseActionActor in __instance.callbacks_added_madness) {
-                    baseActionActor((Actor)__instance);
-                }
+            if(pRemoveOpposites) {
+                __instance.removeOppositeTraits(pTrait);
             }
+            if(__instance.hasOppositeTrait(pTrait)) {
+                return false;
+            }
+            __instance.data.traits.Add(pTrait);
+            __instance.setStatsDirty();
             return false;
         }
 
@@ -452,9 +494,10 @@ namespace SimpleGUI {
             GuiDiplomacy.diplomacyWindowRect.height = 0f;
             GuiItemGeneration.itemGenerationWindowRect.height = 0f;
             StatSetting.StatSettingWindowRect.height = 0f;
-            ActorInteraction.actorInteractionWindowRect.height = 0f;
-            ActorInteraction.actorJobListWindowRect.height = 0f;
-            ActorInteraction.actorJobListWindowRect.height = 0f;
+            //ActorInteraction.actorInteractionWindowRect.height = 0f;
+            //ActorInteraction.actorJobListWindowRect.height = 0f;
+            //ActorInteraction.actorTaskListWindowRect.height = 0f;
+            //ActorInteraction.dragSelectionWindowRect.height = 0f;
             ItemGen.itemGenerationEquipmentWindow1.height = 0f;
             ItemGen.itemGenerationEquipmentWindow2.height = 0f;
             if(!loadMenuSettingsOnStartup.Value) {
@@ -462,7 +505,6 @@ namespace SimpleGUI {
             }
             mainWindowRectConfig.Value = mainWindowRect.ToString();
             timescaleWindowRectConfig.Value = Timescale.timescaleWindowRect.ToString();
-            fastCitiesWindowRectConfig.Value = FastCities.fastCitiesWindowRect.ToString();
             itemGenWindowRectConfig.Value = GuiItemGeneration.itemGenerationWindowRect.ToString();
             traitsWindowRectConfig.Value = Traits.traitWindowRect.ToString();
             diplomacyWindowRectConfig.Value = GuiDiplomacy.diplomacyWindowRect.ToString();
@@ -483,9 +525,6 @@ namespace SimpleGUI {
             }
             if(timescaleWindowRectConfig.Value != "null") {
                 Timescale.timescaleWindowRect = StringIntoRect(timescaleWindowRectConfig.Value);
-            }
-            if(fastCitiesWindowRectConfig.Value != "null") {
-                FastCities.fastCitiesWindowRect = StringIntoRect(fastCitiesWindowRectConfig.Value);
             }
             if(itemGenWindowRectConfig.Value != "null") {
                 GuiItemGeneration.itemGenerationWindowRect = StringIntoRect(itemGenWindowRectConfig.Value);
@@ -561,7 +600,6 @@ namespace SimpleGUI {
                 {
                     runOnce = true;
                     Timescale.showHideTimescaleWindow = true;
-                    FastCities.showHideFastCities = true;
                     ItemGen.showHideItemGeneration = true;
                     Diplomacy.showHideDiplomacy = true;
                     World.showHideWorldOptions = true;
@@ -572,11 +610,6 @@ namespace SimpleGUI {
             if(GUILayout.Button("Timescale")) {
                 showHideTimescaleWindowConfig.Value = !showHideTimescaleWindowConfig.Value;
             }
-            /* fastCities is a debug option now
-            if(GUILayout.Button("Fast cities")) {
-                showHideFastCitiesConfig.Value = !showHideFastCitiesConfig.Value;
-            }
-            */
             if(GUILayout.Button("Items")) {
                 if(AssetManager.items.list != null) {
                     
@@ -648,9 +681,6 @@ namespace SimpleGUI {
             if(showHideTimescaleWindowConfig.Value) {
                 Timescale.timescaleWindowUpdate();
             }
-            if(showHideFastCitiesConfig.Value) {
-                FastCities.fastCitiesWindowUpdate();
-            }
             if(showHideItemGenerationConfig.Value) {
                 ItemGen.itemGenerationWindowUpdate(); 
             }
@@ -669,18 +699,19 @@ namespace SimpleGUI {
             if(showHideConstructionConfig.Value) {
                 Construction.constructionWindowUpdate();
             }
-            if(Traits != null) {
-                Traits.traitWindowUpdate();
-                World.fillToolIterations = fillToolIterations.Value;
-                World.timerBetweenFill = timerBetweenFill.Value;
-                World.fillTileCount = fillTileCount.Value;
-            }
             if(showHideActorInteractConfig.Value) {
                 ActorInteraction.actorInteractionWindowUpdate(); // advertise everything not just patreon
             }
             if(showHidePatreonConfig.Value) {
                 Patreon.patreonWindowUpdate(); // advertise everything not just patreon
             }
+            if(Traits != null) {
+                Traits.traitWindowUpdate();
+                World.fillToolIterations = fillToolIterations.Value;
+                World.timerBetweenFill = timerBetweenFill.Value;
+                World.fillTileCount = fillTileCount.Value;
+            }
+           
             SetWindowInUse(-1);
         }
 
@@ -697,8 +728,6 @@ namespace SimpleGUI {
             }
             GodPower power = AssetManager.powers.get(inputPower);
             //world.Clicked(new Vector2Int(inputTile.x, inputTile.y), 1, power, null);
-
-
         }
 
         public void BenchEnd(string message, float prevTime) // maxims benchmark
@@ -756,7 +785,6 @@ namespace SimpleGUI {
 
             showHideMainWindowConfig = Config.AddSetting("Menus", "Main Menu Toggle", false, "Whether Main menu was last displayed or open");
             showHideTimescaleWindowConfig = Config.AddSetting("Menus", "Timescale Menu Toggle", false, "Whether Timescale menu was last displayed or open");
-            showHideFastCitiesConfig = Config.AddSetting("Menus", "Fast Cities Menu Toggle", false, "Whether Fast Cities menu was last displayed or open");
             showHideItemGenerationConfig = Config.AddSetting("Menus", "Item Menu Toggle", false, "Whether Items menu was last displayed or open");
             showHideTraitsWindowConfig = Config.AddSetting("Menus", "Traits Menu Toggle", false, "Whether Traits menu was last displayed or open");
             showHideDiplomacyConfig = Config.AddSetting("Menus", "Diplomacy Menu Toggle", false, "Whether Diplomacy menu was last displayed or open");
@@ -772,7 +800,6 @@ namespace SimpleGUI {
 
             mainWindowRectConfig = Config.AddSetting("Pos", "Main Menu Position", "null", "Last saved position for window");
             timescaleWindowRectConfig = Config.AddSetting("Pos", "Timescale Menu Position", "null", "Last saved position for window");
-            fastCitiesWindowRectConfig = Config.AddSetting("Pos", "Fastcities Menu Position", "null", "Last saved position for window");
             itemGenWindowRectConfig = Config.AddSetting("Pos", "ItemGen Menu Position", "null", "Last saved position for window");
             traitsWindowRectConfig = Config.AddSetting("Pos", "Traits Menu Position", "null", "Last saved position for window");
             diplomacyWindowRectConfig = Config.AddSetting("Pos", "Diplomacy Menu Position", "null", "Last saved position for window");
@@ -1113,21 +1140,12 @@ namespace SimpleGUI {
         #region variableDeclaration
         //misc
         public Camera mainCamera => Camera.main;
-        public bool animationTest;
-        public float xRot;
-        public float yRot;
-        public float zRot;
         public float rotationRate = 2f;
         public List<LineRenderer> buildingLings = new List<LineRenderer>();
-        public bool actorTest;
-        public bool lockCameraZ;
-        public Quaternion rotationDefault;
-        public bool clearActiveLines;
         // vars
         public static Rect mainWindowRect = new Rect(0f, 1f, 1f, 1f);
         // Menus
         public static GuiTimescale Timescale = new GuiTimescale();
-        public static GuiFastCities FastCities = new GuiFastCities();
         public static GuiItemGeneration ItemGen = new GuiItemGeneration();
         public static GuiTraits Traits = new GuiTraits();
         public static GuiOther Other = new GuiOther();
@@ -1167,9 +1185,6 @@ namespace SimpleGUI {
             get; set;
         }
         public static ConfigEntry<bool> showHideTimescaleWindowConfig {
-            get; set;
-        }
-        public static ConfigEntry<bool> showHideFastCitiesConfig {
             get; set;
         }
         public static ConfigEntry<bool> showHideItemGenerationConfig {
@@ -1214,9 +1229,6 @@ namespace SimpleGUI {
         public static ConfigEntry<string> timescaleWindowRectConfig {
             get; set;
         }
-        public static ConfigEntry<string> fastCitiesWindowRectConfig {
-            get; set;
-        }
         public static ConfigEntry<string> itemGenWindowRectConfig {
             get; set;
         }
@@ -1247,11 +1259,11 @@ namespace SimpleGUI {
         }
         #endregion
         public static int windowInUse = -1;
-        public bool showHideDisclaimerWindow;
+        //public bool showHideDisclaimerWindow;
         public static Rect disclaimerWindowRect = new Rect((Screen.width / 2) - 100, (Screen.height / 2) - 100, 10, 10);
         int attempts;
         string response = "";
-        public float lastMapTime;
+        //public float lastMapTime;
         public bool sentOneTimeStats;
         public string receivedMessage;
         bool responseAskedFor;
@@ -1274,7 +1286,7 @@ namespace SimpleGUI {
 
         [Serializable]
         public class ModUserOptedOut {
-            public bool OptedInToStats;
+            public bool OptedInToStats = false;
         }
 
         [Serializable]

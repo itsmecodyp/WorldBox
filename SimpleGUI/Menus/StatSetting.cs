@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using UnityEngine;
 
-namespace SimpleGUI
+namespace SimpleGUI.Menus
 {
 	class GuiStatSetting {
 		public void StatSettingWindowUpdate()
@@ -27,6 +28,7 @@ namespace SimpleGUI
 			GuiMain.SetWindowInUse(windowID);
 			if(lastSelected == null || Config.selectedUnit != null && Config.selectedUnit != lastSelected) {
 				lastSelected = Config.selectedUnit;
+				GUILayout.Button("Inspect an actor");
 			}
 			if(lastSelected != null) {
 				GUILayout.Button("Name: " + lastSelected.data.name);
@@ -36,7 +38,7 @@ namespace SimpleGUI
 						GUILayout.BeginHorizontal();
 						GUILayout.Button(statNameWithoutPrefix); // display stat name
 						// why is there no Convert.ToFloat?
-						statsToAdd[statNameWithoutPrefix] = (float)Convert.ToDouble(GUILayout.TextField(statsToAdd[statNameWithoutPrefix].ToString()));
+						statsToAdd[statNameWithoutPrefix] = (float)Convert.ToDouble(GUILayout.TextField(statsToAdd[statNameWithoutPrefix].ToString(CultureInfo.CurrentCulture)));
 						GUILayout.EndHorizontal();
 					}
 				}
@@ -87,7 +89,6 @@ namespace SimpleGUI
 		public BaseStats statsToAdd = new BaseStats();
 		public Rect StatSettingWindowRect;
 		public static Actor lastSelected;
-		public static Vector2 scrollPosition;
 
 		//after stats are updated add any saved custom stats on top
 		//probably bypasses any stat limiting from another mod, sorry dej
@@ -103,8 +104,10 @@ namespace SimpleGUI
 					__instance.a.data.get("hasStatTrait", out bool hasTrait);
 					// check if hasStatTrait is false, means actor hasnt received trait or needs refresh
 					if(hasTrait == false) {
-						ActorTrait freshTrait = new ActorTrait();
-						freshTrait.id = __instance.a.name + "Stats";
+						ActorTrait freshTrait = new ActorTrait
+						{
+							id = __instance.a.name + "Stats"
+						};
 						BaseStats statsToAdd = new BaseStats();
 						foreach(string statName in statNames.Keys) {
 							__instance.a.data.get(statName, out float value);
