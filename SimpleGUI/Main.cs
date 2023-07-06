@@ -23,7 +23,7 @@ namespace SimpleGUI {
     class GuiMain : BaseUnityPlugin {
         public const string pluginGuid = "cody.worldbox.simple.gui";
         public const string pluginName = "SimpleGUI";
-        public const string pluginVersion = "0.1.7.0";
+        public const string pluginVersion = "0.1.7.1";
 
         public static ManualLogSource logger;
 
@@ -50,14 +50,21 @@ namespace SimpleGUI {
         public void Update()
         {
             //init cultist stuff
-            /*
 			if(global::Config.gameLoaded) {
                 if(hasInitAssets == false) {
                     cultistsManager.init();
+
+                    //remove official H hotkey and replace with our own
+                    HotkeyAsset hideUI = AssetManager.hotkey_library.get("hide_ui");
+                    hideUI.default_key_1 = KeyCode.None;
                     hasInitAssets = true;
                 }
 			}
-			if(Input.GetKeyDown(KeyCode.L)) {
+            //adding our own H ui toggle
+            if(Input.GetKeyDown(KeyCode.H)) {
+                GuiOther.toggleBar();
+            }
+            if(Input.GetKeyDown(KeyCode.L)) {
 				Actor closest = Toolbox.getClosestActor(MapBox.instance.units.getSimpleList(), MapBox.instance.getMouseTilePos());
                 SimpleCultists.cultsDict.Add(closest, new List<Actor>());
                 closest.ai.setJob("cultLeader");
@@ -65,7 +72,7 @@ namespace SimpleGUI {
                 //ScrollWindow.get("settings");
                 //GuiStatSetting.updateAllElements_Postfix();
 			}
-            */
+           
             if(showHideConstructionConfig.Value) {
                 if(Construction != null) {
                     Construction.constructionControl();
