@@ -23,7 +23,7 @@ namespace SimpleGUI {
     class GuiMain : BaseUnityPlugin {
         public const string pluginGuid = "cody.worldbox.simple.gui";
         public const string pluginName = "SimpleGUI";
-        public const string pluginVersion = "0.1.6.7";
+        public const string pluginVersion = "0.1.7.0";
 
         public static ManualLogSource logger;
 
@@ -50,6 +50,7 @@ namespace SimpleGUI {
         public void Update()
         {
             //init cultist stuff
+            /*
 			if(global::Config.gameLoaded) {
                 if(hasInitAssets == false) {
                     cultistsManager.init();
@@ -64,6 +65,7 @@ namespace SimpleGUI {
                 //ScrollWindow.get("settings");
                 //GuiStatSetting.updateAllElements_Postfix();
 			}
+            */
             if(showHideConstructionConfig.Value) {
                 if(Construction != null) {
                     Construction.constructionControl();

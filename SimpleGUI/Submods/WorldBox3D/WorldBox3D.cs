@@ -26,7 +26,44 @@ namespace SimpleGUI.Submods.WorldBox3D {
                 return true;
             }
         }
-        
+
+
+        //this at least prevents actor becoming flat again...
+        //but now some of them are upside down?
+        public static bool baseUpdateRotation_Prefix(ActorBase __instance)
+		{
+			if(_3dEnabled) {
+                __instance.curAngle.x = -90;
+			}
+            return true;
+		}
+
+        public void Reset3d()
+        {
+            foreach(Building building in MapBox.instance.buildings) {
+                building.transform.rotation = Quaternion.Euler(0, 0, 0);
+            }
+            foreach(Actor actor in MapBox.instance.units) {
+                actor.sprite_animation.transform.rotation = Quaternion.Euler(0, 0, 0);
+                //actor.transform.rotation = Quaternion.Euler(0, 0, 0);
+            }
+            if(activeLines != null && activeLines.Count > 1) {
+                foreach(LineRenderer line in activeLines) {
+                    line.SetVertexCount(0);
+                }
+            }
+            /*
+            if(tileTypeLines != null && tileTypeLines.Count > 1) {
+                foreach(LineRenderer line2 in tileTypeLines) {
+                    line2.SetVertexCount(0);
+                }
+            }
+            */
+            singleLine.SetVertexCount(0);
+            deleteAllExtraLayers(); // sprite thickening reset
+            //if(Camera.main != null) Camera.main.transform.rotation = Quaternion.Euler(cameraX, cameraY, cameraZ);
+        }
+
         public void window3D(int windowID)
         {
             Color temp = GUI.backgroundColor;
@@ -37,9 +74,12 @@ namespace SimpleGUI.Submods.WorldBox3D {
             if(GUILayout.Button("Enable 3D: " + autoPlacement)) {
                 autoPlacement = !autoPlacement;
                 _3dEnabled = !_3dEnabled;
+
+                if(autoPlacement == false) {
+                    Reset3d();
+                }
             }
-            if (publicBuild == false)
-            {
+            if(publicBuild == false) {
                 if(GUILayout.Button("Refresh tiles")) {
                     MapBox.instance.allTilesDirty();
                     MapBox.instance.tilemap.redrawTiles(true);
@@ -49,15 +89,13 @@ namespace SimpleGUI.Submods.WorldBox3D {
             if(lockCameraControl == true) {
                 GUI.backgroundColor = Color.green;
             }
-            if(GUILayout.Button("Lock camera: " + lockCameraControl))
-            {
+            if(GUILayout.Button("Lock camera: " + lockCameraControl)) {
                 lockCameraControl = !lockCameraControl;
-                if (Camera.main != null) Camera.main.transform.rotation = Quaternion.Euler(cameraX, cameraY, cameraZ);
+                if(Camera.main != null) Camera.main.transform.rotation = Quaternion.Euler(cameraX, cameraY, cameraZ);
             }
             GUI.backgroundColor = temp;
-            if(GUILayout.Button("Reset camera"))
-            {
-                if (Camera.main != null) Camera.main.transform.rotation = Quaternion.Euler(cameraX, cameraY, cameraZ);
+            if(GUILayout.Button("Reset camera")) {
+                if(Camera.main != null) Camera.main.transform.rotation = Quaternion.Euler(cameraX, cameraY, cameraZ);
             }
             try {
                 ObjectPositioningButtons();
@@ -388,7 +426,16 @@ namespace SimpleGUI.Submods.WorldBox3D {
             patch = AccessTools.Method(typeof(_3D_Main), "update_CloudPostfix");
             harmony.Patch(original, null, new HarmonyMethod(patch));
             Debug.Log("Post patch: Cloud.update");
+
+            harmony = new Harmony(pluginGuid);
+            original = AccessTools.Method(typeof(ActorBase), "updateRotation");
+            patch = AccessTools.Method(typeof(_3D_Main), "baseUpdateRotation_Prefix");
+            harmony.Patch(original, new HarmonyMethod(patch));
+            Debug.Log("pre patch: ActorBase.UpdateRotation");
+
+
             
+
             harmony = new Harmony(pluginGuid);
             original = AccessTools.Method(typeof(BuildingSmokeEffect), "update");
             patch = AccessTools.Method(typeof(_3D_Main), "smokeUpdate_Prefix");
@@ -661,7 +708,8 @@ namespace SimpleGUI.Submods.WorldBox3D {
             SpriteRenderer spriteRenderer = targetActor.spriteRenderer;
             SpriteRenderer newSprite = Instantiate(spriteRenderer);
             SpriteRenderer newSprite2 = Instantiate(spriteRenderer);
-            newSprite2.transform.rotation = Quaternion.Euler(0, 90, 90);
+            //newSprite2.transform.rotation = Quaternion.Euler(0, 90, 90);
+            newSprite2.transform.rotation = Quaternion.Euler(-90, 0, 0);
             extraLayers.Add(newSprite);
             extraLayers.Add(newSprite2);
         }
