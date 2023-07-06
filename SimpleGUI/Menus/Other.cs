@@ -260,24 +260,7 @@ namespace SimpleGUI.Menus {
                 GUI.backgroundColor = Color.red;
             }
             if(GUILayout.Button("Hide GUI")) {
-                hideGameGUI = !hideGameGUI;
-                //reposition kingbox ui
-                if (hideGameGUI == false)
-                {
-                    GameObject kingboxUI = GameObject.Find("DebugConfig");
-                    if (kingboxUI != null)
-                    {
-                        kingboxUI.transform.position = new Vector3(0, 1194f, 0f);
-                    }
-                }
-                if (hideGameGUI == true)
-                {
-                    GameObject kingboxUI = GameObject.Find("DebugConfig");
-                    if (kingboxUI != null)
-                    {
-                        kingboxUI.transform.position = new Vector3(0, 1017, 0);
-                    }
-                }
+                toggleBar();
             }
             
             if(fogOfWarTest) {
@@ -315,6 +298,24 @@ namespace SimpleGUI.Menus {
             GUI.DragWindow();
         }
 
+        public static void toggleBar()
+		{
+            hideGameGUI = !hideGameGUI;
+            //reposition kingbox ui
+            if(hideGameGUI == false) {
+                GameObject kingboxUI = GameObject.Find("DebugConfig");
+                if(kingboxUI != null) {
+                    kingboxUI.transform.position = new Vector3(0, 1194f, 0f);
+                }
+            }
+            if(hideGameGUI == true) {
+                GameObject kingboxUI = GameObject.Find("DebugConfig");
+                if(kingboxUI != null) {
+                    kingboxUI.transform.position = new Vector3(0, 1017, 0);
+                }
+            }
+        }
+
         public static void isBottomBarShowing_Postfix(ref bool __result)
         {
             if (hideGameGUI == false)
@@ -327,7 +328,7 @@ namespace SimpleGUI.Menus {
                 __result = false;
             }
         }
-        
+
         public static bool fogOfWarTest;
 
         public static bool hideGameGUI;
