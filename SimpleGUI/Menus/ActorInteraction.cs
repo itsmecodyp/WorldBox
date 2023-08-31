@@ -369,8 +369,12 @@ namespace SimpleGUI.Menus {
                         if(list != null) {
                             lastSelectedTiles = list;
                             foreach(WorldTile tile in list) {
-								if(tile.hasUnits()) {
-                                    lastSelectedActorList.AddRange(tile._units);
+                                foreach(Actor actor in tile._units)
+                                {
+                                    if(lastSelectedActorList.Contains(actor) == false)
+                                    {
+                                        lastSelectedActorList.Add(actor);
+                                    }
                                 }
 							}
                         }

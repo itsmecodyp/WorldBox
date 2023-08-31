@@ -7,7 +7,7 @@ namespace SimpleGUI.Submods.SimpleGamba
 {
     public class Deck
     {
-        public List<Card> cards;
+        public List<Card> cards = new List<Card>();
 
         private Random random;
 
@@ -15,7 +15,13 @@ namespace SimpleGUI.Submods.SimpleGamba
         {
             random = new Random();
             cards = new List<Card>();
+            SetupDeck();
+            Debug.Log("Deck reset, now shuffling");
+            Shuffle();
+        }
 
+        public void SetupDeck()
+        {
             // add cards to deck
             for (int c = 0; c < Card.values.Length; c++)
             {
@@ -27,17 +33,22 @@ namespace SimpleGUI.Submods.SimpleGamba
                     }
                 }
             }
-
-            Debug.Log("Deck reset, now shuffling");
-            Shuffle();
         }
 
         public Card DrawCard()
         {
-            var card = cards.First();
-            cards.Remove(card);
-            man.currentCardNumber++;
-            return card;
+            if (cards != null && cards.Count > 0) {
+                Card card = cards.First();
+                return card;
+            }
+            else
+            {
+                Debug.Log("cards null, cant draw! resetting deck");
+                SetupDeck();
+                Debug.Log("Deck reset, now shuffling");
+                Shuffle();
+                return null;
+            }
         }
 
         public Blackjack man;
@@ -45,7 +56,6 @@ namespace SimpleGUI.Submods.SimpleGamba
         public void Shuffle()
         {
             var list = cards.ToList();
-
             for (int i = 0; i < cards.Count; i++)
             {
                 var index = random.Next(list.Count);
@@ -54,7 +64,5 @@ namespace SimpleGUI.Submods.SimpleGamba
                 list.RemoveAt(index);
             }
         }
-
-
     }
 }

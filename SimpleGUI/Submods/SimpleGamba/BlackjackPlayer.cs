@@ -232,6 +232,7 @@ namespace SimpleGUI.Submods.SimpleGamba {
             }
             else {
                 Card drawnCard = man.blackjackDeck.DrawCard();
+                man.blackjackDeck.cards.Remove(drawnCard);
                 hand.Add(drawnCard);
                 Debug.Log("Player drew card: " + drawnCard.DisplayString() + ". New total: " + man.HandTotalValue(hand)); //  + ". Cards left in deck: " + officialDeck.cards.Count
 

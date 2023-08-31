@@ -44,7 +44,9 @@ namespace SimpleGUI.Submods.WorldBox3D {
                 building.transform.rotation = Quaternion.Euler(0, 0, 0);
             }
             foreach(Actor actor in MapBox.instance.units) {
-                actor.sprite_animation.transform.rotation = Quaternion.Euler(0, 0, 0);
+                if(actor.sprite_animation != null) {
+                    actor.sprite_animation.transform.rotation = Quaternion.Euler(0, 0, 0);
+                }
                 //actor.transform.rotation = Quaternion.Euler(0, 0, 0);
             }
             if(activeLines != null && activeLines.Count > 1) {
@@ -59,9 +61,12 @@ namespace SimpleGUI.Submods.WorldBox3D {
                 }
             }
             */
-            singleLine.SetVertexCount(0);
+            if(singleLine != null)
+            {
+                singleLine.SetVertexCount(0);
+            }
             deleteAllExtraLayers(); // sprite thickening reset
-            //if(Camera.main != null) Camera.main.transform.rotation = Quaternion.Euler(cameraX, cameraY, cameraZ);
+            if (Camera.main != null) Camera.main.transform.rotation = Quaternion.Euler(cameraX, cameraY, cameraZ);
         }
 
         public void window3D(int windowID)
@@ -339,7 +344,7 @@ namespace SimpleGUI.Submods.WorldBox3D {
         public static bool _3dEnabled;
 
         //false = show experimental stuff
-        public bool publicBuild = true;
+        public bool publicBuild = false;
 
 
         public Vector3 RandomCircle(Vector3 center, float radius, int a)
@@ -370,7 +375,7 @@ namespace SimpleGUI.Submods.WorldBox3D {
         }
         */
 
-        public static int dividerAmount = 10;
+        public static int dividerAmount = -10;
 
         // tile3d setup
         public static bool setTile_Prefix(WorldTile pWorldTile, Vector3Int pVec, Tile pGraphic, TilemapExtended __instance)
@@ -404,7 +409,8 @@ namespace SimpleGUI.Submods.WorldBox3D {
                 __instance.transform.RotateAround(__instance.tile.posV3, Vector3.forward, 20 * Time.deltaTime * Toolbox.randomFloat(0f, 5f));
             }
             else {
-                __instance.transform.Translate(-(1f * pElapsed), 0f, 0f);
+                //why did i make clouds go backwards??
+                //__instance.transform.Translate(-(1f * pElapsed), 0f, 0f);
             }
         }
 
@@ -593,6 +599,7 @@ namespace SimpleGUI.Submods.WorldBox3D {
             if(_3dEnabled) {
                 float height = 0f;
                 WorldTile tile = tileFromVector(__instance.transform.localPosition);
+                
                 if(tile3Denabled && tile != null) {
                     height = (tile.Height) / dividerAmount;
                 }
@@ -717,6 +724,7 @@ namespace SimpleGUI.Submods.WorldBox3D {
         {
             float height = 0f;
             SpriteRenderer spriteRenderer = targetBuilding.spriteRenderer;
+
             if(twoLayer) {
                 SpriteRenderer newSprite2 = Instantiate(spriteRenderer);
                 newSprite2.transform.rotation = Quaternion.Euler(0, 90, 90);

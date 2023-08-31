@@ -172,9 +172,39 @@ namespace SimpleGUI.Menus {
                     GUILayout.Button("NeedCity2");
                 }
                 else {
-                    if(GUILayout.Button("Transfer to Kingdom2")) {
+                    if(GUILayout.Button("Transfer")) {
                         selectedCity1.joinAnotherKingdom(selectedCity2Kingdom);
                     }
+                    //merge stuff
+                    /*
+                    if (GUILayout.Button("Merge"))
+                    {
+                        
+                        //check if city needs settlers, if not slaughter 50% for room
+                        if (selectedCity2.needSettlers() == false) {
+                            //number of people joining the city
+                            int halfsies = selectedCity2.units.Count / 2;
+                            for (int i = 0; i < halfsies; i++)
+                            {
+                                selectedCity2.units.GetRandom().killHimself();
+                            }
+                        }
+                        //excess after this will settle a new city? maybe new feature to suicide instead?
+                        //assign refugees their new home
+                        foreach (Actor cityActor in selectedCity1.units)
+                        {
+                            cityActor.setKingdom(selectedCity2Kingdom);
+                            cityActor.joinCity(selectedCity2);
+                        }
+                        
+
+                        //foreach()
+
+                        //unassign the city that is about to no longer exist anyway, save the menu
+                        //selectedCity1 = null;
+
+                    }
+                    */
                 }
                 /*
                 if(GUILayout.Button("War everyone")) {
@@ -211,7 +241,7 @@ namespace SimpleGUI.Menus {
                     GUILayout.Button("NeedCity1");
 				}
 				else {
-                    if(GUILayout.Button("Transfer to Kingdom1")) {
+                    if(GUILayout.Button("Transfer")) {
                         selectedCity2.joinAnotherKingdom(selectedCity1Kingdom);
                     }
                 }

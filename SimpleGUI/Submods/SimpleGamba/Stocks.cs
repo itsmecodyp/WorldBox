@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using BepInEx;
 using Discord;
-using Firebase.Auth;
 using Proyecto26;
 using SimpleGUI.Submods.SimpleGamba.LargeNumbers;
 using SimpleJSON;

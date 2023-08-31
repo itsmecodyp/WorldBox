@@ -44,7 +44,7 @@ namespace SimpleGUI.Submods.SimpleGamba {
 
             roundEndTime = Time.realtimeSinceStartup;
             readyToResetHands = true;
-            if(currentCardNumber >= 45) {
+            if(blackjackDeck.cards.Count <= 7) {
                 readyToResetDeck = true;
             }
             Main.blackjackGames.Value++;
@@ -59,7 +59,6 @@ namespace SimpleGUI.Submods.SimpleGamba {
 
         public bool readyToResetHands;
         public bool readyToResetDeck;
-        public int currentCardNumber = 0; //shuffle at 45
 
         public DealerStatus currentDealerStatus = DealerStatus.Waiting;
 
@@ -235,7 +234,7 @@ namespace SimpleGUI.Submods.SimpleGamba {
             Card drawnCard = blackjackDeck.DrawCard();
             Debug.Log("Dealer drew: " + drawnCard.DisplayString());
             Debug.Log("Dealer new total: " + HandTotalValue(dealersHand));
-
+            blackjackDeck.cards.Remove(drawnCard);
             dealersHand.Add(drawnCard);
             foreach(BlackjackPlayer player in currentPlayers) {
                 if(player.playername == "Human") {

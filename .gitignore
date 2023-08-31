@@ -80,3 +80,6 @@ WorldBox3D/obj/Debug/.NETFramework,Version=v4.8.AssemblyAttributes.cs
 *.config
 *.csproj
 SimpleLib/SimpleLib.csproj
+SimpleGUI/.idea/.idea.SimpleGUI.dir/.idea/vcs.xml
+SimpleGUI/.idea/.idea.SimpleGUI.dir/.idea/indexLayout.xml
+SimpleGUI/.idea/.idea.SimpleGUI.dir/.idea/encodings.xml
