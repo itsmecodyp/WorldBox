@@ -112,18 +112,18 @@ namespace SimpleGUI.Menus
 			if (GuiMain.showWindowMinimizeButtons.Value)
 			{
 				string buttontext = "T";
-				if (GuiMain.showHideTimescaleWindowConfig.Value)
+				if (SimpleSettings.showHideTimescaleWindowConfig.Value)
 				{
 					buttontext = "-";
 				}
 				if (GUI.Button(new Rect(timescaleWindowRect.x + timescaleWindowRect.width - 25f, timescaleWindowRect.y - 25, 25, 25), buttontext))
 				{
-					GuiMain.showHideTimescaleWindowConfig.Value = !GuiMain.showHideTimescaleWindowConfig.Value;
+					SimpleSettings.showHideTimescaleWindowConfig.Value = !SimpleSettings.showHideTimescaleWindowConfig.Value;
 				}
 			}
 			
 			//
-			if (GuiMain.showHideTimescaleWindowConfig.Value)
+			if (SimpleSettings.showHideTimescaleWindowConfig.Value)
 			{
 				timescaleWindowRect = GUILayout.Window(1002, timescaleWindowRect, timescaleWindow, "Timescale", GUILayout.MaxWidth(300f), GUILayout.MinWidth(200f));
 			}

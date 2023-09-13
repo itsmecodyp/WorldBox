@@ -10,15 +10,15 @@ namespace SimpleGUI.Menus
 		{
 			if(GuiMain.showWindowMinimizeButtons.Value) {
 				string buttontext = "S";
-				if(GuiMain.showHideStatSettingConfig.Value) {
+				if(SimpleSettings.showHideStatSettingConfig.Value) {
 					buttontext = "-";
 				}
 				if(GUI.Button(new Rect(StatSettingWindowRect.x + StatSettingWindowRect.width - 25f, StatSettingWindowRect.y - 25, 25, 25), buttontext)) {
-					GuiMain.showHideStatSettingConfig.Value = !GuiMain.showHideStatSettingConfig.Value;
+                    SimpleSettings.showHideStatSettingConfig.Value = !SimpleSettings.showHideStatSettingConfig.Value;
 				}
 			}
 
-			if(GuiMain.showHideStatSettingConfig.Value) {
+			if(SimpleSettings.showHideStatSettingConfig.Value) {
 				StatSettingWindowRect = GUILayout.Window(50050, StatSettingWindowRect, StatSettingWindow, "Stats", GUILayout.MaxWidth(300f), GUILayout.MinWidth(200f));
 			}
 		}

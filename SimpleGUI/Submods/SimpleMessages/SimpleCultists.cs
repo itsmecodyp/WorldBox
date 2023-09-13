@@ -201,7 +201,7 @@ namespace SimpleGUI.Submods {
 		}
 
 		public string godOfChoice;
-		public List<string> emotions = new List<string>() { "anger", "bloodshed", "insanity", "rage", "fury", "wrath", "hate" };
+		public List<string> emotions = new List<string>() { "anger", "bloodshed", "insanity", "rage", "fury", "wrath", "hate", "love", "joy" };
 		public static List<string> preachStarters = new List<string>();
 		public static Dictionary<Actor, List<Actor>> cultsDict = new Dictionary<Actor, List<Actor>>();
 

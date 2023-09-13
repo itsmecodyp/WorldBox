@@ -357,13 +357,13 @@ namespace SimpleGUI.Menus {
         {
             if(GuiMain.showWindowMinimizeButtons != null && GuiMain.showWindowMinimizeButtons.Value) {
                 string buttontext = "D";
-                if(GuiMain.showHideDiplomacyConfig != null && GuiMain.showHideDiplomacyConfig.Value) {
+                if(SimpleSettings.showHideDiplomacyConfig != null && SimpleSettings.showHideDiplomacyConfig.Value) {
                     buttontext = "-";
                 }
                 if(GUI.Button(new Rect(diplomacyWindowRect.x + diplomacyWindowRect.width - 25f, diplomacyWindowRect.y - 25, 25, 25), buttontext))
                 {
-                    if (GuiMain.showHideDiplomacyConfig != null)
-                        GuiMain.showHideDiplomacyConfig.Value = !GuiMain.showHideDiplomacyConfig.Value;
+                    if (SimpleSettings.showHideDiplomacyConfig != null)
+                        SimpleSettings.showHideDiplomacyConfig.Value = !SimpleSettings.showHideDiplomacyConfig.Value;
                 }
             }
             //
@@ -460,7 +460,7 @@ namespace SimpleGUI.Menus {
                 }
             }
             */
-            if(GuiMain.showHideDiplomacyConfig != null && GuiMain.showHideDiplomacyConfig.Value) {
+            if(SimpleSettings.showHideDiplomacyConfig != null && SimpleSettings.showHideDiplomacyConfig.Value) {
                 diplomacyWindowRect = GUILayout.Window(96850, diplomacyWindowRect, diplomacyWindow, "Diplomacy", GUILayout.MaxWidth(300f), GUILayout.MinWidth(200f));
             }
 			if(showCultureSelectionWindow) {

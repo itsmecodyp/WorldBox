@@ -278,7 +278,6 @@ namespace SimpleGUI.Submods.SimpleGamba {
         public void ResetDeck()
         {
             blackjackDeck = new Deck();
-            Debug.Log("Deck reset");
         }
         public bool PlayerBlackjack(List<Card> targetHand)
         {

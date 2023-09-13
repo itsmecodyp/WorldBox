@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SimpleGUI.Menus;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -24,7 +25,7 @@ namespace SimpleGUI
 
         public void patreonWindowUpdate()
         {
-            if (GuiMain.showHidePatreonConfig.Value)
+            if (SimpleSettings.showHidePatreonConfig.Value)
             {
                 patreonWindowRect = GUILayout.Window(1009, patreonWindowRect, patreonWindow, "Patreon", GUILayout.MaxWidth(300f), GUILayout.MinWidth(200f));
             }

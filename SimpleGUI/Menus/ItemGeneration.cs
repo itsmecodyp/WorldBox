@@ -11,16 +11,16 @@ namespace SimpleGUI.Menus
 			if (GuiMain.showWindowMinimizeButtons.Value)
 			{
 				string buttontext = "I";
-				if (GuiMain.showHideItemGenerationConfig.Value)
+				if (SimpleSettings.showHideItemGenerationConfig.Value)
 				{
 					buttontext = "-";
 				}
 				if (GUI.Button(new Rect(itemGenerationWindowRect.x + itemGenerationWindowRect.width - 25f, itemGenerationWindowRect.y - 25, 25, 25), buttontext))
 				{
-					GuiMain.showHideItemGenerationConfig.Value = !GuiMain.showHideItemGenerationConfig.Value;
+                    SimpleSettings.showHideItemGenerationConfig.Value = !SimpleSettings.showHideItemGenerationConfig.Value;
 				}
 			}
-			if (GuiMain.showHideItemGenerationConfig.Value)
+			if (SimpleSettings.showHideItemGenerationConfig.Value)
 			{
 				itemGenerationWindowRect = GUILayout.Window(1005, itemGenerationWindowRect, ItemGenerationWindow, "Items", GUILayout.MaxWidth(300f), GUILayout.MinWidth(200f));
 			}

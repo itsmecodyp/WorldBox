@@ -8,27 +8,27 @@ namespace SimpleGUI.Menus {
 
         public void actorInteractionWindowUpdate()
         {
-            if(GuiMain.showHideActorInteractConfig.Value) {
+            if(SimpleSettings.showHideActorInteractConfig.Value) {
                 actorInteractionWindowRect = GUILayout.Window(41094, actorInteractionWindowRect, actorWindow, "Actor Interaction", GUILayout.MaxWidth(300f), GUILayout.MinWidth(200f));
                 if(showTaskWindow) {
                     actorTaskListWindowRect = GUILayout.Window(43095, actorTaskListWindowRect, actorTaskWindow, "Actor Tasks", GUILayout.MaxWidth(300f), GUILayout.MinWidth(200f));
-                }
-                if(showJobWindow) {
-                    actorJobListWindowRect = GUILayout.Window(43096, actorJobListWindowRect, actorJobWindow, "Actor Jobs", GUILayout.MaxWidth(300f), GUILayout.MinWidth(200f));
-                }
-                if(showHideDragSelectionWindow) {
-                    dragSelectionWindowRect = GUILayout.Window(41888, dragSelectionWindowRect, dragSelectWindow, "Actor drag");
-                }
-
-                if(showTaskWindow) {
                     actorTaskListWindowRect.position = new Vector2(actorInteractionWindowRect.x + actorInteractionWindowRect.width, (actorInteractionWindowRect.y));
                 }
-                if(showJobWindow) {
+                if (showJobWindow) {
+                    actorJobListWindowRect = GUILayout.Window(43096, actorJobListWindowRect, actorJobWindow, "Actor Jobs", GUILayout.MaxWidth(300f), GUILayout.MinWidth(200f));
                     actorJobListWindowRect.position = new Vector2(actorInteractionWindowRect.x + actorInteractionWindowRect.width, (actorInteractionWindowRect.y));
                 }
-                if(showHideDragSelectionWindow) {
+                if (showHideDragSelectionWindow) {
+                    dragSelectionWindowRect = GUILayout.Window(41888, dragSelectionWindowRect, dragSelectWindow, "Actor Drag");
                     dragSelectionWindowRect.position = new Vector2(actorInteractionWindowRect.x, (actorInteractionWindowRect.y + actorInteractionWindowRect.height));
                 }
+
+                if (showSkinWindow)
+                {
+                    actorSkinWindowRect = GUILayout.Window(43097, actorSkinWindowRect, actorSkinWindow, "Skin Selection", GUILayout.MaxWidth(300f), GUILayout.MinWidth(200f));
+                    actorSkinWindowRect.position = new Vector2(actorInteractionWindowRect.x + actorInteractionWindowRect.width, (actorInteractionWindowRect.y));
+                }
+
             }
         }
 
@@ -60,6 +60,22 @@ namespace SimpleGUI.Menus {
             GUI.DragWindow();
         }
 
+        //parent this to actor window on right side somehow
+        public void actorSkinWindow(int windowID)
+        {
+            scrollPositionSkin = GUILayout.BeginScrollView(
+          scrollPositionSkin, GUILayout.Width(300f), GUILayout.Height(actorInteractionWindowRect.height - 50f));
+            foreach (string skinToSelect in textureSelectionList)
+            {
+                if (GUILayout.Button(skinToSelect))
+                {
+                    newTexture = skinToSelect;
+                }
+            }
+            GUILayout.EndScrollView();
+            GUI.DragWindow();
+        }
+
         //size (height) of window should be limited, OR resize if smaller
         public float dragSize => Math.Max(200f, lastSelectedActorList.Count * 25f);
 
@@ -83,6 +99,8 @@ namespace SimpleGUI.Menus {
 
         public bool showTaskWindow;
         public bool showJobWindow;
+        public bool showSkinWindow;
+
 
         public bool showAiStuff;
         public Color ori;
@@ -166,7 +184,7 @@ namespace SimpleGUI.Menus {
                 if(GUILayout.Button("Force to kingdom king") && lastSelected.kingdom != null) {
                     lastSelected.kingdom.setKing(lastSelected);
                 }
-				/*
+                /*
                 // rgb pixels in the worst ways possible
                 if(GUILayout.Button("Test c")) {
                     // Get the sprite renderer component from an object in the scene
@@ -221,6 +239,51 @@ namespace SimpleGUI.Menus {
                     spriteRenderer.sprite = Sprite.Create(tex, spriteRenderer.sprite.rect, new Vector2(0.5f, 0.5f));
                 }
                 */
+
+                GUILayout.BeginHorizontal();
+                if(GUILayout.Button("Set texture:"))
+                {
+                    if(string.IsNullOrEmpty(newTexture) == false)
+                    {
+                        string strToSubmit = newTexture;
+                        //make sure string being used isnt in blacklist and also original actor asset isnt in blacklist // && textureSelectionBlacklist.Contains(lastSelected.asset.id) == false
+                        if (textureSelectionBlacklist.Contains(strToSubmit) == false)
+                        {
+                            ActorAsset a = AssetManager.actor_library.get(newTexture);
+                            //help i guess, can make some sort of selection for this after confirming it works
+                            if (a != null)
+                            {
+                                if (a.unit)
+                                {
+                                    strToSubmit = AssetManager.raceLibrary.get(a.race).main_texture_path;
+                                }
+                                else
+                                {
+                                    strToSubmit = AssetManager.actor_library.get(newTexture).texture_path;
+                                }
+                            }
+
+                            lastSelected.data.set("textureOverride", strToSubmit);
+
+                            lastSelected.dirty_sprite_main = true;
+                            lastSelected.setHeadSprite(null);
+                        }
+                    }
+                }
+                newTexture = GUILayout.TextField(newTexture);
+                GUI.backgroundColor = Color.yellow;
+                string x = "->";
+                if (showSkinWindow)
+                {
+                    GUI.backgroundColor = Color.green;
+                    x = "x";
+                }
+                if (GUILayout.Button(x))
+                {
+                    showSkinWindow = !showSkinWindow;
+                }
+                GUILayout.EndHorizontal();
+
                 string s = "v AI stuff v";
                 GUI.backgroundColor = Color.yellow;
                 if(showAiStuff) {
@@ -320,20 +383,138 @@ namespace SimpleGUI.Menus {
             GUI.DragWindow();
         }
 
+        public static bool hasTextureOverride(ActorBase __instance)
+        {
+            if(__instance.data != null)
+            {
+                if (__instance.data.custom_data_string != null)
+                {
+                    if (__instance.data.custom_data_string.dict != null)
+                    {
+                        if (__instance.data.custom_data_string.dict.ContainsKey("textureOverride"))
+                        {
+                            Debug.Log("texture override, actor has a textureOverride: " + __instance.data.custom_data_string.dict["textureOverride"]);
+                            return true;
+                        }
+                    }
+                    else
+                    {
+                        Debug.Log("texture override, actor custom_string_data DICT is null");
+                    }
+                }
+                else
+                {
+                    Debug.Log("texture override, actor custom_string_data is null");
+                    __instance.data.custom_data_string = new CustomDataContainer<string>();
+                }
+            }
+            else
+            {
+                Debug.Log("texture override, actor data is null");
+            }
+            return false;
+        }
+
+        public static bool checkAnimationContainer_Prefix(ActorBase __instance)
+        {
+            if (hasTextureOverride(__instance))
+            {
+                if (!__instance.dirty_sprite_main)
+                {
+                    return false;
+                }
+                __instance.dirty_sprite_main = false;
+                string str = __instance.data.custom_data_string["textureOverride"];
+                AnimationContainerUnit animationContainerUnit = ActorAnimationLoader.loadAnimationUnit("actors/" + str, __instance.asset);
+                __instance.animationContainer = animationContainerUnit;
+                return false;
+            }
+            return true;
+            /*
+            if (lockedActorTextures.ContainsKey(__instance)){
+                if (!__instance.dirty_sprite_main)
+                {
+                    return false;
+                }
+                __instance.dirty_sprite_main = false;
+                string str = lockedActorTextures[__instance];
+                AnimationContainerUnit animationContainerUnit = ActorAnimationLoader.loadAnimationUnit("actors/" + str, __instance.asset);
+                __instance.animationContainer = animationContainerUnit;
+                return false;
+            }
+            else
+            {
+                return true;
+            }
+            */
+        }
+
+        //take all id from assetmanager and exclude ones that dont work
+        //modded ones are ???
+        public static List<string> textureSelectionBlacklist = new List<string> { 
+            "_unit",
+            "unit_human",
+            "unit_elf",
+            "unit_dwarf",
+            "unit_orc",
+            "baby_human",
+            "baby_dwarf",
+            "baby_elf",
+            "baby_orc",
+            "dragon",
+            "zombie_dragon",
+            "tornado",
+            "crabzilla",
+            "godFinger",
+            "_mob",
+            "_animal",
+            "_peacefulAnimal",
+            "_carnivore",
+            "_herbivore",
+            "_omnivore",
+            "_insect",
+            "_flying_insect",
+            "_egg",
+            "livingPlants",
+            "livingHouse",
+            "_boat",
+            "boat_trading",
+            "boat_transport",
+            "boat_fishing"
+        };
+
+        //init with all ids of actor assets
+        public static List<string> textureSelectionList = new List<string>();
+
+        //prevent random heads popping back up
+        public static bool checkSpriteHead_Prefix(ActorBase __instance)
+        {
+            if (hasTextureOverride(__instance))
+            {
+                return false;
+            }
+            return true;
+        }
+
+        public static string newTexture = "";
+
         public static bool selectUsingHover;
         public Rect actorInteractionWindowRect;
         public Rect actorTaskListWindowRect;
         public Rect actorJobListWindowRect;
+        public Rect actorSkinWindowRect;
+
+
         public Rect dragSelectionWindowRect;
 
 
         public Vector2 scrollPositionTask;
         public Vector2 scrollPositionJob;
         public Vector2 scrollPositionDragSelect;
+        public Vector2 scrollPositionSkin;
 
         public bool lockActorJob;
         Dictionary<Actor, string> lockedActorJobs = new Dictionary<Actor, string>();
-
 
         public List<string> moods = new List<string> { "happy", "normal", "sad", "angry" };
 

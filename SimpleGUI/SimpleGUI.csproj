@@ -46,6 +46,7 @@
     <Compile Include="Menus\Diplomacy.cs" />
     <Compile Include="Menus\ItemGeneration.cs" />
     <Compile Include="Menus\Other.cs" />
+    <Compile Include="Menus\Settings.cs" />
     <Compile Include="Menus\StatSetting.cs" />
     <Compile Include="Menus\Timescale.cs" />
     <Compile Include="Menus\Traits.cs" />

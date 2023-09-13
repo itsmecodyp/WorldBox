@@ -455,16 +455,16 @@ namespace SimpleGUI.Menus
 			if (GuiMain.showWindowMinimizeButtons.Value)
 			{
 				string buttontext = "W";
-				if (GuiMain.showHideWorldOptionsConfig.Value)
+				if (SimpleSettings.showHideWorldOptionsConfig.Value)
 				{
 					buttontext = "-";
 				}
 				if (GUI.Button(new Rect(worldOptionsRect.x + 280f, worldOptionsRect.y - 25, 25, 25), buttontext))
 				{
-					GuiMain.showHideWorldOptionsConfig.Value = !GuiMain.showHideWorldOptionsConfig.Value;
+					SimpleSettings.showHideWorldOptionsConfig.Value = !SimpleSettings.showHideWorldOptionsConfig.Value;
 				}
 			}
-			if (GuiMain.showHideWorldOptionsConfig.Value)
+			if (SimpleSettings.showHideWorldOptionsConfig.Value)
 			{
 				GUI.contentColor = Color.white;
 				worldOptionsRect = GUILayout.Window(1010, worldOptionsRect, worldOptionsWindow, "World Options", GUILayout.MaxWidth(300f), GUILayout.MinWidth(200f));

@@ -16,7 +16,6 @@ namespace SimpleGUI.Submods.SimpleGamba
             random = new Random();
             cards = new List<Card>();
             SetupDeck();
-            Debug.Log("Deck reset, now shuffling");
             Shuffle();
         }
 

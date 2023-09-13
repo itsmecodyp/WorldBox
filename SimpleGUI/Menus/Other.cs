@@ -272,7 +272,20 @@ namespace SimpleGUI.Menus {
             if(GUILayout.Button("fogOfWarTest")) {
                 fogOfWarTest = !fogOfWarTest;
             }
-            
+
+            if (disableDebugLog)
+            {
+                GUI.backgroundColor = Color.green;
+            }
+            else
+            {
+                GUI.backgroundColor = Color.red;
+            }
+            if (GUILayout.Button("Disable logging"))
+            {
+                disableDebugLog = !disableDebugLog;
+            }
+
             GUI.backgroundColor = original;
 
             /* was for blueskye
@@ -297,6 +310,10 @@ namespace SimpleGUI.Menus {
             
             GUI.DragWindow();
         }
+
+        //disables the normal commenting logs, not errors
+        //easier than cleaning up the 50+ places i use them
+        public static bool disableDebugLog = true; 
 
         public static void toggleBar()
 		{
@@ -326,6 +343,19 @@ namespace SimpleGUI.Menus {
             if (hideGameGUI == true)
             {
                 __result = false;
+            }
+        }
+
+        [HarmonyPatch(typeof(Debug), "Log", new Type[] { typeof(object)})]
+        class DebugLogPatch
+        {
+            public static bool Prefix(object message)
+            {
+                if (disableDebugLog)
+                {
+                    return false;
+                }
+                return true;
             }
         }
 
@@ -538,16 +568,16 @@ namespace SimpleGUI.Menus {
         {
             if(GuiMain.showWindowMinimizeButtons.Value) {
                 string buttontext = "O";
-                if(GuiMain.showHideOtherConfig.Value) {
+                if(SimpleSettings.showHideOtherConfig.Value) {
                     buttontext = "-";
                 }
                 if(GUI.Button(new Rect(otherWindowRect.x + otherWindowRect.width - 25f, otherWindowRect.y - 25, 25, 25), buttontext)) {
-                    GuiMain.showHideOtherConfig.Value = !GuiMain.showHideOtherConfig.Value;
+                    SimpleSettings.showHideOtherConfig.Value = !SimpleSettings.showHideOtherConfig.Value;
                 }
             }
 
             //
-            if(GuiMain.showHideOtherConfig.Value) {
+            if(SimpleSettings.showHideOtherConfig.Value) {
                 otherWindowRect = GUILayout.Window(50000, otherWindowRect, otherWindow, "Other options", GUILayout.MaxWidth(300f), GUILayout.MinWidth(200f));
             }
         }

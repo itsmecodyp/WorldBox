@@ -27,6 +27,44 @@ namespace SimpleGUI {
 
         public static ManualLogSource logger;
 
+        // adding tooltip stuff
+
+        public static int timesLocalizedRan = 0;
+        public static void loadLocalizedText_Postfix(string pLocaleID)
+        {
+            timesLocalizedRan++;
+            Debug.Log("localizedText postfix ran " + timesLocalizedRan.ToString() + " times");
+            string language = Reflection.GetField(LocalizedTextManager.instance.GetType(), LocalizedTextManager.instance, "language") as string;
+            Dictionary<string, string> localizedText = Reflection.GetField(LocalizedTextManager.instance.GetType(), LocalizedTextManager.instance, "localizedText") as Dictionary<string, string>;
+            if (language == "en")
+            {
+                // text tips
+                if (localizedText != null)
+                {
+                    localizedText.Add("Styderr makes awesome maps, check them out!", "Styderr makes awesome maps, check them out!");
+                    localizedText.Add("Nothing to see here guys - KJYhere", "Nothing to see here guys - KJYhere");
+                    localizedText.Add("Call up Rajit at 1(800)-911-SCAM   - Ramlord", "Call up Rajit at 1(800)-911-SCAM   - Ramlord");
+                    localizedText.Add("10/10 would recommend - boopahead08", "10/10 would recommend - boopahead08");
+                    localizedText.Add("Kosovo je srbija!", "Kosovo je srbija!");
+                    localizedText.Add("This mod is sponsored by Raid: Shadow Legends - Slime", "This mod is sponsored by Raid: Shadow Legends - Slime");
+                    localizedText.Add("The four nations lived in harmony, until the orc nation attacked", "The four nations lived in harmony, until the orc nation attacked");
+                    localizedText.Add("Now with raytracing!", "Now with raytracing!");
+                    localizedText.Add("Modificating and customizating the game...", "Modificating and customizating the game...");
+                    localizedText.Add("Tiempo con Juan Diego makes amazing worldbox videos! - Juanchiz", "Tiempo con Juan Diego makes amazing worldbox videos! - Juanchiz");
+                    localizedText.Add("null", "null");
+                }
+            }
+            else if (language == "es") // Just an example
+            {
+                Debug.Log("Using language: Spanish");
+            }
+            else
+            {
+                Debug.Log("English/Spanish not in use");
+            }
+            //localizedText.Add("en", "Lays Eggs");
+        }
+
         public void Awake()
         {
             SettingSetup();
@@ -35,12 +73,28 @@ namespace SimpleGUI {
             HarmonyPatchSetup();
             InvokeRepeating("SaveMenuPositions", 10, 3);
             InvokeRepeating("ConstantWarCheck", 10, 10);
+
             //discord stuff hard crashes if discord is half-logged in
             //(client open, not signed into account)
             
             //disabled 1.6.6, patreon exclusivity means data collection isnt important now
             //InvokeRepeating("DiscordStuff", 10, 10);
             logger = Logger;
+        }
+
+        //why havent i done this sooner?
+        //postfix after InitLibraries.initLibs
+        public static void postAssetInitStuff()
+        {
+            //init texture reassignment list //make it a method idiot
+            foreach(ActorAsset actorAsset in AssetManager.actor_library.list)
+            {
+                if(ActorInteraction.textureSelectionBlacklist.Contains(actorAsset.id) == false)
+                {
+                    ActorInteraction.textureSelectionList.Add(actorAsset.id);
+                }
+            }
+            Debug.Log("simplegui post-asset stuff finished");
         }
 
         public bool hasInitAssets;
@@ -73,12 +127,12 @@ namespace SimpleGUI {
                 //GuiStatSetting.updateAllElements_Postfix();
 			}
            
-            if(showHideConstructionConfig.Value) {
+            if(SimpleSettings.showHideConstructionConfig.Value) {
                 if(Construction != null) {
                     Construction.constructionControl();
                 }
             }
-            if(showHideWorldOptionsConfig.Value) {
+            if(SimpleSettings.showHideWorldOptionsConfig.Value) {
                 if(World.activeFill == null) {
                     World.fillIterationPosition = 0;
                 }
@@ -96,7 +150,7 @@ namespace SimpleGUI {
 					}
 				}
 			}
-            if(showHideActorInteractConfig.Value) {
+            if(SimpleSettings.showHideActorInteractConfig.Value) {
                 ActorInteraction.actorDragSelectionUpdate(); // advertise everything not just patreon
             }
         }
@@ -106,38 +160,17 @@ namespace SimpleGUI {
             // swapped to gui.button at Key's request
             if (GUI.Button(new Rect(Screen.width - 120, 0, 120, 20), "SimpleGUI"))
             {
-                showHideMainWindowConfig.Value = !showHideMainWindowConfig.Value;
-                if(showHideMainWindowConfig.Value == false) {
-                    CloseAllWindows();
+                SimpleSettings.ToggleMenu(SimpleSettings.MenuType.Main);
+                if (SimpleSettings.showHideMainWindowConfig.Value == false) {
+                    // close all windows if main window is closed, fast exit for the many menus
+                    SimpleSettings.CloseAllWindows();
                 }
             }
-            /*
-            GUILayout.BeginArea(new Rect(Screen.width - 120, 0, 120, 30));
-            if(GUILayout.Button("SimpleGUI")) {
-                showHideMainWindowConfig.Value = !showHideMainWindowConfig.Value;
-                if(showHideMainWindowConfig.Value == false) {
-                    CloseAllWindows();
-                }
-            }
-            GUILayout.EndArea();
-            */
-            if(showHideMainWindowConfig.Value == true) {
+            if(SimpleSettings.showHideMainWindowConfig.Value == true) {
                 updateWindows();
             }
         }
 
-        public void CloseAllWindows()
-        {
-            showHideTimescaleWindowConfig.Value = false;
-            showHideItemGenerationConfig.Value = false;
-            showHideTraitsWindowConfig.Value = false;
-            showHideDiplomacyConfig.Value = false;
-            showHideWorldOptionsConfig.Value = false;
-            showHideConstructionConfig.Value = false;
-            showHideOtherConfig.Value = false;
-            showHideStatSettingConfig.Value = false;
-            showHidePatreonConfig.Value = false;
-        }
 
         /*
         public void DisclaimerWindow(int windowID)
@@ -212,9 +245,27 @@ namespace SimpleGUI {
             MethodInfo original;
             MethodInfo patch;
 
+            harmony.PatchAll();
+
             original = AccessTools.Method(typeof(TooltipLibrary), "showActor");
             patch = AccessTools.Method(typeof(ActorInteraction), "showActor_Postfix");
             harmony.Patch(original, null, new HarmonyMethod(patch));
+            Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
+
+
+            original = AccessTools.Method(typeof(ActorBase), "checkAnimationContainer");
+            patch = AccessTools.Method(typeof(ActorInteraction), "checkAnimationContainer_Prefix");
+            harmony.Patch(original, new HarmonyMethod(patch));
+            Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
+
+            original = AccessTools.Method(typeof(InitLibraries), "initLibs");
+            patch = AccessTools.Method(typeof(GuiMain), "postAssetInitStuff");
+            harmony.Patch(original, null, new HarmonyMethod(patch));
+            Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
+
+            original = AccessTools.Method(typeof(ActorBase), "checkSpriteHead");
+            patch = AccessTools.Method(typeof(ActorInteraction), "checkSpriteHead_Prefix");
+            harmony.Patch(original, new HarmonyMethod(patch));
             Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
 
             /*
@@ -245,7 +296,7 @@ namespace SimpleGUI {
             Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
 
             original = AccessTools.Method(typeof(LocalizedTextManager), "loadLocalizedText");
-            patch = AccessTools.Method(typeof(GuiTraits), "loadLocalizedText_Postfix");
+            patch = AccessTools.Method(typeof(GuiMain), "loadLocalizedText_Postfix");
             harmony.Patch(original, null, new HarmonyMethod(patch));
             Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
 
@@ -446,7 +497,6 @@ namespace SimpleGUI {
             UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
             */
 
-            harmony.PatchAll();
         }
 
         public static bool getItem_Prefix(string pID)
@@ -584,15 +634,7 @@ namespace SimpleGUI {
         {
             SetWindowInUse(windowID);
             if(b == true) {
-                // ban problematic users
-                // keep all menus closed so mod is unusable
-                showHideTimescaleWindowConfig.Value = false;
-                showHideTraitsWindowConfig.Value = false;
-                showHideDiplomacyConfig.Value = false;
-                showHideWorldOptionsConfig.Value = false;
-                showHideConstructionConfig.Value = false;
-                showHideStatSettingConfig.Value = false;
-                showHideOtherConfig.Value = false;
+                SimpleSettings.CloseAllWindows();
                 // display ban status
                 GUILayout.Label("BANNED.");
                 // prevent clouds from spawning
@@ -617,51 +659,53 @@ namespace SimpleGUI {
                 */
             }
             if(GUILayout.Button("Timescale")) {
-                showHideTimescaleWindowConfig.Value = !showHideTimescaleWindowConfig.Value;
+                SimpleSettings.ToggleMenu(SimpleSettings.MenuType.Timescale);
             }
-            if(GUILayout.Button("Items")) {
+            if (GUILayout.Button("Items")) {
                 if(AssetManager.items.list != null) {
-                    
                     //ItemGen.allWeapons = new List<string>();
                     foreach(ItemAsset item in AssetManager.items.list) {
                        // if(ItemGen.allOtherEquipment.Contains(item.id) == false && item.id.StartsWith("_") == false && item.id != "base") {
                             //ItemGen.allWeapons.Add(item.id);
                         //}
                     }
-                    
                 }
-				showHideItemGenerationConfig.Value = !showHideItemGenerationConfig.Value;
-                if(showHideItemGenerationConfig.Value == false) {
+                SimpleSettings.ToggleMenu(SimpleSettings.MenuType.Items);
+                if (SimpleSettings.showHideItemGenerationConfig.Value == false) {
                     GuiItemGeneration.itemSelection = false;
 				}
             }
             if(GUILayout.Button("Traits")) {
-                showHideTraitsWindowConfig.Value = !showHideTraitsWindowConfig.Value;
+                SimpleSettings.ToggleMenu(SimpleSettings.MenuType.Traits);
             }
-            if(GUILayout.Button("Diplomacy")) {
-                showHideDiplomacyConfig.Value = !showHideDiplomacyConfig.Value;
+            if (GUILayout.Button("Diplomacy")) {
+                SimpleSettings.ToggleMenu(SimpleSettings.MenuType.Diplomacy);
             }
-            if(showHideDiplomacyConfig.Value == false) {
+            if (SimpleSettings.showHideDiplomacyConfig.Value == false) {
                 GuiDiplomacy.showCultureSelectionWindow = false;
             }
             if (GUILayout.Button("World")) {
-                showHideWorldOptionsConfig.Value = !showHideWorldOptionsConfig.Value;
+                SimpleSettings.ToggleMenu(SimpleSettings.MenuType.World);
             }
-            if(GUILayout.Button("Construction")) {
-                showHideConstructionConfig.Value = !showHideConstructionConfig.Value;
+            if (GUILayout.Button("Construction")) {
+                SimpleSettings.ToggleMenu(SimpleSettings.MenuType.Construction);
             }
-            if(GUILayout.Button("Actor Interaction")) {
-                showHideActorInteractConfig.Value = !showHideActorInteractConfig.Value;
+            if (GUILayout.Button("Actor Interaction")) {
+                SimpleSettings.ToggleMenu(SimpleSettings.MenuType.Interaction);
             }
-            if(showHideActorInteractConfig.Value == false) {
+            if (SimpleSettings.showHideActorInteractConfig.Value == false) {
                 ActorInteraction.showJobWindow = false;
                 ActorInteraction.showTaskWindow = false;
             }
             if(GUILayout.Button("Stats")) {
-                showHideStatSettingConfig.Value = !showHideStatSettingConfig.Value;
+                SimpleSettings.ToggleMenu(SimpleSettings.MenuType.StatSetting);
             }
-            if(GUILayout.Button("Other")) {
-                showHideOtherConfig.Value = !showHideOtherConfig.Value;
+            if (GUILayout.Button("Other")) {
+                SimpleSettings.ToggleMenu(SimpleSettings.MenuType.Other);
+            }
+            if (GUILayout.Button("Settings"))
+            {
+                SimpleSettings.ToggleMenu(SimpleSettings.MenuType.Settings);
             }
             //if (GUILayout.Button("Patreon")){showHidePatreonConfig.Value = !showHidePatreonConfig.Value; }
             GUI.DragWindow();
@@ -673,7 +717,7 @@ namespace SimpleGUI {
         public void updateWindows()
         {
             Color originalcol = GUI.backgroundColor;
-            if(showHideMainWindowConfig.Value) {
+            if(SimpleSettings.showHideMainWindowConfig.Value) {
                 GUI.contentColor = Color.white;
                 mainWindowRect = GUILayout.Window(1001, mainWindowRect, mainWindow, "Main", GUILayout.MaxWidth(300f), GUILayout.MinWidth(200f));
             }
@@ -687,31 +731,31 @@ namespace SimpleGUI {
             if(receivedMessage != null) {
                 messageWindowRect = GUILayout.Window(186075, messageWindowRect, showModMessageWindow, "Message", GUILayout.MaxWidth(300f), GUILayout.MinWidth(200f));
             }
-            if(showHideTimescaleWindowConfig.Value) {
+            if(SimpleSettings.showHideTimescaleWindowConfig.Value) {
                 Timescale.timescaleWindowUpdate();
             }
-            if(showHideItemGenerationConfig.Value) {
+            if(SimpleSettings.showHideItemGenerationConfig.Value) {
                 ItemGen.itemGenerationWindowUpdate(); 
             }
-            if(showHideDiplomacyConfig.Value) {
+            if(SimpleSettings.showHideDiplomacyConfig.Value) {
                 Diplomacy.diplomacyWindowUpdate();
             }
-            if(showHideOtherConfig.Value) {
+            if(SimpleSettings.showHideOtherConfig.Value) {
                 Other.otherWindowUpdate();
             }
-            if(showHideStatSettingConfig.Value) {
+            if(SimpleSettings.showHideStatSettingConfig.Value) {
                 StatSetting.StatSettingWindowUpdate();
             }
-            if(showHideWorldOptionsConfig.Value) {
+            if(SimpleSettings.showHideWorldOptionsConfig.Value) {
                 World.worldOptionsUpdate();
             }
-            if(showHideConstructionConfig.Value) {
+            if(SimpleSettings.showHideConstructionConfig.Value) {
                 Construction.constructionWindowUpdate();
             }
-            if(showHideActorInteractConfig.Value) {
+            if(SimpleSettings.showHideActorInteractConfig.Value) {
                 ActorInteraction.actorInteractionWindowUpdate(); // advertise everything not just patreon
             }
-            if(showHidePatreonConfig.Value) {
+            if(SimpleSettings.showHidePatreonConfig.Value) {
                 Patreon.patreonWindowUpdate(); // advertise everything not just patreon
             }
             if(Traits != null) {
@@ -792,20 +836,20 @@ namespace SimpleGUI {
             maxTimeToWait = Config.AddSetting("Fill", "Max time to wait", 1f, "If a spread tick takes longer than this filling will stop");
             fillByLines = Config.AddSetting("Fill", "Fill by mode", "random", "Which fill mode is used. Valid inputs: first, last, random");
 
-            showHideMainWindowConfig = Config.AddSetting("Menus", "Main Menu Toggle", false, "Whether Main menu was last displayed or open");
-            showHideTimescaleWindowConfig = Config.AddSetting("Menus", "Timescale Menu Toggle", false, "Whether Timescale menu was last displayed or open");
-            showHideItemGenerationConfig = Config.AddSetting("Menus", "Item Menu Toggle", false, "Whether Items menu was last displayed or open");
-            showHideTraitsWindowConfig = Config.AddSetting("Menus", "Traits Menu Toggle", false, "Whether Traits menu was last displayed or open");
-            showHideDiplomacyConfig = Config.AddSetting("Menus", "Diplomacy Menu Toggle", false, "Whether Diplomacy menu was last displayed or open");
-            showHideWorldOptionsConfig = Config.AddSetting("Menus", "World Menu Toggle", false, "Whether world menu was last displayed or open");
-            showHideConstructionConfig = Config.AddSetting("Menus", "Construction Menu Toggle", false, "Whether Construction menu was last displayed or open");
-            showHideOtherConfig = Config.AddSetting("Menus", "Other Menu Toggle", false, "Whether Other menu was last displayed or open");
-            showHideStatSettingConfig = Config.AddSetting("Menus", "Stats Menu Toggle", false, "Whether Stats menu was last displayed or open");
-            showHidePatreonConfig = Config.AddSetting("Menus", "Patreon Menu Toggle", false, "Whether Patreon menu was last displayed or open");
-            showHideActorInteractConfig = Config.AddSetting("Menus", "Actor Interaction Menu Toggle", false, "Whether Actor Interaction menu was last displayed or open");
+            SimpleSettings.showHideMainWindowConfig = Config.AddSetting("Menus", "Main Menu Toggle", false, "Whether Main menu was last displayed or open");
+            SimpleSettings.showHideTimescaleWindowConfig = Config.AddSetting("Menus", "Timescale Menu Toggle", false, "Whether Timescale menu was last displayed or open");
+            SimpleSettings.showHideItemGenerationConfig = Config.AddSetting("Menus", "Item Menu Toggle", false, "Whether Items menu was last displayed or open");
+            SimpleSettings.showHideTraitsWindowConfig = Config.AddSetting("Menus", "Traits Menu Toggle", false, "Whether Traits menu was last displayed or open");
+            SimpleSettings.showHideDiplomacyConfig = Config.AddSetting("Menus", "Diplomacy Menu Toggle", false, "Whether Diplomacy menu was last displayed or open");
+            SimpleSettings.showHideWorldOptionsConfig = Config.AddSetting("Menus", "World Menu Toggle", false, "Whether world menu was last displayed or open");
+            SimpleSettings.showHideConstructionConfig = Config.AddSetting("Menus", "Construction Menu Toggle", false, "Whether Construction menu was last displayed or open");
+            SimpleSettings.showHideOtherConfig = Config.AddSetting("Menus", "Other Menu Toggle", false, "Whether Other menu was last displayed or open");
+            SimpleSettings.showHideStatSettingConfig = Config.AddSetting("Menus", "Stats Menu Toggle", false, "Whether Stats menu was last displayed or open");
+            SimpleSettings.showHidePatreonConfig = Config.AddSetting("Menus", "Patreon Menu Toggle", false, "Whether Patreon menu was last displayed or open");
+            SimpleSettings.showHideActorInteractConfig = Config.AddSetting("Menus", "Actor Interaction Menu Toggle", false, "Whether Actor Interaction menu was last displayed or open");
 
 
-            showPatreonWindow = Config.AddSetting("Menus", "Show Patreon Advertisement", false, "Display my advertisement for Patreon and Discord");
+            SimpleSettings.showPatreonWindow = Config.AddSetting("Menus", "Show Patreon Advertisement", false, "Display my advertisement for Patreon and Discord");
 
             mainWindowRectConfig = Config.AddSetting("Pos", "Main Menu Position", "null", "Last saved position for window");
             timescaleWindowRectConfig = Config.AddSetting("Pos", "Timescale Menu Position", "null", "Last saved position for window");
@@ -842,7 +886,7 @@ namespace SimpleGUI {
         {
             if(loadMenuSettingsOnStartup.Value == false) // close all the menus on startup if this is disabled
             {
-                CloseAllWindows();
+                SimpleSettings.CloseAllWindows();
             }
 
         }
@@ -1165,6 +1209,7 @@ namespace SimpleGUI {
         public static GuiStatSetting StatSetting = new GuiStatSetting();
         public static ActorInteraction ActorInteraction = new ActorInteraction();
 
+
         // Config
         public static ConfigEntry<float> farmsNewRange {
             get; set;
@@ -1187,42 +1232,7 @@ namespace SimpleGUI {
         public static ConfigEntry<bool> autoPositionSomeWindows {
             get; set;
         }
-        public static ConfigEntry<bool> showPatreonWindow {
-            get; set;
-        }
-        public static ConfigEntry<bool> showHideMainWindowConfig {
-            get; set;
-        }
-        public static ConfigEntry<bool> showHideTimescaleWindowConfig {
-            get; set;
-        }
-        public static ConfigEntry<bool> showHideItemGenerationConfig {
-            get; set;
-        }
-        public static ConfigEntry<bool> showHideTraitsWindowConfig {
-            get; set;
-        }
-        public static ConfigEntry<bool> showHideDiplomacyConfig {
-            get; set;
-        }
-        public static ConfigEntry<bool> showHideWorldOptionsConfig {
-            get; set;
-        }
-        public static ConfigEntry<bool> showHideConstructionConfig {
-            get; set;
-        }
-        public static ConfigEntry<bool> showHideOtherConfig {
-            get; set;
-        }
-        public static ConfigEntry<bool> showHidePatreonConfig {
-            get; set;
-        }
-        public static ConfigEntry<bool> showHideActorInteractConfig {
-            get; set;
-        }
-        public static ConfigEntry<bool> showHideStatSettingConfig {
-            get; set;
-        }
+     
         public static ConfigEntry<bool> showWindowMinimizeButtons {
             get; set;
         }

@@ -31,39 +31,6 @@ namespace SimpleGUI.Menus
             return char.ToUpper(targetstring[0]) + targetstring.Substring(1);
         }
 
-        // adding tooltip stuff
-        public static void loadLocalizedText_Postfix(string pLocaleID)
-        {
-            string language = Reflection.GetField(LocalizedTextManager.instance.GetType(), LocalizedTextManager.instance, "language") as string;
-            Dictionary<string, string> localizedText = Reflection.GetField(LocalizedTextManager.instance.GetType(), LocalizedTextManager.instance, "localizedText") as Dictionary<string, string>;
-            if (language == "en")
-            {
-                // text tips
-                if (localizedText != null)
-                {
-                    localizedText.Add("Styderr makes awesome maps, check them out!", "Styderr makes awesome maps, check them out!");
-                    localizedText.Add("Nothing to see here guys - KJYhere", "Nothing to see here guys - KJYhere");
-                    localizedText.Add("Call up Rajit at 1(800)-911-SCAM   - Ramlord", "Call up Rajit at 1(800)-911-SCAM   - Ramlord");
-                    localizedText.Add("10/10 would recommend - boopahead08", "10/10 would recommend - boopahead08");
-                    localizedText.Add("Kosovo je srbija!", "Kosovo je srbija!");
-                    localizedText.Add("This mod is sponsored by Raid: Shadow Legends - Slime", "This mod is sponsored by Raid: Shadow Legends - Slime");
-                    localizedText.Add("The four nations lived in harmony, until the orc nation attacked", "The four nations lived in harmony, until the orc nation attacked");
-                    localizedText.Add("Now with raytracing!", "Now with raytracing!");
-                    localizedText.Add("Modificating and customizating the game...", "Modificating and customizating the game...");
-                    localizedText.Add("Tiempo con Juan Diego makes amazing worldbox videos! - Juanchiz", "Tiempo con Juan Diego makes amazing worldbox videos! - Juanchiz");
-                    localizedText.Add("null", "null");
-                }
-            }
-            else if (language == "es") // Just an example
-            {
-                Debug.Log("Using language: Spanish");
-            }
-            else
-            {
-                Debug.Log("English/Spanish not in use");
-            }
-            //localizedText.Add("en", "Lays Eggs");
-        }
         /*
         actorTrait.action_special_effect += actionTest;
         public static bool turnIntoSkeleton(BaseSimObject pTarget, WorldTile pTile = null)
@@ -220,17 +187,17 @@ namespace SimpleGUI.Menus
             if (GuiMain.showWindowMinimizeButtons.Value)
             {
                 string buttontext = "T";
-                if (GuiMain.showHideTraitsWindowConfig.Value)
+                if (SimpleSettings.showHideTraitsWindowConfig.Value)
                 {
                     buttontext = "-";
                 }
                 if (GUI.Button(new Rect(traitWindowRect.x + traitWindowRect.width - 25f, traitWindowRect.y - 25, 25, 25), buttontext))
                 {
-                    GuiMain.showHideTraitsWindowConfig.Value = !GuiMain.showHideTraitsWindowConfig.Value;
+                    SimpleSettings.showHideTraitsWindowConfig.Value = !SimpleSettings.showHideTraitsWindowConfig.Value;
                 }
             }
 
-            if (GuiMain.showHideTraitsWindowConfig.Value)
+            if (SimpleSettings.showHideTraitsWindowConfig.Value)
             {
                 traitWindowRect = GUILayout.Window(1006, traitWindowRect, TraitWindow, "Traits", GUILayout.MaxWidth(300f), GUILayout.MinWidth(200f));
 

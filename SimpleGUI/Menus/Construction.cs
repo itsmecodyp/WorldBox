@@ -276,16 +276,16 @@ namespace SimpleGUI.Menus
             if (GuiMain.showWindowMinimizeButtons.Value)
             {
                 string buttontext = "C";
-                if (GuiMain.showHideConstructionConfig.Value)
+                if (SimpleSettings.showHideConstructionConfig.Value)
                 {
                     buttontext = "-";
                 }
                 if (GUI.Button(new Rect(ConstructionWindowRect.x + ConstructionWindowRect.width - 25f, ConstructionWindowRect.y - 25, 25, 25), buttontext))
                 {
-                    GuiMain.showHideConstructionConfig.Value = !GuiMain.showHideConstructionConfig.Value;
+                    SimpleSettings.showHideConstructionConfig.Value = !SimpleSettings.showHideConstructionConfig.Value;
                 }
             }
-            if (GuiMain.showHideConstructionConfig.Value)
+            if (SimpleSettings.showHideConstructionConfig.Value)
             {
                 ConstructionWindowRect = GUILayout.Window(1007, ConstructionWindowRect, constructionWindow, "Construction", GUILayout.MaxWidth(300f), GUILayout.MinWidth(200f));
             }
