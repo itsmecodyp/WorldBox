@@ -70,6 +70,7 @@ namespace SimpleGUI.Submods.WorldBox3D {
                 GUI.backgroundColor = Color.green;
             }
             if(GUILayout.Button("Enable 3D: " + autoPlacement)) {
+                //Camera.main.transparencySortMode = TransparencySortMode.Perspective;
                 autoPlacement = !autoPlacement;
                 _3dEnabled = !_3dEnabled;
 
@@ -77,6 +78,36 @@ namespace SimpleGUI.Submods.WorldBox3D {
                     Reset3d();
                     if (Camera.main != null) Camera.main.transform.rotation = Quaternion.Euler(cameraX, cameraY, cameraZ);
                 }
+            }
+            GUI.backgroundColor = Color.red;
+            if (tile3Denabled == true)
+            {
+                GUI.backgroundColor = Color.green;
+            }
+            if (GUILayout.Button("tile3d:" + tile3Denabled))
+            {
+                tile3Denabled = !tile3Denabled;
+            }
+            GUILayout.BeginHorizontal();
+            if (GUILayout.Button("DividerAmount: "))
+            {
+            }
+            dividerAmount = Convert.ToInt32(GUILayout.TextField(dividerAmount.ToString()));
+            GUILayout.EndHorizontal();
+            if (tile3Denabled)
+            {
+                GUI.backgroundColor = Color.red;
+                if (useThiccTile3D == true)
+                {
+                    GUI.backgroundColor = Color.green;
+                }
+                GUILayout.BeginHorizontal();
+                if (GUILayout.Button("ThiccTile3D: " + useThiccTile3D))
+                {
+                    useThiccTile3D = !useThiccTile3D;
+                }
+                thiccTile3DAmount = Convert.ToInt32(GUILayout.TextField(thiccTile3DAmount.ToString()));
+                GUILayout.EndHorizontal();
             }
             GUI.backgroundColor = Color.red;
             if(lockCameraControl == true) {
@@ -95,7 +126,7 @@ namespace SimpleGUI.Submods.WorldBox3D {
             if(publicBuild == false) {
                 try
                 {
-                    //ObjectRotationButtons();
+                    ObjectRotationButtons();
                 }
                 catch (Exception e)
                 {
@@ -164,7 +195,7 @@ namespace SimpleGUI.Submods.WorldBox3D {
         public static bool _3dEnabled;
 
         //false = show experimental stuff
-        public bool publicBuild = false;
+        public bool publicBuild = true;
 
 
         public Vector3 RandomCircle(Vector3 center, float radius, int a)
@@ -195,25 +226,57 @@ namespace SimpleGUI.Submods.WorldBox3D {
         }
         */
 
-        public static int dividerAmount = -5;
+        public static int dividerAmount = 2;
 
         // tile3d setup
         public static bool setTile_Prefix(WorldTile pWorldTile, Vector3Int pVec, Tile pGraphic, TilemapExtended __instance)
         {
-            if(tile3Denabled) {
+            if (tile3Denabled)
+            {
                 //tilesAtPos = new Dictionary<Vector3, Sprite>();
                 List<Vector3Int> vec = __instance._vec;
                 List<Tile> tiles = __instance._tiles;
                 Tile curGraphics = pWorldTile.curGraphics;
 
-                pVec.z = (pWorldTile.Height) / dividerAmount; // main change, everything else is recreation/replacement
+                pVec.z = (-pWorldTile.Height) / dividerAmount; // main change, everything else is recreation/replacement
 
-                if(curGraphics == pGraphic && pGraphic != null) {
+                if (curGraphics == pGraphic && pGraphic != null)
+                {
                     return false;
                 }
                 curGraphics = pGraphic;
                 vec.Add(pVec);
                 tiles.Add(pGraphic);
+
+                if (useThiccTile3D)
+                {
+                    //doesnt work
+                    int tileCloneAmount = thiccTile3DAmount;
+
+                    while (tileCloneAmount > 0)
+                    {
+                        vec.Add(pVec + new Vector3Int(0, 0, tileCloneAmount));
+                        tiles.Add(pGraphic);
+                        tileCloneAmount--;
+                    }
+                    /* doesnt work
+                    for (int i = 0; i < thiccTile3DAmount; i++)
+                    {
+                        vec.Add(pVec + new Vector3Int(0, 0, thiccTile3DAmount));
+                        tiles.Add(pGraphic);
+                    }
+                    */
+                    /* DOES WORK
+                    vec.Add(pVec + new Vector3Int(0, 0, 1));
+                    tiles.Add(pGraphic);
+                    vec.Add(pVec + new Vector3Int(0, 0, 2));
+                    tiles.Add(pGraphic);
+                    vec.Add(pVec + new Vector3Int(0, 0, 3));
+                    tiles.Add(pGraphic);
+                    vec.Add(pVec + new Vector3Int(0, 0, 4));
+                    tiles.Add(pGraphic);
+                    */
+                }
                 return false;
             }
             //new try
@@ -223,6 +286,9 @@ namespace SimpleGUI.Submods.WorldBox3D {
             }
             return true;
         }
+
+        public static bool useThiccTile3D;
+        public static int thiccTile3DAmount = 4;
 
         public static Dictionary<Vector3, Sprite> tilesAtPos = new Dictionary<Vector3, Sprite>();
 
@@ -406,7 +472,7 @@ namespace SimpleGUI.Submods.WorldBox3D {
                     height = target.currentTile.Height / dividerAmount;
                 }
             }
-            return height;
+            return -height;
         }
 
         public static void setAlpha_Postfix(float pVal, BaseEffect __instance) // applies to clouds, explosions, fireworks
@@ -416,7 +482,7 @@ namespace SimpleGUI.Submods.WorldBox3D {
                 WorldTile tile = tileFromVector(__instance.transform.localPosition);
                 
                 if(tile3Denabled && tile != null) {
-                    height = (tile.Height) / dividerAmount;
+                    height = (-tile.Height) / dividerAmount;
                 }
 
                 __instance.transform.localPosition = new Vector3(__instance.transform.localPosition.x, __instance.transform.localPosition.y, height);
@@ -487,7 +553,7 @@ namespace SimpleGUI.Submods.WorldBox3D {
         {
             float height = 0f;
             if(tile3Denabled) {
-                height = (__instance.currentTile.Height) / dividerAmount;
+                height = (-__instance.currentTile.Height) / dividerAmount;
             }
             if(_3dEnabled) {
                 __instance.transform.localPosition = new Vector3(__instance.transform.localPosition.x, __instance.transform.localPosition.y, height);
@@ -538,22 +604,30 @@ namespace SimpleGUI.Submods.WorldBox3D {
         public void layerBuildingSprite(Building targetBuilding, bool twoLayer = false)
         {
             float height = 0f;
+            WorldTile tTile = targetBuilding.currentTile;
             SpriteRenderer spriteRenderer = targetBuilding.spriteRenderer;
-
-            if(twoLayer) {
+            if (twoLayer) {
                 SpriteRenderer newSprite2 = Instantiate(spriteRenderer);
                 newSprite2.transform.rotation = Quaternion.Euler(0, 90, 90);
                 if(tile3Denabled) {
-                    height = (targetBuilding.currentTile.Height) / dividerAmount;
+                    height = (-targetBuilding.currentTile.Height) / dividerAmount;
                     targetBuilding.curTransformPosition = new Vector3(targetBuilding.currentPosition.x, targetBuilding.currentPosition.y, height);
                 }
                 newSprite2.transform.position = new Vector3(targetBuilding.currentPosition.x, targetBuilding.currentPosition.y, height);
                 extraLayers.Add(newSprite2);
             }
             SpriteRenderer newSprite = Instantiate(spriteRenderer);
+
+            /* experimental test to fix layering, FAILED
+            spriteRenderer.sortingLayerName = "Tiles";
+            newSprite.sortingLayerName = "Tiles";
+            spriteRenderer.sortingOrder = tTile.Type.render_z;
+            newSprite.sortingOrder = tTile.Type.render_z;
+            */
+
             newSprite.transform.rotation = Quaternion.Euler(-90, 0, 0);
             if(tile3Denabled) {
-                height = (targetBuilding.currentTile.Height) / dividerAmount;
+                height = (-targetBuilding.currentTile.Height) / dividerAmount;
             }
             newSprite.transform.position = new Vector3(targetBuilding.currentPosition.x, targetBuilding.currentPosition.y, height);
             extraLayers.Add(newSprite);
@@ -716,7 +790,7 @@ namespace SimpleGUI.Submods.WorldBox3D {
 
                     if(actor.currentTile != null) {
                         if(tile3Denabled) {
-                            height = (actor.currentTile.Height) / dividerAmount;
+                            height = (-actor.currentTile.Height) / dividerAmount;
                         }
                         actor.transform.position = new Vector3(actor.transform.position.x, actor.transform.position.y, height);
                         SpriteRenderer spriteRenderer = actor.spriteRenderer;
@@ -748,57 +822,7 @@ namespace SimpleGUI.Submods.WorldBox3D {
         */
         public void ObjectRotationButtons()
         {
-            if(GUILayout.Button("Actor flip")) {
-                foreach(Actor actor in MapBox.instance.units) {
-                    SpriteAnimation spriteAnimation = actor.sprite_animation;
-                    spriteAnimation.transform.Rotate(-90, 0, 0); // was southup
-                    actor.transform.position = new Vector3(actor.transform.position.x, actor.transform.position.y, 0f);
-                }
-            }
-            if(GUILayout.Button("Building flip")) {
-                foreach(Building building in MapBox.instance.buildings) {
-                    SpriteRenderer spriteRenderer = building.spriteRenderer;
-                    spriteRenderer.transform.Rotate(-90, 0, 0);
-                }
-            }
-            if(GUILayout.Button("RotateXBuildings")) {
-                foreach(Building building in MapBox.instance.buildings) {
-
-                    building.transform.position = new Vector3(building.transform.position.x, building.transform.position.y, 0f);
-                    SpriteRenderer spriteRenderer = building.spriteRenderer;
-                    spriteRenderer.transform.Rotate(0, 90, 0);
-                }
-            }
-            if(GUILayout.Button("RotateBuildingsXRandomized")) {
-                foreach(Building building in MapBox.instance.buildings) {
-                    if(Toolbox.randomBool()) {
-
-                        building.transform.position = new Vector3(building.transform.position.x, building.transform.position.y, 0f);
-                        SpriteRenderer spriteRenderer = building.spriteRenderer;
-                        spriteRenderer.transform.Rotate(0, 15, 0);
-                    }
-
-                }
-            }
-            if(GUILayout.Button("RotateActorsX")) {
-                foreach(Actor building in MapBox.instance.units) {
-
-                    building.transform.position = new Vector3(building.transform.position.x, building.transform.position.y, 0f);
-                    SpriteRenderer spriteRenderer = building.spriteRenderer;
-                    spriteRenderer.transform.Rotate(0, 90, 0);
-                }
-
-            }
-            if(GUILayout.Button("RotateActorsXRandomized")) {
-                foreach(Actor actor in MapBox.instance.units) {
-                    if(Toolbox.randomBool()) {
-                        actor.transform.position = new Vector3(actor.transform.position.x, actor.transform.position.y, 0f);
-                        SpriteRenderer spriteRenderer = actor.spriteRenderer;
-                        spriteRenderer.transform.Rotate(0, 15, 0);
-                    }
-
-                }
-            }
+            
         }
 
         public bool lockCameraControl = true;

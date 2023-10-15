@@ -25,7 +25,7 @@ namespace SimpleGUI
 
         public void patreonWindowUpdate()
         {
-            if (SimpleSettings.showHidePatreonConfig.Value)
+            if (SimpleSettings.showHidePatreonConfig)
             {
                 patreonWindowRect = GUILayout.Window(1009, patreonWindowRect, patreonWindow, "Patreon", GUILayout.MaxWidth(300f), GUILayout.MinWidth(200f));
             }

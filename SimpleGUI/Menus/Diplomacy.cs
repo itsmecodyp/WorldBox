@@ -16,7 +16,7 @@ namespace SimpleGUI.Menus {
             scrollPosition = GUILayout.BeginScrollView(
           scrollPosition, GUILayout.Height(diplomacyWindowRect.height - 32.5f));
             foreach(Culture culture in MapBox.instance.cultures.list) {
-				if(GUILayout.Button(culture.name)) {
+				if(GUILayout.Button(culture.name) && selectedCity1 != null) {
                     currentCultureFromSelectionWindow = culture.name;
                     Culture city1Culture = selectedCity1.getCulture();
                     if(city1Culture != null) {
@@ -355,18 +355,6 @@ namespace SimpleGUI.Menus {
 
         public void diplomacyWindowUpdate()
         {
-            if(GuiMain.showWindowMinimizeButtons != null && GuiMain.showWindowMinimizeButtons.Value) {
-                string buttontext = "D";
-                if(SimpleSettings.showHideDiplomacyConfig != null && SimpleSettings.showHideDiplomacyConfig.Value) {
-                    buttontext = "-";
-                }
-                if(GUI.Button(new Rect(diplomacyWindowRect.x + diplomacyWindowRect.width - 25f, diplomacyWindowRect.y - 25, 25, 25), buttontext))
-                {
-                    if (SimpleSettings.showHideDiplomacyConfig != null)
-                        SimpleSettings.showHideDiplomacyConfig.Value = !SimpleSettings.showHideDiplomacyConfig.Value;
-                }
-            }
-            //
             if(selectingCity1 && Input.GetMouseButton(0)) {
                 if(MapBox.instance.getMouseTilePos() != null) {
                     if(MapBox.instance.getMouseTilePos().zone.city != null) {
@@ -391,7 +379,7 @@ namespace SimpleGUI.Menus {
                     }
                     selectedCity1.addZone(MapBox.instance.getMouseTilePos().zone);
                 }
-                if(Input.GetMouseButton(1) && MapBox.instance.getMouseTilePos().zone.city == selectedCity1) {
+                if (Input.GetMouseButton(1) && MapBox.instance.getMouseTilePos().zone.city == selectedCity1 && selectedCity1.zones.Count > 1) {
                     selectedCity1.removeZone(MapBox.instance.getMouseTilePos().zone);
                 }
             }
@@ -402,7 +390,7 @@ namespace SimpleGUI.Menus {
                     }
                     selectedCity2.addZone(MapBox.instance.getMouseTilePos().zone);
                 }
-                if(Input.GetMouseButton(1) && MapBox.instance.getMouseTilePos().zone.city == selectedCity2) {
+                if(Input.GetMouseButton(1) && MapBox.instance.getMouseTilePos().zone.city == selectedCity2 && selectedCity2.zones.Count > 1) {
                     selectedCity2.removeZone(MapBox.instance.getMouseTilePos().zone);
                 }
             }
@@ -460,7 +448,7 @@ namespace SimpleGUI.Menus {
                 }
             }
             */
-            if(SimpleSettings.showHideDiplomacyConfig != null && SimpleSettings.showHideDiplomacyConfig.Value) {
+            if(SimpleSettings.showHideDiplomacyConfig != null && SimpleSettings.showHideDiplomacyConfig) {
                 diplomacyWindowRect = GUILayout.Window(96850, diplomacyWindowRect, diplomacyWindow, "Diplomacy", GUILayout.MaxWidth(300f), GUILayout.MinWidth(200f));
             }
 			if(showCultureSelectionWindow) {

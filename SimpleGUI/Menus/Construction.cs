@@ -273,19 +273,7 @@ namespace SimpleGUI.Menus
 
         public void constructionWindowUpdate()
         {
-            if (GuiMain.showWindowMinimizeButtons.Value)
-            {
-                string buttontext = "C";
-                if (SimpleSettings.showHideConstructionConfig.Value)
-                {
-                    buttontext = "-";
-                }
-                if (GUI.Button(new Rect(ConstructionWindowRect.x + ConstructionWindowRect.width - 25f, ConstructionWindowRect.y - 25, 25, 25), buttontext))
-                {
-                    SimpleSettings.showHideConstructionConfig.Value = !SimpleSettings.showHideConstructionConfig.Value;
-                }
-            }
-            if (SimpleSettings.showHideConstructionConfig.Value)
+            if (SimpleSettings.showHideConstructionConfig)
             {
                 ConstructionWindowRect = GUILayout.Window(1007, ConstructionWindowRect, constructionWindow, "Construction", GUILayout.MaxWidth(300f), GUILayout.MinWidth(200f));
             }

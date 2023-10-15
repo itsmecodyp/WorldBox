@@ -1,64 +1,19 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using Amazon.Runtime;
+using Amazon.Runtime.Internal.Transform;
 using BepInEx;
+using Google.MiniJSON;
+using Newtonsoft.Json;
 using SimpleGUI.Submods.UnitClipboard;
+using SimpleJSON;
 using UnityEngine;
 
 namespace SimpleGUI.Submods.SimpleMessages
 {
-    [BepInPlugin(pluginGuid, pluginName, pluginVersion)]
-    public class Main : BaseUnityPlugin {
-        public const string pluginGuid = "cody.worldbox.simple.lib";
-        public const string pluginName = "SimpleLibrary";
-        public const string pluginVersion = "0.0.0.3";
-
-        public void Update()
-        {
-            if(Input.GetKeyDown(KeyCode.M)) {
-                Actor potentialStarter = UnitClipboard_Main.ClosestActorToTile(MapBox.instance.getMouseTilePos(), 5f);
-                if(potentialStarter != null) {
-                    string id = potentialStarter.asset.id;
-                    Debug.Log("actor found with id:" + id);
-                    if(Messages.actorStartPhrases.TryGetValue(id, out var phrase)) {
-                        string phraseToSay = phrase.GetRandom();
-                        Messages.ActorSay(potentialStarter, phraseToSay, 3);
-                    }
-                    else {
-                        Debug.Log("No conversation starter found for actor ID");
-                    }
-                }
-                else {
-                    Debug.Log("No actor found near cursor");
-                }
-            }
-
-            //if(Input.GetKeyDown(KeyCode.L)) { foreach(Actor actor in MapBox.instance.units) { ActorSay(actor, "Hi, my name is " + actor.data.name, 3f); } }
-
-
-            /*
-            if (lastTimer + 5f < Time.realtimeSinceStartup)
-            {
-                if(MapBox.instance != null && MapBox.instance.units != null)
-                foreach (Actor actor in MapBox.instance.units)
-                {
-                    ActorStatus data = Reflection.GetField(actor.GetType(), actor, "data") as ActorStatus;
-                    string name = data.firstName;
-                    if (data.favorite)
-                    {
-                        Messages.ActorSay(actor, name, 5f);
-                    }
-                }
-                lastTimer = Time.realtimeSinceStartup;
-            }
-            */
-            Messages.replyUpdate();
-        }
-
-        public float lastTimer;
-
-    }
-
     [BepInPlugin(pluginGuid, pluginName, pluginVersion)]
     public class Messages : BaseUnityPlugin {
 
@@ -69,6 +24,7 @@ namespace SimpleGUI.Submods.SimpleMessages
         public static int windowInUse = 0;
         public static List<ModMessage> listOfMessages = new List<ModMessage>();
         public static int messageID;
+        public float lastTimer;
 
         public static Messages self;
 
@@ -232,12 +188,158 @@ namespace SimpleGUI.Submods.SimpleMessages
                 }
             }
         }
-
         public void Update()
         {
-            //if(Input.GetKeyDown(KeyCode.L)) { foreach(Actor actor in MapBox.instance.units) { ActorSay(actor, "Hi, my name is " + actor.data.firstName); } }
-            //if(Input.GetKeyDown(KeyCode.Alpha0)) { foreach(Actor actor in MapBox.instance.units) { ActorSay(actor, "0"); } }
-            //if(Input.GetKeyDown(KeyCode.Alpha1)) { foreach(Actor actor in MapBox.instance.units) { ActorSay(actor, "11111"); } }
+            if (GuiMain.useDebugHotkeys && Input.GetKeyDown(KeyCode.M))
+            {
+                Actor potentialStarter = UnitClipboard_Main.ClosestActorToTile(MapBox.instance.getMouseTilePos(), 5f);
+                if (potentialStarter != null)
+                {
+                    string id = potentialStarter.asset.id;
+                    Console.WriteLine("actor found with id:" + id);
+                    if (Messages.actorStartPhrases.ContainsKey(id))
+                    {
+                        string phraseToSay = Messages.actorStartPhrases[id].starterPhrases.GetRandom();
+                        Messages.ActorSay(potentialStarter, phraseToSay, 3);
+                    }
+                    else
+                    {
+                        Console.WriteLine("No conversation starter found for actor ID");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("No actor found near cursor");
+                }
+            }
+            Messages.replyUpdate();
+        }
+
+        //for refreshing changes mid-gameplay
+        public static void Reload()
+        {
+            LoadStartersFromJson();
+            LoadCustomsFromJson();
+        }
+
+        public static void LoadStartersFromJson()
+        {
+            string path1 = Application.streamingAssetsPath + "/messages";
+            //load starters
+            foreach (string f in Directory.GetFiles(path1 + "/starters"))
+            {
+                string fileName = RemoveInvalidChars(f.Replace(path1 + "/starters", "").Replace(".json", ""));
+                if (actorStartPhrases.ContainsKey(fileName))
+                {
+                    actorStartPhrases[fileName] = JsonUtility.FromJson<StarterData>(File.ReadAllText(f));
+                }
+                else
+                {
+                    actorStartPhrases.Add(fileName, JsonUtility.FromJson<StarterData>(File.ReadAllText(f)));
+                }
+            }
+            //load replies
+            foreach (string f in Directory.GetFiles(path1 + "/replies"))
+            {
+                ResponseData response = JsonUtility.FromJson<ResponseData>(File.ReadAllText(f));
+                if (actorResponses.ContainsKey(response.inputToRespondTo))
+                {
+                    actorResponses[response.inputToRespondTo] = response;
+                }
+                else
+                {
+                    actorResponses.Add(response.inputToRespondTo, response);
+                }
+            }
+        }
+        public static void LoadCustomsFromJson()
+        {
+            string path1 = Application.streamingAssetsPath + "/messages/custom/";
+            if (File.Exists(path1 + "escortCommand.json"))
+            {
+                string[] lines = JsonConvert.DeserializeObject<string[]>(File.ReadAllText(path1 + "escortCommand.json"));
+                GuiMain.ActorControl.escortCommandLines = lines;
+            }
+        }
+
+        //export pre-made message assets so there is reference to create new ones
+        public static void SaveCurrent()
+        {
+            string path1 = Application.streamingAssetsPath + "/messages";
+            //check for and create the paths if needed
+            if(Directory.Exists(path1) == false)
+            {
+                Directory.CreateDirectory(path1);
+            }
+            if (Directory.Exists(path1 + "/starters") == false)
+            {
+                Directory.CreateDirectory(path1 + "/starters");
+            }
+            if (Directory.Exists(path1 + "/replies") == false)
+            {
+                Directory.CreateDirectory(path1 + "/replies");
+            }
+            if (Directory.Exists(path1 + "/custom") == false)
+            {
+                Directory.CreateDirectory(path1 + "/custom");
+            }
+
+            path1 = Application.streamingAssetsPath + "/messages/starters/";
+            foreach (KeyValuePair<string, StarterData> starterData in actorStartPhrases)
+            {
+                string path2 = path1 + starterData.Key + ".json";
+                string toSave = JsonUtility.ToJson(starterData.Value, true);
+                File.WriteAllText(path2, toSave);
+                Console.WriteLine(starterData);
+            }
+
+            path1 = Application.streamingAssetsPath + "/messages/replies/";
+            foreach (KeyValuePair<string, ResponseData> responseData in actorResponses)
+            {
+                //cleanup the string to save as filename
+                var invalidChars = Path.GetInvalidFileNameChars();
+                string invalidCharsRemoved = new string(responseData.Key
+                  .Where(x => !invalidChars.Contains(x))
+                  .ToArray());
+                //combine path with newly cleaned name
+                string path2 = path1 + invalidCharsRemoved + ".json";
+                string toSave = JsonUtility.ToJson(responseData.Value, true);
+                File.WriteAllText(path2, toSave);
+            }
+
+            path1 = Application.streamingAssetsPath + "/messages/custom/";
+            if (File.Exists(path1 + "escortCommand.json") == false)
+            {
+                string toSave = JsonConvert.SerializeObject(GuiMain.ActorControl.escortCommandLines);
+                File.WriteAllText(path1 + "escortCommand.json", toSave);
+            }
+            if (File.Exists(path1 + "escortEncouragement.json") == false)
+            {
+                string toSave = JsonConvert.SerializeObject(GuiMain.ActorControl.escortEncourageLines);
+                File.WriteAllText(path1 + "escortEncouragement.json", toSave);
+            }
+            if (File.Exists(path1 + "fear.json") == false)
+            {
+                string toSave = JsonConvert.SerializeObject(GuiMain.ActorControl.fearLines);
+                File.WriteAllText(path1 + "fear.json", toSave);
+            }
+            if (File.Exists(path1 + "sorry.json") == false)
+            {
+                string toSave = JsonConvert.SerializeObject(GuiMain.ActorControl.sorryLines);
+
+                File.WriteAllText(path1 + "sorry.json", toSave);
+            }
+        }
+
+        public static string RemoveInvalidChars(string filename)
+        {
+            string invalid = new string(Path.GetInvalidFileNameChars()) + new string(Path.GetInvalidPathChars());
+
+            foreach (char c in invalid)
+            {
+                filename = filename.Replace(c.ToString(), "");
+            }
+            return filename;
         }
 
         public void ActorMessageDisplayWindow(int windowID)
@@ -250,13 +352,108 @@ namespace SimpleGUI.Submods.SimpleMessages
         }
 
         public void CreateStartPhrases(){
-            string[] starterPhrases;
-            //humans
-            starterPhrases = new string[] { "Howdy!", "What's up?", "Good day to you.", "Hello!" };
-            actorStartPhrases.Add("unit_human", starterPhrases);
+            actorStartPhrases.Add("unit_human", new StarterData(new string[] { "Hello.", "What do you want?", "Can I help you?" }));
+            actorStartPhrases.Add("chicken", new StarterData(new string[] { "bu-bock", "bock!", "Where's my egg?", "Do I smell grease?", "Eat more beef" }));
+            actorStartPhrases.Add("rooster", new StarterData(new string[] { "bu-bock", "bock!", "Where's my egg?", "Do I smell grease?", "Eat more beef" }));
+            actorStartPhrases.Add("unit_elf", new StarterData(new string[] { "Greetings.", "Sshhh...", "I'm a vegan." }));
+            actorStartPhrases.Add("unit_dwarf", new StarterData(new string[] { "Oy!", "Get back to work.", "Where did I leave my cup?", "Ooww, my head..", "You're big!" }));
+            actorStartPhrases.Add("unit_orc", new StarterData(new string[] { "Grrr..", "Go away.", "Want to fight?", "I'll break your bones.", "You are small.", "Meat... *drools*" }));
+            actorStartPhrases.Add("baby_human", new StarterData(new string[] { "That tickles!", "Want to play?", "Look over there!", "Where's my friend?", "I'm a big kid!" }));
+            actorStartPhrases.Add("baby_elf", new StarterData(new string[] { "That tickles!", "Want to play?", "Look over there!", "Where's my friend?", "I'm a big kid!" }));
+            actorStartPhrases.Add("baby_orc", new StarterData(new string[] { "That tickles!", "Want to play?", "Look over there!", "Where's my friend?", "I'm a big kid!" }));
+            actorStartPhrases.Add("baby_dwarf", new StarterData(new string[] { "That tickles!", "Want to play?", "Look over there!", "Where's my friend?", "I'm a big kid!" }));
+            actorStartPhrases.Add("dragon", new StarterData(new string[] { "Grrr...", "I'm tired.", "Where's my treasure?", "BURN!", "So small!", "RAH!" }));
+            actorStartPhrases.Add("sheep", new StarterData(new string[] { "Ba.", "Baaaahh!", "Shh.. They can't know.", ".....", "Buuuhh.", "What are you doing?" }));
+            actorStartPhrases.Add("cow", new StarterData(new string[] { "Mooo", "Mooooove!", "Shh.. They can't know.", ".....", "*Chews grass*" }));
+            actorStartPhrases.Add("penguin", new StarterData(new string[] { "It might be a spy.", "What sort of noises does a penguin make?", "How did I get here?", "My feet don't have feelings..." }));
+            actorStartPhrases.Add("turtle", new StarterData(new string[] { "Is that a bit of moss?", "How old am I?", "Where is my egg?", ".....", "Wow you're fast..." }));
+            actorStartPhrases.Add("river_turtle", new StarterData(new string[] { "Is that a bit of moss?", "How old am I?", "Where is my egg?", ".....", "Wow you're fast..." }));
+            actorStartPhrases.Add("crab", new StarterData(new string[] { "Click click.", "Let's dance!", "There's a rave going down later...", ".....", "Where's the big one?" }));
+            actorStartPhrases.Add("fairy", new StarterData(new string[] { "Watch out for lightning..", "Do you hear them?", "Shh.. They're coming", ".....", "*Giggles*" }));
+            actorStartPhrases.Add("enchanted_fairy", new StarterData(new string[] { "Watch out for lightning..", "Do you hear them?", "Shh.. They're coming", ".....", "*Giggles*" }));
         }
 
         public void CreateResponseDicts(){
+            ResponseData hello1 = new ResponseData
+            {
+                inputToRespondTo = "Hello.",
+                actorAssetID = new List<string> { "unit_human", "unit_elf", "unit_dwarf" },
+                actorReply = new List<string> { "How are you?", "Greetings.", "Lovely weather.", "Hello!" }
+            };
+            actorResponses.Add(hello1.inputToRespondTo, hello1);
+
+            ResponseData hello2 = new ResponseData
+            {
+                inputToRespondTo = "Hello!",
+                actorAssetID = new List<string> { "unit_human", "unit_elf", "unit_dwarf" },
+                actorReply = new List<string> { "How are you?", "Greetings.", "Can I help you?" }
+            };
+            actorResponses.Add(hello2.inputToRespondTo, hello2);
+
+            ResponseData howAreYou = new ResponseData
+            {
+                inputToRespondTo = "How are you?",
+                actorAssetID = new List<string> { "unit_human", "unit_elf", "unit_dwarf" },
+                actorReply = new List<string> { "I'm doing well.", "A bit ill..", "Alright and you?", "I'm great!" }
+            };
+            actorResponses.Add(howAreYou.inputToRespondTo, howAreYou);
+
+            ResponseData aBitIll = new ResponseData
+            {
+                inputToRespondTo = "A bit ill..",
+                actorAssetID = new List<string> { "unit_human", "unit_elf", "unit_dwarf" },
+                actorReply = new List<string> { "Sorry to hear that..", "Stay away from me, please.", "Who'd you catch it from?" }
+            };
+            actorResponses.Add(aBitIll.inputToRespondTo, aBitIll);
+
+            ResponseData imDoingWell = new ResponseData
+            {
+                inputToRespondTo = "I'm doing well.",
+                actorAssetID = new List<string> { "unit_human", "unit_elf", "unit_dwarf" },
+                actorReply = new List<string> { "That's good.", "Glad to hear.", "Aye me too.", "Nice." }
+            };
+            actorResponses.Add(imDoingWell.inputToRespondTo, imDoingWell);
+
+            ResponseData canIHelpYou = new ResponseData
+            {
+                inputToRespondTo = "Can I help you?",
+                actorAssetID = new List<string> { "unit_human", "unit_elf", "unit_dwarf" },
+                actorReply = new List<string> { "If you wouldn't mind...", "No, thank you.", "I can help too!" }
+            };
+            actorResponses.Add(canIHelpYou.inputToRespondTo, canIHelpYou);
+
+            ResponseData ifYouWouldntMind = new ResponseData
+            {
+                inputToRespondTo = "If you wouldn't mind..",
+                actorAssetID = new List<string> { "unit_human", "unit_elf", "unit_dwarf" },
+                actorReply = new List<string> { "Okay, what do you need?", "I can help, let's go." }
+            };
+            actorResponses.Add(ifYouWouldntMind.inputToRespondTo, ifYouWouldntMind);
+
+            ResponseData noThankYou = new ResponseData
+            {
+                inputToRespondTo = "No, thank you.",
+                actorAssetID = new List<string> { "unit_human", "unit_elf", "unit_dwarf" },
+                actorReply = new List<string> { "Okay.", "If you say so.", "Just ask if you need me!" }
+            };
+            actorResponses.Add(noThankYou.inputToRespondTo, noThankYou);
+
+            ResponseData no = new ResponseData
+            {
+                inputToRespondTo = "No.",
+                actorAssetID = new List<string> { "unit_human", "unit_elf", "unit_dwarf" },
+                actorReply = new List<string> { "Okay.", "A little rude..", "I wasn't even asking you.", "Fine." }
+            };
+            actorResponses.Add(no.inputToRespondTo, no);
+
+            ResponseData wheresMyFriend = new ResponseData
+            {
+                inputToRespondTo = "Where's my friend?",
+                actorAssetID = new List<string> { "unit_human", "unit_elf", "unit_dwarf" },
+                actorReply = new List<string> { "He's over there!", "I'm right here!", "Are you lost?", "I don't know." }
+            };
+            actorResponses.Add(wheresMyFriend.inputToRespondTo, wheresMyFriend);
+
             ResponseData example1 = new ResponseData
             {
                 inputToRespondTo = "Howdy!",
@@ -285,8 +482,9 @@ namespace SimpleGUI.Submods.SimpleMessages
             Debug.Log("attempting to attack from conversation ending: " + didAttack);
         }
 
+
         //key: statsID, value: list/array of phrases to start conversations
-        public static Dictionary<string, string[]> actorStartPhrases = new Dictionary<string, string[]>();
+        public static Dictionary<string, StarterData> actorStartPhrases = new Dictionary<string, StarterData>();
         //key: inputToRespondTo, value: response data
         public static Dictionary<string, ResponseData> actorResponses = new Dictionary<string, ResponseData>();
     }
@@ -294,10 +492,20 @@ namespace SimpleGUI.Submods.SimpleMessages
     [Serializable]
     public delegate void ResponseAction(Actor pActor = null, Actor pTarget = null);
 
-    public class ResponseData {
-        public Actor originActor;
-        public Actor respondingActor;
+    [Serializable]
+    public class StarterData
+    {
+        //actor id is assigned by dict already
+        public string[] starterPhrases;
 
+        public StarterData(string[] starterPhrases)
+        {
+            this.starterPhrases = starterPhrases;
+        }
+    }
+
+    [Serializable]
+    public class ResponseData {
         //input to start these responses, cannot be null
         //maybe this should be key in dict and actor id is separate?
         public string inputToRespondTo;
@@ -313,13 +521,7 @@ namespace SimpleGUI.Submods.SimpleMessages
         //thems fightin words
         public ResponseAction responseAction;
     }
-
-    //?
-    public class StarterData {
-        //list of actor ids that can use this starter
-        public List<string> actorAssetID;
-    }
-
+ 
     [Serializable]
     public class ModMessage {
         public int id;

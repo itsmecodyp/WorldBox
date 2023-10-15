@@ -8,19 +8,7 @@ namespace SimpleGUI.Menus
 	{
 		public void itemGenerationWindowUpdate()
 		{
-			if (GuiMain.showWindowMinimizeButtons.Value)
-			{
-				string buttontext = "I";
-				if (SimpleSettings.showHideItemGenerationConfig.Value)
-				{
-					buttontext = "-";
-				}
-				if (GUI.Button(new Rect(itemGenerationWindowRect.x + itemGenerationWindowRect.width - 25f, itemGenerationWindowRect.y - 25, 25, 25), buttontext))
-				{
-                    SimpleSettings.showHideItemGenerationConfig.Value = !SimpleSettings.showHideItemGenerationConfig.Value;
-				}
-			}
-			if (SimpleSettings.showHideItemGenerationConfig.Value)
+			if (SimpleSettings.showHideItemGenerationConfig)
 			{
 				itemGenerationWindowRect = GUILayout.Window(1005, itemGenerationWindowRect, ItemGenerationWindow, "Items", GUILayout.MaxWidth(300f), GUILayout.MinWidth(200f));
 			}

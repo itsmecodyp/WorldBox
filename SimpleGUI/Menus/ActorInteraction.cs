@@ -8,7 +8,7 @@ namespace SimpleGUI.Menus {
 
         public void actorInteractionWindowUpdate()
         {
-            if(SimpleSettings.showHideActorInteractConfig.Value) {
+            if(SimpleSettings.showHideActorInteractConfig) {
                 actorInteractionWindowRect = GUILayout.Window(41094, actorInteractionWindowRect, actorWindow, "Actor Interaction", GUILayout.MaxWidth(300f), GUILayout.MinWidth(200f));
                 if(showTaskWindow) {
                     actorTaskListWindowRect = GUILayout.Window(43095, actorTaskListWindowRect, actorTaskWindow, "Actor Tasks", GUILayout.MaxWidth(300f), GUILayout.MinWidth(200f));
@@ -22,13 +22,11 @@ namespace SimpleGUI.Menus {
                     dragSelectionWindowRect = GUILayout.Window(41888, dragSelectionWindowRect, dragSelectWindow, "Actor Drag");
                     dragSelectionWindowRect.position = new Vector2(actorInteractionWindowRect.x, (actorInteractionWindowRect.y + actorInteractionWindowRect.height));
                 }
-
                 if (showSkinWindow)
                 {
                     actorSkinWindowRect = GUILayout.Window(43097, actorSkinWindowRect, actorSkinWindow, "Skin Selection", GUILayout.MaxWidth(300f), GUILayout.MinWidth(200f));
                     actorSkinWindowRect.position = new Vector2(actorInteractionWindowRect.x + actorInteractionWindowRect.width, (actorInteractionWindowRect.y));
                 }
-
             }
         }
 
@@ -500,6 +498,7 @@ namespace SimpleGUI.Menus {
 
         public static bool selectUsingHover;
         public Rect actorInteractionWindowRect;
+        //subwindows for dividing categories
         public Rect actorTaskListWindowRect;
         public Rect actorJobListWindowRect;
         public Rect actorSkinWindowRect;

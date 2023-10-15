@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
+using Amazon.Runtime.Internal.Transform;
 using BepInEx;
 using BepInEx.Configuration;
 using HarmonyLib;
@@ -27,13 +29,9 @@ namespace SimpleGUI.Submods.MapSizes {
         {
 
             Harmony harmony = new Harmony(pluginGuid);
-            MethodInfo original = AccessTools.Method(typeof(GeneratorTool), "applyTemplate");
-            MethodInfo patch = AccessTools.Method(typeof(MapSizes), "applyTemplate_Prefix");
-            harmony.Patch(original, new HarmonyMethod(patch));
-            Debug.Log("Pre patch: GeneratorTool.applyTemplate");
 
-            original = AccessTools.Method(typeof(MapBox), "setMapSize");
-            patch = AccessTools.Method(typeof(MapSizes), "setMapSize_Prefix");
+            MethodInfo original = AccessTools.Method(typeof(MapBox), "setMapSize");
+            MethodInfo patch = AccessTools.Method(typeof(MapSizes), "setMapSize_Prefix");
             harmony.Patch(original, new HarmonyMethod(patch));
             Debug.Log("Pre patch: MapBox.setMapSize");
 
@@ -55,10 +53,205 @@ namespace SimpleGUI.Submods.MapSizes {
                 GUILayout.MaxWidth(300f),
                 GUILayout.MinWidth(200f)
                     });
+
+                if (showCustomTemplateWindow)
+                {
+                    customTemplateWindowRect = GUILayout.Window(43095, customTemplateWindowRect, customTemplateWindow, "Custom Template", GUILayout.MaxWidth(300f), GUILayout.MinWidth(200f));
+                    customTemplateWindowRect.position = new Vector2(mapSizeWindowRect.x + mapSizeWindowRect.width, (mapSizeWindowRect.y));
+                }
             }
             tooltipRect.x = Input.mousePosition.x + 5f;
             tooltipRect.y = (float)Screen.height - Input.mousePosition.y + 5f;
             GUI.Label(new Rect(tooltipRect), GUI.tooltip);
+        }
+
+        //this stuff shouldnt be necessary once AssetModLoader works
+        public bool showCustomTemplateWindow;
+        public Rect customTemplateWindowRect;
+
+        public Vector2 scrollPositionTemplate;
+
+        public void customTemplateWindow(int windowID)
+        {
+            if (GUILayout.Button("Set 'custom' template"))
+            {
+                SetupCustomTemplate();
+            }
+            scrollPositionTemplate = GUILayout.BeginScrollView(
+      scrollPositionTemplate, GUILayout.Width(300f), GUILayout.Height(mapSizeWindowRect.height - 50f));
+
+            //quick bypass for collection modified error
+            List<KeyValuePair<string, int>> valueList = customValues.ToList();
+            foreach (KeyValuePair<string, int> customVal in valueList)
+            {
+                GUILayout.BeginHorizontal();
+                GUILayout.Button(customVal.Key);
+                int v = customVal.Value;
+                string s = GUILayout.TextField(v.ToString());
+                int.TryParse(s, out int newV);
+                if(newV != v)
+                {
+                    customValues[customVal.Key] = newV;
+                }
+                GUILayout.EndHorizontal();
+            }
+            GUILayout.EndScrollView();
+
+        }
+
+        //why did i decide to do it this way?????
+        public Dictionary<string, int> customValues = new Dictionary<string, int>{
+            { "force_height_to", 0 },
+            { "freeze_mountains", 0 },
+            { "special_anthill", 0 },
+            { "special_checkerboard", 0 },
+            { "special_cubicles", 0 },
+            { "allow_edit_size", 0 },
+            { "allow_edit_random_shapes", 0 },
+            { "allow_edit_random_biomes", 0 },
+            { "allow_edit_perlin_scale_stage_1", 0 },
+            { "allow_edit_perlin_scale_stage_2", 0 },
+            { "allow_edit_perlin_scale_stage_3", 0 },
+            { "allow_edit_mountain_edges", 0 },
+            { "allow_edit_random_vegetation", 0 },
+            { "allow_edit_random_resources", 0 },
+            { "allow_edit_center_lake", 0 },
+            { "allow_edit_round_edges", 0 },
+            { "allow_edit_square_edges", 0 },
+            { "allow_edit_ring_effect", 0 },
+            { "allow_edit_center_land", 0 },
+            { "allow_edit_low_ground", 0 },
+            { "allow_edit_high_ground", 0 },
+            { "allow_edit_remove_mountains", 0 },
+            { "allow_edit_cubicles", 0 },
+            { "show_reset_button", 0 },
+            //.values below
+            { "perlin_scale_stage_1", 0 },
+            { "perlin_scale_stage_2", 0 },
+            { "perlin_scale_stage_3", 0 },
+            { "main_perlin_noise_stage", 0 },
+            { "perlin_noise_stage_2", 0 },
+            { "perlin_noise_stage_3", 0 },
+            { "square_edges", 0 },
+            { "gradient_round_edges", 0 },
+            { "add_center_gradient_land", 0 },
+            { "center_gradient_mountains", 0 },
+            { "add_center_lake", 0 },
+            { "ring_effect", 0 },
+            { "add_vegetation", 0 },
+            { "add_resources", 0 },
+            { "add_mountain_edges", 0 },
+            { "random_biomes", 0 },
+            { "random_shapes_amount", 0 },
+            { "cubicle_size", 0 },
+            { "remove_mountains", 0 },
+            { "low_ground", 0 },
+            { "high_ground", 0 }
+        };
+
+        public void SetupCustomTemplate()
+        {
+            MapGenTemplate customTemplate = new MapGenTemplate();
+            customTemplate.id = "custom";
+            bool test = true;
+            customTemplate.force_height_to = customValues["force_height_to"];
+            //boolParse is custom extension to quickly assign this copy paste garbage
+            customTemplate.freeze_mountains = customValues["freeze_mountains"].boolParse();
+            customTemplate.special_anthill = customValues["special_anthill"].boolParse();
+            customTemplate.special_checkerboard = customValues["special_checkerboard"].boolParse();
+            customTemplate.special_cubicles = customValues["special_cubicles"].boolParse();
+            customTemplate.allow_edit_size = customValues["allow_edit_size"].boolParse();
+            customTemplate.allow_edit_random_shapes = customValues["allow_edit_random_shapes"].boolParse();
+            customTemplate.allow_edit_random_biomes = customValues["allow_edit_random_biomes"].boolParse();
+            customTemplate.allow_edit_mountain_edges = customValues["allow_edit_mountain_edges"].boolParse();
+            customTemplate.allow_edit_random_vegetation = customValues["allow_edit_random_vegetation"].boolParse();
+            customTemplate.allow_edit_random_resources = customValues["allow_edit_random_resources"].boolParse();
+            customTemplate.allow_edit_center_lake = customValues["allow_edit_center_lake"].boolParse();
+            customTemplate.allow_edit_round_edges = customValues["allow_edit_round_edges"].boolParse();
+            customTemplate.allow_edit_square_edges = customValues["allow_edit_square_edges"].boolParse();
+            customTemplate.allow_edit_ring_effect = customValues["allow_edit_ring_effect"].boolParse();
+            customTemplate.allow_edit_center_land = customValues["allow_edit_center_land"].boolParse();
+            customTemplate.allow_edit_low_ground = customValues["allow_edit_low_ground"].boolParse();
+            customTemplate.allow_edit_high_ground = customValues["allow_edit_high_ground"].boolParse();
+            customTemplate.allow_edit_remove_mountains = customValues["allow_edit_remove_mountains"].boolParse();
+            customTemplate.allow_edit_cubicles = customValues["allow_edit_cubicles"].boolParse();
+            customTemplate.show_reset_button = customValues["show_reset_button"].boolParse();
+            customTemplate.values.perlin_scale_stage_1 = customValues["perlin_scale_stage_1"];
+            customTemplate.values.perlin_scale_stage_2 = customValues["perlin_scale_stage_2"];
+            customTemplate.values.perlin_scale_stage_3 = customValues["perlin_scale_stage_3"];
+            customTemplate.values.main_perlin_noise_stage = customValues["main_perlin_noise_stage"].boolParse();
+            customTemplate.values.perlin_noise_stage_2 = customValues["perlin_noise_stage_2"].boolParse();
+            customTemplate.values.perlin_noise_stage_3 = customValues["perlin_noise_stage_3"].boolParse();
+            customTemplate.values.square_edges = customValues["square_edges"].boolParse();
+            customTemplate.values.gradient_round_edges = customValues["gradient_round_edges"].boolParse();
+            customTemplate.values.add_center_gradient_land = customValues["add_center_gradient_land"].boolParse();
+            customTemplate.values.center_gradient_mountains = customValues["center_gradient_mountains"].boolParse();
+            customTemplate.values.add_center_lake = customValues["add_center_lake"].boolParse();
+            customTemplate.values.ring_effect = customValues["ring_effect"].boolParse();
+            customTemplate.values.add_vegetation = customValues["add_vegetation"].boolParse();
+            customTemplate.values.add_resources = customValues["add_resources"].boolParse();
+            customTemplate.values.add_mountain_edges = customValues["add_mountain_edges"].boolParse();
+            customTemplate.values.random_biomes = customValues["random_biomes"].boolParse();
+            customTemplate.values.random_shapes_amount = customValues["random_shapes_amount"];
+            customTemplate.values.cubicle_size = customValues["cubicle_size"];
+            customTemplate.values.remove_mountains = customValues["remove_mountains"].boolParse();
+            customTemplate.values.low_ground = customValues["low_ground"].boolParse();
+            customTemplate.values.high_ground = customValues["high_ground"].boolParse();
+
+            AssetManager.map_gen_templates.add(customTemplate);
+        }
+
+        public void SetCustomToExisting(string templateID)
+        {
+            MapGenTemplate templateInLib = AssetManager.map_gen_templates.get(templateToUse);
+            if (templateInLib != null)
+            {
+                customValues["force_height_to"] = templateInLib.force_height_to;
+                customValues["freeze_mountains"] = templateInLib.freeze_mountains.intParse();
+                customValues["special_anthill"] = templateInLib.special_anthill.intParse();
+                customValues["special_checkerboard"] = templateInLib.special_checkerboard.intParse();
+                customValues["special_cubicles"] = templateInLib.special_cubicles.intParse();
+                customValues["allow_edit_size"] = templateInLib.allow_edit_size.intParse();
+                customValues["allow_edit_random_shapes"] = templateInLib.allow_edit_random_shapes.intParse();
+                customValues["allow_edit_random_biomes"] = templateInLib.allow_edit_random_biomes.intParse();
+                customValues["allow_edit_perlin_scale_stage_1"] = templateInLib.allow_edit_perlin_scale_stage_1.intParse();
+                customValues["allow_edit_perlin_scale_stage_2"] = templateInLib.allow_edit_perlin_scale_stage_2.intParse();
+                customValues["allow_edit_perlin_scale_stage_3"] = templateInLib.allow_edit_perlin_scale_stage_3.intParse();
+                customValues["allow_edit_mountain_edges"] = templateInLib.allow_edit_mountain_edges.intParse();
+                customValues["allow_edit_random_vegetation"] = templateInLib.allow_edit_random_vegetation.intParse();
+                customValues["allow_edit_random_resources"] = templateInLib.allow_edit_random_resources.intParse() ;
+                customValues["allow_edit_center_lake"] = templateInLib.allow_edit_center_lake.intParse();
+                customValues["allow_edit_round_edges"] = templateInLib.allow_edit_round_edges.intParse();
+                customValues["allow_edit_square_edges"] = templateInLib.allow_edit_square_edges.intParse();
+                customValues["allow_edit_ring_effect"] = templateInLib.allow_edit_ring_effect.intParse();
+                customValues["allow_edit_center_land"] = templateInLib.allow_edit_center_land.intParse();
+                customValues["allow_edit_low_ground"] = templateInLib.allow_edit_low_ground.intParse();
+                customValues["allow_edit_high_ground"] = templateInLib.allow_edit_high_ground.intParse();
+                customValues["allow_edit_remove_mountains"] = templateInLib.allow_edit_remove_mountains.intParse();
+                customValues["allow_edit_cubicles"] = templateInLib.allow_edit_cubicles.intParse();
+                customValues["show_reset_button"] = templateInLib.show_reset_button.intParse() ;
+                customValues["perlin_scale_stage_1"] = templateInLib.values.perlin_scale_stage_1;
+                customValues["perlin_scale_stage_2"] = templateInLib.values.perlin_scale_stage_2;
+                customValues["perlin_scale_stage_3"] = templateInLib.values.perlin_scale_stage_3;
+                customValues["main_perlin_noise_stage"] = templateInLib.values.main_perlin_noise_stage.intParse();
+                customValues["perlin_noise_stage_2"] = templateInLib.values.perlin_noise_stage_2.intParse();
+                customValues["perlin_noise_stage_3"] = templateInLib.values.perlin_noise_stage_3.intParse();
+                customValues["square_edges"] = templateInLib.values.square_edges.intParse();
+                customValues["gradient_round_edges"] = templateInLib.values.gradient_round_edges.intParse();
+                customValues["add_center_gradient_land"] = templateInLib.values.add_center_gradient_land.intParse();
+                customValues["center_gradient_mountains"] = templateInLib.values.center_gradient_mountains.intParse();
+                customValues["add_center_lake"] = templateInLib.values.add_center_lake.intParse();
+                customValues["ring_effect"] = templateInLib.values.ring_effect.intParse();
+                customValues["add_vegetation"] = templateInLib.values.add_vegetation.intParse();
+                customValues["add_resources"] = templateInLib.values.add_resources.intParse();
+                customValues["add_mountain_edges"] = templateInLib.values.add_mountain_edges.intParse();
+                customValues["random_biomes"] = templateInLib.values.random_biomes.intParse();
+                customValues["cubicle_size"] = templateInLib.values.cubicle_size;
+                customValues["random_shapes_amount"] = templateInLib.values.random_shapes_amount;
+                customValues["remove_mountains"] = templateInLib.values.remove_mountains.intParse();
+                customValues["low_ground"] = templateInLib.values.low_ground.intParse();
+                customValues["high_ground"] = templateInLib.values.high_ground.intParse();
+            }
         }
 
         public static Rect tooltipRect = new Rect();
@@ -69,6 +262,13 @@ namespace SimpleGUI.Submods.MapSizes {
 
         public void mapSizesWindow(int windowID)
         {
+            if (GUILayout.Button("Generate new map"))
+            {
+                hasFinishedLoading = false;
+                intentionallyChangingMapSize = true;
+                WhyDoINeedThis.ChangeConfig(smallIslands, randomShapes);
+                MapBox.instance.generateNewMap(false); // was clickgenerate
+            }
             GUILayout.BeginHorizontal();
             GUILayout.Button("Map size x: " + mapSizeX.ToString());
             GUILayout.Button("Map size y: " + mapSizeY.ToString());
@@ -122,204 +322,40 @@ namespace SimpleGUI.Submods.MapSizes {
             }
             GUILayout.EndHorizontal();
             GUILayout.BeginHorizontal();
-            if(GUILayout.Button("Template")) {
+            if(GUILayout.Button("Template to use")) {
             }
             templateToUse = GUILayout.TextField(templateToUse);
             GUILayout.EndHorizontal();
-            if(GUILayout.Button("Regenerate map")) {
-                hasFinishedLoading = false;
-                intentionallyChangingMapSize = true;
-                WhyDoINeedThis.ChangeConfig(smallIslands, randomShapes);
-                MapBox.instance.generateNewMap(false); // was clickgenerate
+            /* im so dumb, all of this is in the normal map gen window now...
+             * only advantage here is running custom delegates
+            if(GUILayout.Button("Setup 'custom' with '" + templateToUse + "'"))
+            {
+                SetCustomToExisting(templateToUse);
             }
-            if(GUILayout.Button("Resize current map")) ResizeCurrentMap();
-
-            if(GUILayout.Button("Resize current map")) ResizeCurrentMap();
-            if(GUILayout.Button("copy map")) CopyMap();
-            if(GUILayout.Button("clear map")) ClearMap();
-            if(GUILayout.Button("paste map")) PasteMap();
-            GUILayout.BeginHorizontal();
-            GUILayout.Button("PicSizeX");
-            pictureSizeX = (int)GUILayout.HorizontalSlider((float)pictureSizeX, 1f, 2000f);
-            if(syncResize) {
-                pictureSizeY = pictureSizeX;
+            //create custom map template and edit it here?
+            if (GUILayout.Button("Template settings"))
+            {
+                showCustomTemplateWindow = !showCustomTemplateWindow;
             }
-            GUILayout.EndHorizontal();
-            GUILayout.BeginHorizontal();
-            GUILayout.Button("PicSizeY");
-            pictureSizeY = (int)GUILayout.HorizontalSlider((float)pictureSizeY, 1f, 2000f);
-            if(syncResize) {
-                pictureSizeX = pictureSizeY;
-            }
-            GUILayout.EndHorizontal();
-            if(GUILayout.Button("Sync buttons: " + syncResize.ToString())) {
-                syncResize = !syncResize;
-            }
-            filename = GUILayout.TextField(filename);
-            if(File.Exists(imagePath)) {
-                GUI.backgroundColor = Color.green;
-            }
-            else {
-                GUI.backgroundColor = Color.red;
-
-            }
-            if(GUILayout.Button("Regenerate " + filename + ".png")) {
-                //MapBox.instance.setMapSize(mapSizeX, mapSizeY);
-                imageToMap(filename); // why does this run twice?
-                //startingPicture = true;
-                //MapBox.instance.generateNewMap(pClear: false); // pClear does nothing
-                //MapBox.instance.GenerateMap("earth");
-                //MapBox.instance.finishMakingWorld();
-
-
-                /*
-                  SmoothLoader.add(delegate{
-                foreach(WorldTile tile in MapBox.instance.tilesList){MapAction.terraformMain(tile, AssetManager.tiles.get("deep_ocean"),  AssetManager.terraform.get("flash"));
-}
-                }, "imageToMap1", true, 2f);
-                SmoothLoader.add(delegate{imageToMap(filename);
-                hasFinishedLoading = true;
-                intentionallyChangingMapSize = false;
-                }, "imageToMap2", true, 2f);
-             */   
-            }
+            */
             GUI.DragWindow();
         }
 
-        public void ClearMap()
-        {
-            TileType ocean = AssetManager.tiles.get("deep_ocean");
-            foreach(WorldTile tile in MapBox.instance.tilesList) {
-                MapAction.terraformMain(tile, ocean, AssetManager.terraform.get("flash"));
-            }
-        }
-
-        public void CopyMap()
-        {
-            tilesCache.Clear();
-            buildingCache.Clear();
-            foreach(WorldTile tile in MapBox.instance.tilesList) {
-                tilesCache.Add(tile.pos, tile.Type.id);
-            }
-            foreach(Building building in MapBox.instance.buildings) {
-                buildingCache.Add(building.currentTile.pos, building);
-            }
-
-
-        }
-
-        public void CreateBuilding(Building fromBuilding)
-        {
-            BuildingAsset fromStats = fromBuilding.asset;
-            Building building = MapBox.instance.buildings.addBuilding(fromStats.id, fromBuilding.currentTile);
-            building.updateBuild(100);
-            WorldTile currentTile = building.currentTile;
-            if(currentTile.zone.city != null) {
-                building.setCity(currentTile.zone.city);
-            }
-            if(building.city != null) {
-                building.city.addBuilding(building);
-                building.city.status.housingTotal += fromStats.housing * (fromStats.upgradeLevel + 1);
-                if(building.city.status.population > building.city.status.housingTotal) {
-                    building.city.status.housingOccupied = building.city.status.housingTotal;
-                }
-                else {
-                    building.city.status.housingOccupied = building.city.status.population;
-                }
-                building.city.status.housingFree = building.city.status.housingTotal - building.city.status.housingOccupied;
-            }
-
-        }
-
-        public List<string> tiles;
-        public List<string> tilesTop;
-
-
-        public void PasteMap()
-        {
-            if(tiles == null) {
-                tilesTop = new List<string>();
-                tiles = new List<string>();
-                foreach(TileType tiletype1 in AssetManager.tiles.list) {
-                    tiles.Add(tiletype1.id);
-                }
-                foreach(TopTileType tiletype2 in AssetManager.topTiles.list) {
-                    tilesTop.Add(tiletype2.id);
-                }
-            }
-
-            // logs spam hard from the checks in wrong libraries..
-            foreach(Vector2Int tilePos in tilesCache.Keys) {
-                WorldTile targetTile = MapBox.instance.GetTile(tilePos.x, tilePos.y);
-                if(targetTile != null) {
-                    if(tiles.Contains(tilesCache[tilePos])) {
-                        MapAction.terraformMain(targetTile, AssetManager.tiles.get(tilesCache[tilePos]), AssetManager.terraform.get("flash"));
-                    }
-                    else {
-                        if(tilesTop.Contains(tilesCache[tilePos])) {
-                            MapAction.terraformTop(targetTile, AssetManager.topTiles.get(tilesCache[tilePos]), AssetManager.terraform.get("flash"));
-                        }
-                        else {
-                            // tile type not found
-                        }
-                    }
-                }
-            }
-            foreach(Vector2Int tilePos2 in buildingCache.Keys) {
-                WorldTile targetTile = MapBox.instance.GetTile(tilePos2.x, tilePos2.y);
-                if(targetTile != null) {
-                    CreateBuilding(buildingCache[tilePos2]);
-                }
-            }
-        }
-
-
-        public Dictionary<Vector2Int, string> tilesCache = new Dictionary<Vector2Int, string>(); // tilePos, tileType
-        public Dictionary<Vector2Int, Building> buildingCache = new Dictionary<Vector2Int, Building>(); // tilePos, building
-
-        public List<WorldTile> tileList;
-        public void ResizeCurrentMap()
-        {
-            CopyMap();
-            hasFinishedLoading = false;
-            intentionallyChangingMapSize = true;
-            MapBox.instance.generateNewMap(true);
-            waitingForLoading = true;
-        }
+        public GameObject testObjectFor2Worlds;
+     
         public static bool waitingForLoading = false;
         public void Update()
         {
             if(waitingForLoading) {
                 if(hasFinishedLoading) {
-                    ResizeFinish();
                     waitingForLoading = false;
-
                     hasFinishedLoading = false;
                     intentionallyChangingMapSize = false;
                 }
             }
         }
 
-        public void ResizeFinish()
-        {
-            ClearMap();
-            PasteMap();
-        }
-
-        public static string imagePath => Directory.GetCurrentDirectory() + "\\WorldBox_Data//images//" + filename + ".png";
-        public static bool startingPicture;
-        public static bool applyTemplate_Prefix(string pID, float pMod = 1f)
-        {
-            if(startingPicture && File.Exists(imagePath)) {
-                imageToMap(filename);
-                startingPicture = false;
-                return false;
-            }
-            return true;
-        }
-
         public static bool intentionallyChangingMapSize = false;
-
         public static bool setMapSize_Prefix(ref int pWidth, ref int pHeight)
         {
             if(intentionallyChangingMapSize == true) {
@@ -336,30 +372,6 @@ namespace SimpleGUI.Submods.MapSizes {
             intentionallyChangingMapSize = false;
         }
         public static bool hasFinishedLoading = true; // check if mod wanted game to load and it finished
-        // for later: public static Dictionary<WorldTile, Color> customTileColors = new Dictionary<WorldTile, Color>();
-        public static int pictureSizeX = 100;
-        public static int pictureSizeY = 100;
-        public static void imageToMap(string imageName)
-        {
-            // ModTest.isMapLoadedFromPicture = true;
-            // Texture2D texture2D = (Texture2D)Resources.Load("mapTemplates/earth"); // default earth picture
-            string path = Directory.GetCurrentDirectory() + "\\WorldBox_Data//images//" + imageName + ".png"; // picture to convert
-            Texture2D texture2D2 = null;
-            byte[] data = File.ReadAllBytes(path);
-            texture2D2 = new Texture2D(2, 2);
-            texture2D2.LoadImage(data);
-            TextureScale.Bilinear(texture2D2, pictureSizeX, pictureSizeY);
-            for(int i = 0; i < texture2D2.width; i++) {
-                for(int j = 0; j < texture2D2.height; j++) {
-                    WorldTile tile = MapBox.instance.GetTile(i, j);
-                    if(tile != null) {
-                        int num2 = (int)((1f - texture2D2.GetPixel(i, j).g) * 255f); // change tile according to pixel color
-                        tile.Height += num2;
-                    }
-                }
-            }
-            // tile.data.tileMinimapColor = texture2D2.GetPixel(i, j); // for when minimap showing pic is important
-        }
     }
 
     public class WhyDoINeedThis {
@@ -374,6 +386,34 @@ namespace SimpleGUI.Submods.MapSizes {
             Config.customPerlinScale = pScale;
             Config.customRandomShapes = pShapes;
         }
+    }
+
+    public static class SimpleExtension
+    {
+        public static bool boolParse(this int input)
+        {
+            if (input == 0)
+            {
+                return false;
+            }
+            else
+            {
+                return true;
+            }
+        }
+
+        public static int intParse(this bool input)
+        {
+            if (input == false)
+            {
+                return 0;
+            }
+            else
+            {
+                return 1;
+            }
+        }
+
     }
 }
 

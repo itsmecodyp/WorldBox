@@ -8,17 +8,7 @@ namespace SimpleGUI.Menus
 	class GuiStatSetting {
 		public void StatSettingWindowUpdate()
 		{
-			if(GuiMain.showWindowMinimizeButtons.Value) {
-				string buttontext = "S";
-				if(SimpleSettings.showHideStatSettingConfig.Value) {
-					buttontext = "-";
-				}
-				if(GUI.Button(new Rect(StatSettingWindowRect.x + StatSettingWindowRect.width - 25f, StatSettingWindowRect.y - 25, 25, 25), buttontext)) {
-                    SimpleSettings.showHideStatSettingConfig.Value = !SimpleSettings.showHideStatSettingConfig.Value;
-				}
-			}
-
-			if(SimpleSettings.showHideStatSettingConfig.Value) {
+			if(SimpleSettings.showHideStatSettingConfig) {
 				StatSettingWindowRect = GUILayout.Window(50050, StatSettingWindowRect, StatSettingWindow, "Stats", GUILayout.MaxWidth(300f), GUILayout.MinWidth(200f));
 			}
 		}

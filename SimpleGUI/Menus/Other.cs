@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using FMODUnity;
 using HarmonyLib;
 using UnityEngine;
 
@@ -42,97 +43,88 @@ namespace SimpleGUI.Menus {
                 }
             }
             */
-            if(GuiMain.disableMinimap.Value) {
+            if (disableMinimap) {
                 GUI.backgroundColor = Color.green;
             }
             else {
                 GUI.backgroundColor = Color.red;
             }
-            if(GUILayout.Button("Disable minimap")) {
-                GuiMain.disableMinimap.Value = !GuiMain.disableMinimap.Value;
+            if (GUILayout.Button("Disable minimap")) {
+                disableMinimap = !disableMinimap;
                 QualityChanger qualityChanger = Reflection.GetField(MapBox.instance.GetType(), MapBox.instance, "qualityChanger") as QualityChanger;
                 bool lowRes = qualityChanger.lowRes;
-                if(GuiMain.disableMinimap.Value) {
+                if (disableMinimap) {
                     lowRes = false;
                 }
             }
-            if(!GuiMain.disableMouseDrag.Value) {
+            if (!disableMouseDrag) {
                 GUI.backgroundColor = Color.green;
             }
             else {
                 GUI.backgroundColor = Color.red;
             }
-            if(GUILayout.Button("Mouse drags camera")) {
-                GuiMain.disableMouseDrag.Value = !GuiMain.disableMouseDrag.Value;
+            if (GUILayout.Button("Mouse drags camera")) {
+                disableMouseDrag = !disableMouseDrag;
             }
-            if(GuiMain.showWindowMinimizeButtons.Value) {
-                GUI.backgroundColor = Color.green;
-            }
-            else {
-                GUI.backgroundColor = Color.red;
-            }
-            if(GUILayout.Button("Window minimize buttons")) {
-                GuiMain.showWindowMinimizeButtons.Value = !GuiMain.showWindowMinimizeButtons.Value;
-            }
-            if(disableBuildingDestruction) {
+            if (disableBuildingDestruction) {
                 GUI.backgroundColor = Color.green;
             }
             else {
                 GUI.backgroundColor = Color.red;
             }
             // seems useless with tile destruction prevention
-            if(GUILayout.Button("Disable Building Destruction")) {
+            if (GUILayout.Button("Disable Building Destruction")) {
                 disableBuildingDestruction = !disableBuildingDestruction;
             }
-            if(disableTileDestruction) {
+            if (disableTileDestruction) {
                 GUI.backgroundColor = Color.green;
             }
             else {
                 GUI.backgroundColor = Color.red;
             }
-            if(GUILayout.Button("Disable Tile Destruction")) {
+            if (GUILayout.Button("Disable Tile Destruction")) {
                 disableTileDestruction = !disableTileDestruction;
             }
-            if(disableLevelCap) {
+            if (disableLevelCap) {
                 GUI.backgroundColor = Color.green;
             }
             else {
                 GUI.backgroundColor = Color.red;
             }
-            if(GUILayout.Button("Disable Level Cap")) {
+            if (GUILayout.Button("Disable Level Cap")) {
                 disableLevelCap = !disableLevelCap;
             }
 
-            if(allowMultipleSameTrait) {
+            if (allowMultipleSameTrait) {
                 GUI.backgroundColor = Color.green;
             }
             else {
                 GUI.backgroundColor = Color.red;
             }
-            if(GUILayout.Button("Allow multiple same trait")) {
+            if (GUILayout.Button("Allow multiple same trait")) {
                 allowMultipleSameTrait = !allowMultipleSameTrait;
             }
 
-            if(multiCrab) {
+            if (multiCrab) {
                 GUI.backgroundColor = Color.green;
             }
             else {
                 GUI.backgroundColor = Color.red;
             }
-            if(GUILayout.Button("Allow multiple CrabZilla")) {
+            if (GUILayout.Button("Allow multiple CrabZilla")) {
                 multiCrab = !multiCrab;
             }
 
-            if(powersDuringCrab) {
+            if (powersDuringCrab) {
                 GUI.backgroundColor = Color.green;
             }
             else {
                 GUI.backgroundColor = Color.red;
             }
-            if(GUILayout.Button("Allow powers during CrabZilla")) {
+            if (GUILayout.Button("Allow powers during CrabZilla")) {
                 powersDuringCrab = !powersDuringCrab;
             }
-            
+
             /* became vanilla feature in 0.15+
             if(kingdomZonesMoreVisible) {
                 GUI.backgroundColor = Color.green;
@@ -160,119 +152,108 @@ namespace SimpleGUI.Menus {
                 MapBox.instance.zoneCalculator.clearCurrentDrawnZones();
             }
             */
-            if(stopBodyRemoval) {
+            if (stopBodyRemoval) {
                 GUI.backgroundColor = Color.green;
             }
             else {
                 GUI.backgroundColor = Color.red;
             }
-            if(GUILayout.Button("Prevent body decay")) {
+            if (GUILayout.Button("Prevent body decay")) {
                 stopBodyRemoval = !stopBodyRemoval;
             }
 
-            if(staticBorders) {
+            if (staticBorders) {
                 GUI.backgroundColor = Color.green;
             }
             else {
                 GUI.backgroundColor = Color.red;
             }
-            if(GUILayout.Button("Prevent border changes")) {
+            if (GUILayout.Button("Prevent border changes")) {
                 staticBorders = !staticBorders;
             }
 
-            if(expandedFarmRange) {
+            if (expandedFarmRange) {
                 GUI.backgroundColor = Color.green;
             }
             else {
                 GUI.backgroundColor = Color.red;
             }
-            if(GUILayout.Button("Expand Windmill farm range")) {
+            if (GUILayout.Button("Expand Windmill farm range")) {
                 expandedFarmRange = !expandedFarmRange;
             }
-            if(moreThanOneWindmills) {
+            if (moreThanOneWindmills) {
                 GUI.backgroundColor = Color.green;
             }
             else {
                 GUI.backgroundColor = Color.red;
             }
-            if(GUILayout.Button("Allow multiple Windmills")) {
+            if (GUILayout.Button("Allow multiple Windmills")) {
                 moreThanOneWindmills = !moreThanOneWindmills;
             }
-            if(kingdomGetsCapitalName) {
+            if (kingdomGetsCapitalName) {
                 GUI.backgroundColor = Color.green;
             }
             else {
                 GUI.backgroundColor = Color.red;
             }
-            if(GUILayout.Button("Kingdom name becomes Capital")) {
+            if (GUILayout.Button("Kingdom name becomes Capital")) {
                 kingdomGetsCapitalName = !kingdomGetsCapitalName;
             }
 
-            if(toggleSandFarmable) {
+            if (toggleSandFarmable) {
                 GUI.backgroundColor = Color.green;
             }
             else {
                 GUI.backgroundColor = Color.red;
             }
-            if(GUILayout.Button("Sand can be farmable")) {
+            if (GUILayout.Button("Sand can be farmable")) {
                 toggleSandFarmable = !toggleSandFarmable;
                 TileLibrary.sand.can_be_farm = toggleSandFarmable;
             }
-            if(toggleSnowFarmable) {
+            if (toggleSnowFarmable) {
                 GUI.backgroundColor = Color.green;
             }
             else {
                 GUI.backgroundColor = Color.red;
             }
-            if(GUILayout.Button("Snow can be farmable")) {
+            if (GUILayout.Button("Snow can be farmable")) {
                 toggleSnowFarmable = !toggleSnowFarmable;
                 TopTileLibrary.snow_block.can_be_farm = toggleSnowFarmable;
                 TopTileLibrary.snow_sand.can_be_farm = toggleSnowFarmable;
                 TopTileLibrary.snow_hills.can_be_farm = toggleSnowFarmable;
             }
-            if(dockLimitOverride) {
+            if (dockLimitOverride) {
                 GUI.backgroundColor = Color.green;
             }
             else {
                 GUI.backgroundColor = Color.red;
             }
             GUILayout.BeginHorizontal();
-            if(GUILayout.Button("Dock limit: ")) {
+            if (GUILayout.Button("Dock limit: ")) {
                 dockLimitOverride = !dockLimitOverride;
             }
             dockLimitOverrideAmount = Convert.ToInt32(GUILayout.TextField(dockLimitOverrideAmount.ToString()));
             GUILayout.EndHorizontal();
 
-            if(canDragCreaturesWithMouse) {
+            if (canDragCreaturesWithMouse) {
                 GUI.backgroundColor = Color.green;
             }
             else {
                 GUI.backgroundColor = Color.red;
             }
-            if(GUILayout.Button("Drag creatures")) {
+            if (GUILayout.Button("Drag creatures")) {
                 canDragCreaturesWithMouse = !canDragCreaturesWithMouse;
             }
-            
-            if(hideGameGUI) {
+
+            if (hideGameGUI) {
                 GUI.backgroundColor = Color.green;
             }
             else {
                 GUI.backgroundColor = Color.red;
             }
-            if(GUILayout.Button("Hide GUI")) {
+            if (GUILayout.Button("Hide GUI")) {
                 toggleBar();
             }
-            
-            if(fogOfWarTest) {
-                GUI.backgroundColor = Color.green;
-            }
-            else {
-                GUI.backgroundColor = Color.red;
-            }
-            if(GUILayout.Button("fogOfWarTest")) {
-                fogOfWarTest = !fogOfWarTest;
-            }
-
             if (disableDebugLog)
             {
                 GUI.backgroundColor = Color.green;
@@ -286,34 +267,113 @@ namespace SimpleGUI.Menus {
                 disableDebugLog = !disableDebugLog;
             }
 
+            if (closeCities)
+            {
+                GUI.backgroundColor = Color.green;
+            }
+            else
+            {
+                GUI.backgroundColor = Color.red;
+            }
+            if (GUILayout.Button("Closer cities"))
+            {
+                closeCities = !closeCities;
+            }
+
+            GUILayout.BeginHorizontal();
             GUI.backgroundColor = original;
+           
+            if (enableMaxCityZones)
+            {
 
-            /* was for blueskye
-            //get original name generator for mob, in this case sheep
-            NameGeneratorAsset sheepNames = AssetManager.nameGenerator.get("sheep_name");
-            //reset parts used
-            sheepNames.part_groups = new List<string>();
-            //reset templates
-            sheepNames.templates = new List<string>();
+                GUI.backgroundColor = Color.green;
+            }
+            else
+            {
+                GUI.backgroundColor = Color.red;
+            }
+            if (GUILayout.Button("Max cityZones:"))
+            {
+                enableMaxCityZones = !enableMaxCityZones;
+            }
 
-            //add new parts
-            sheepNames.part_groups.Add("C");
-            sheepNames.part_groups.Add("o,oo,ooo");
-            sheepNames.part_groups.Add("d");
-            sheepNames.part_groups.Add("y,ie,ee");
-            //use parts in new template
-            sheepNames.templates.Add("part_group");
+            //go ahead and parse, assign color based on it parsing correctly
+            int.TryParse(maxCityZonesToSet, out int newMaxZones);
+            if (newMaxZones != 0)
+            {
+                maxCityZones = newMaxZones;
+            }
+            if (maxCityZones != 0)
+            {
 
-            //re-add generator with edited parts
-            AssetManager.nameGenerator.add(sheepNames);
-            */
-            
+                GUI.backgroundColor = Color.green;
+            }
+            else
+            {
+                GUI.backgroundColor = Color.red;
+            }
+            maxCityZonesToSet = GUILayout.TextField(maxCityZonesToSet);
+
+            GUILayout.EndHorizontal();
             GUI.DragWindow();
+        }
+
+        //requested by Archeron_Dizmason, make it possible for cities to settle close to each other
+        public static bool closeCities;
+
+        //requested by Archeron_Dizmason, limit city size
+        public static bool enableMaxCityZones;
+        public static int maxCityZones = 4;
+        public static string maxCityZonesToSet = "4";
+
+        //CityPlaceFinder.check
+        //usually does many loops over all zones to do checks, cancel and only check for city
+        public static bool check_Prefix(CityPlaceFinder __instance)
+        {
+            if (closeCities)
+            {
+                __instance.dirty = false;
+                __instance.zones.Clear();
+               List<TileZone> list = World.world.zoneCalculator.zones;
+                for (int i = 0; i < list.Count; i++)
+                {
+                    TileZone tileZone = list[i];
+                    if (tileZone.hasCity() == false)
+                    {
+                        tileZone.good_for_new_city = true;
+                        __instance.zones.Add(tileZone);
+                    }
+                    else
+                    {
+                        tileZone.good_for_new_city = false;
+                    }
+                }
+                __instance.zones.Shuffle<TileZone>();
+                return false;
+            }
+            else
+            {
+                return true;
+            }
+        }
+
+        //CityZoneGrowth.checkGrowBorder
+        //prevents city natural growth, not war growth
+        public static bool checkGrowBorder_Prefix(City pCity)
+        {
+            if (pCity.zones.Count > maxCityZones && enableMaxCityZones)
+            {
+                return false;
+            }
+            else
+            {
+                return true;
+            }
         }
 
         //disables the normal commenting logs, not errors
         //easier than cleaning up the 50+ places i use them
-        public static bool disableDebugLog = true; 
+        public static bool disableDebugLog = false; 
 
         public static void toggleBar()
 		{
@@ -358,9 +418,6 @@ namespace SimpleGUI.Menus {
                 return true;
             }
         }
-
-        public static bool fogOfWarTest;
-
         public static bool hideGameGUI;
 
         public static bool canDragCreaturesWithMouse;
@@ -414,7 +471,7 @@ namespace SimpleGUI.Menus {
             if(expandedFarmRange) {
                 foreach(TileZone cityZone in pCity.zones) {
                     foreach(WorldTile worldTile in cityZone.tiles) {
-                        if(Toolbox.DistTile(pBuilding.currentTile, worldTile) <= GuiMain.farmsNewRange.Value) {
+                        if(Toolbox.DistTile(pBuilding.currentTile, worldTile) <= SimpleSettings.farmsNewRange.Value) {
                             if(worldTile.Type.can_be_farm) {
                                 pCity.calculated_place_for_farms.Add(worldTile);
                             }
@@ -566,18 +623,7 @@ namespace SimpleGUI.Menus {
 
         public void otherWindowUpdate()
         {
-            if(GuiMain.showWindowMinimizeButtons.Value) {
-                string buttontext = "O";
-                if(SimpleSettings.showHideOtherConfig.Value) {
-                    buttontext = "-";
-                }
-                if(GUI.Button(new Rect(otherWindowRect.x + otherWindowRect.width - 25f, otherWindowRect.y - 25, 25, 25), buttontext)) {
-                    SimpleSettings.showHideOtherConfig.Value = !SimpleSettings.showHideOtherConfig.Value;
-                }
-            }
-
-            //
-            if(SimpleSettings.showHideOtherConfig.Value) {
+            if(SimpleSettings.showHideOtherConfig) {
                 otherWindowRect = GUILayout.Window(50000, otherWindowRect, otherWindow, "Other options", GUILayout.MaxWidth(300f), GUILayout.MinWidth(200f));
             }
         }
@@ -585,7 +631,7 @@ namespace SimpleGUI.Menus {
         // minimap zoom patch
         public static bool update_Prefix(QualityChanger __instance)
         {
-            if(GuiMain.disableMinimap.Value && !SmoothLoader.isLoading() && Config.gameLoaded) {
+            if(disableMinimap && !SmoothLoader.isLoading() && Config.gameLoaded) {
                 return false;
             }
 
@@ -607,7 +653,7 @@ namespace SimpleGUI.Menus {
 
         public static bool updateMouseCameraDrag_Prefix()
         {
-            if(GuiMain.disableMouseDrag.Value) {
+            if(disableMouseDrag) {
                 return false;
             }
 
@@ -618,7 +664,7 @@ namespace SimpleGUI.Menus {
 
         public bool allowMultipleSameTrait;
         public static bool disableMinimap = false; // needs to be used instead of bepinex config
-        //public static bool preventMouseDrag;
+        public static bool disableMouseDrag = false;
         public static bool disableBuildingDestruction;
         public bool disableLevelCap;
         //public bool showHideOther;

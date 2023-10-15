@@ -53,6 +53,9 @@
     <Compile Include="Menus\World.cs" />
     <Compile Include="ModSettingsMenu.cs" />
     <Compile Include="Patreon_Eggs.cs" />
+    <Compile Include="Submods\BodySnatchers\ControlledActor.cs" />
+    <Compile Include="Submods\BodySnatchers\Main.cs" />
+    <Compile Include="Submods\BodySnatchers\Squad.cs" />
     <Compile Include="Submods\MapSizes\MapSizes.cs" />
     <Compile Include="Submods\SimpleAI\SimpleAI.cs" />
     <Compile Include="Submods\SimpleDraggables\Draggables.cs" />
@@ -89,11 +92,11 @@
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
-    <None Include="Resources\ricardo.bin" />
     <None Include="Submods\SimpleGamba\.editorconfig" />
   </ItemGroup>
   <ItemGroup>
@@ -496,6 +499,9 @@
     <Reference Include="UnityEngine.XRModule">
       <HintPath>C:\Program Files (x86)\Steam\steamapps\common\worldbox\worldbox_Data\Managed\UnityEngine.XRModule.dll</HintPath>
     </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Resources\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

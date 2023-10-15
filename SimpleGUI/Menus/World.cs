@@ -262,20 +262,25 @@ namespace SimpleGUI.Menus
 					}
 					if(Input.GetKeyDown(KeyCode.C) && Input.GetKey(KeyCode.LeftControl)) {
 						CopyTileSelection();
-					}
-					if(Input.GetKeyDown(KeyCode.V) && Input.GetKey(KeyCode.LeftControl)) {
+                        WorldTip.showNowCenter("Tiles copied");
+                    }
+                    if (Input.GetKeyDown(KeyCode.V) && Input.GetKey(KeyCode.LeftControl)) {
 						PasteTileSelection();
-					}
-					if(pastedTerrains.Count > 0 && Input.GetKeyDown(KeyCode.Z) && Input.GetKey(KeyCode.LeftControl)) {
+                        WorldTip.showNowCenter("Tiles pasted");
+                    }
+                    if (pastedTerrains.Count > 0 && Input.GetKeyDown(KeyCode.Z) && Input.GetKey(KeyCode.LeftControl)) {
 						UndoTilePaste();
-					}
-					if(Input.GetKeyDown(KeyCode.Q) && Input.GetKey(KeyCode.LeftControl)) {
+                        WorldTip.showNowCenter("Tile paste undone");
+                    }
+                    if (Input.GetKeyDown(KeyCode.Q) && Input.GetKey(KeyCode.LeftControl)) {
 						RotateTileSelectionLeft();
+						WorldTip.showNowCenter("Copied tiles rotated left");
 					}
 					if(Input.GetKeyDown(KeyCode.E) && Input.GetKey(KeyCode.LeftControl)) {
 						RotateTileSelectionRight();
-					}
-					if(Input.GetKeyDown(KeyCode.Slash)) {
+                        WorldTip.showNowCenter("Copied tiles rotated right");
+                    }
+                    if (Input.GetKeyDown(KeyCode.Slash)) {
 						//ReorderTileSelection();
 					}
 				}
@@ -452,23 +457,10 @@ namespace SimpleGUI.Menus
 
 		public void worldOptionsUpdate()
 		{
-			if (GuiMain.showWindowMinimizeButtons.Value)
-			{
-				string buttontext = "W";
-				if (SimpleSettings.showHideWorldOptionsConfig.Value)
-				{
-					buttontext = "-";
-				}
-				if (GUI.Button(new Rect(worldOptionsRect.x + 280f, worldOptionsRect.y - 25, 25, 25), buttontext))
-				{
-					SimpleSettings.showHideWorldOptionsConfig.Value = !SimpleSettings.showHideWorldOptionsConfig.Value;
-				}
-			}
-			if (SimpleSettings.showHideWorldOptionsConfig.Value)
+			if (SimpleSettings.showHideWorldOptionsConfig)
 			{
 				GUI.contentColor = Color.white;
 				worldOptionsRect = GUILayout.Window(1010, worldOptionsRect, worldOptionsWindow, "World Options", GUILayout.MaxWidth(300f), GUILayout.MinWidth(200f));
-				
 			}
 			
 			if (enabledPopulationCap)
@@ -478,7 +470,6 @@ namespace SimpleGUI.Menus
 					// Do something with list[i]
 					actorList[i].killHimself(true, AttackType.Other, false, false, false);
 				}
-
 			}
 			
 			if (buildingLimitEnabled && MapBox.instance.buildings.Count > buildingLimit)
@@ -486,7 +477,7 @@ namespace SimpleGUI.Menus
 				List<Building> buildingList = MapBox.instance.buildings.ToList();
 				for (int i = buildingList.Count - 2; i > buildingLimit; i--)
 				{
-					buildingList[i].CallMethod("startDestroyBuilding", true);
+					buildingList[i].startDestroyBuilding();
 				}
 			}
 		}
@@ -1039,9 +1030,9 @@ namespace SimpleGUI.Menus
 						WorldTile activeTile = activeFill.GetRandom();
 						while (activeFill.Count >= 1 && position <= fillTileCount)
 						{
-							if (GuiMain.fillByLines.Value == "first") { activeTile = activeFill.First(); }
-							if (GuiMain.fillByLines.Value == "random") { activeTile = activeFill.GetRandom(); }
-							if (GuiMain.fillByLines.Value == "last") { activeTile = activeFill.Last(); }
+							if (SimpleSettings.fillByLines.Value == "first") { activeTile = activeFill.First(); }
+							if (SimpleSettings.fillByLines.Value == "random") { activeTile = activeFill.GetRandom(); }
+							if (SimpleSettings.fillByLines.Value == "last") { activeTile = activeFill.Last(); }
 							activeFill.Remove(activeTile);
 							tileActionComplete = false;
 							if (!alreadyChanged.Contains(activeTile)) // change tiles that havent been already
@@ -1203,7 +1194,7 @@ namespace SimpleGUI.Menus
 		public float lastUpdate;
 		public int fillTileCount;
 		public int fillIterationPosition;
-		public float maxTimeToWait => GuiMain.maxTimeToWait.Value;
+		public float maxTimeToWait => SimpleSettings.maxTimeToWait.Value;
 		public static bool dragSelection;
 		public static bool dragCircular = true;
 		public bool temp;

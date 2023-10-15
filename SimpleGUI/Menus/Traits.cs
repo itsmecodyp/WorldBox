@@ -184,20 +184,7 @@ namespace SimpleGUI.Menus
 
         public void traitWindowUpdate()
         {
-            if (GuiMain.showWindowMinimizeButtons.Value)
-            {
-                string buttontext = "T";
-                if (SimpleSettings.showHideTraitsWindowConfig.Value)
-                {
-                    buttontext = "-";
-                }
-                if (GUI.Button(new Rect(traitWindowRect.x + traitWindowRect.width - 25f, traitWindowRect.y - 25, 25, 25), buttontext))
-                {
-                    SimpleSettings.showHideTraitsWindowConfig.Value = !SimpleSettings.showHideTraitsWindowConfig.Value;
-                }
-            }
-
-            if (SimpleSettings.showHideTraitsWindowConfig.Value)
+            if (SimpleSettings.showHideTraitsWindowConfig)
             {
                 traitWindowRect = GUILayout.Window(1006, traitWindowRect, TraitWindow, "Traits", GUILayout.MaxWidth(300f), GUILayout.MinWidth(200f));
 

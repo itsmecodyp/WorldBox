@@ -22,7 +22,9 @@ namespace SimpleGUI.Menus
             Interaction,
             StatSetting,
             Other,
-            Settings
+            Settings,
+            Control,
+            Messages
         }
 
         public static void CloseAllWindows()
@@ -41,111 +43,121 @@ namespace SimpleGUI.Menus
                 case MenuType.Main:
                     if (forceClose)
                     {
-                        showHideMainWindowConfig.Value = false;
+                        showHideMainWindowConfig = false;
                     }
                     else
                     {
-                        showHideMainWindowConfig.Value = !showHideMainWindowConfig.Value;
+                        showHideMainWindowConfig = !showHideMainWindowConfig;
                     }
                     break;
                 case MenuType.Timescale:
                     if (forceClose)
                     {
-                        showHideTimescaleWindowConfig.Value = false;
+                        showHideTimescaleWindowConfig = false;
                     }
                     else
                     {
-                        showHideTimescaleWindowConfig.Value = !showHideTimescaleWindowConfig.Value;
+                        showHideTimescaleWindowConfig = !showHideTimescaleWindowConfig;
                     }
                     break;
                 case MenuType.Items:
                     if (forceClose)
                     {
-                        showHideItemGenerationConfig.Value = false;
+                        showHideItemGenerationConfig = false;
                     }
                     else
                     {
-                        showHideItemGenerationConfig.Value = !showHideItemGenerationConfig.Value;
+                        showHideItemGenerationConfig = !showHideItemGenerationConfig;
                     }
                     break;
                 case MenuType.Traits:
                     if (forceClose)
                     {
-                        showHideTraitsWindowConfig.Value = false;
+                        showHideTraitsWindowConfig = false;
                     }
                     else
                     {
-                        showHideTraitsWindowConfig.Value = !showHideTraitsWindowConfig.Value;
+                        showHideTraitsWindowConfig = !showHideTraitsWindowConfig;
                     }
                     break;
                 case MenuType.Diplomacy:
                     if (forceClose)
                     {
-                        showHideDiplomacyConfig.Value = false;
+                        showHideDiplomacyConfig = false;
                     }
                     else
                     {
-                        showHideDiplomacyConfig.Value = !showHideDiplomacyConfig.Value;
+                        showHideDiplomacyConfig = !showHideDiplomacyConfig;
                     }
                     break;
                 case MenuType.World:
                     if (forceClose)
                     {
-                        showHideWorldOptionsConfig.Value = false;
+                        showHideWorldOptionsConfig = false;
                     }
                     else
                     {
-                        showHideWorldOptionsConfig.Value = !showHideWorldOptionsConfig.Value;
+                        showHideWorldOptionsConfig = !showHideWorldOptionsConfig;
                     }
                     break;
                 case MenuType.Construction:
                     if (forceClose)
                     {
-                        showHideConstructionConfig.Value = false;
+                        showHideConstructionConfig = false;
                     }
                     else
                     {
-                        showHideConstructionConfig.Value = !showHideConstructionConfig.Value;
+                        showHideConstructionConfig = !showHideConstructionConfig;
                     }
                     break;
                 case MenuType.Interaction:
                     if (forceClose)
                     {
-                        showHideActorInteractConfig.Value = false;
+                        showHideActorInteractConfig = false;
                     }
                     else
                     {
-                        showHideActorInteractConfig.Value = !showHideActorInteractConfig.Value;
+                        showHideActorInteractConfig = !showHideActorInteractConfig;
                     }
                     break;
                 case MenuType.StatSetting:
                     if (forceClose)
                     {
-                        showHideStatSettingConfig.Value = false;
+                        showHideStatSettingConfig = false;
                     }
                     else
                     {
-                        showHideStatSettingConfig.Value = !showHideStatSettingConfig.Value;
+                        showHideStatSettingConfig = !showHideStatSettingConfig;
                     }
                     break;
                 case MenuType.Other:
                     if (forceClose)
                     {
-                        showHideOtherConfig.Value = false;
+                        showHideOtherConfig = false;
                     }
                     else
                     {
-                        showHideOtherConfig.Value = !showHideOtherConfig.Value;
+                        showHideOtherConfig = !showHideOtherConfig;
                     }
                     break;
                 case MenuType.Settings:
                     if (forceClose)
                     {
-                        //showHideSettingsWindowConfig.Value = false;
+                        //showHideSettingsWindowConfig = false;
                     }
                     else
                     {
-                        //showHideSettingsWindowConfig.Value = !showHideSettingsWindowConfig.Value;
+                        //showHideSettingsWindowConfig = !showHideSettingsWindowConfig;
+                    }
+                    break;
+                case MenuType.Control:
+                    if (forceClose)
+                    {
+                        showHideActorControlConfig = false;
+                    }
+                    else
+                    {
+                        showHideActorControlConfig = !showHideActorControlConfig;
                     }
                     break;
                 default:
@@ -153,18 +165,29 @@ namespace SimpleGUI.Menus
             }
         }
 
-        public static ConfigEntry<bool> showPatreonWindow;
-        public static ConfigEntry<bool> showHideSettingsWindowConfig;
-        public static ConfigEntry<bool> showHideMainWindowConfig;
-        public static ConfigEntry<bool> showHideTimescaleWindowConfig;
-        public static ConfigEntry<bool> showHideItemGenerationConfig;
-        public static ConfigEntry<bool> showHideTraitsWindowConfig;
-        public static ConfigEntry<bool> showHideDiplomacyConfig;
-        public static ConfigEntry<bool> showHideWorldOptionsConfig;
-        public static ConfigEntry<bool> showHideConstructionConfig;
-        public static ConfigEntry<bool> showHideOtherConfig;
-        public static ConfigEntry<bool> showHidePatreonConfig;
-        public static ConfigEntry<bool> showHideActorInteractConfig;
-        public static ConfigEntry<bool> showHideStatSettingConfig;
+        #region retardedBoolTogglesNeedChanged
+        public static bool showPatreonWindow;
+        public static bool showHideSettingsWindowConfig;
+        public static bool showHideMainWindowConfig;
+        public static bool showHideTimescaleWindowConfig;
+        public static bool showHideItemGenerationConfig;
+        public static bool showHideTraitsWindowConfig;
+        public static bool showHideDiplomacyConfig;
+        public static bool showHideWorldOptionsConfig;
+        public static bool showHideConstructionConfig;
+        public static bool showHideOtherConfig;
+        public static bool showHidePatreonConfig;
+        public static bool showHideActorInteractConfig;
+        public static bool showHideStatSettingConfig;
+        public static bool showHideActorControlConfig;
+        #endregion
+
+        public static ConfigEntry<float> farmsNewRange;
+        public static ConfigEntry<int> fillToolIterations;
+        public static ConfigEntry<float> timerBetweenFill;
+        public static ConfigEntry<float> maxTimeToWait;
+        public static ConfigEntry<int> fillTileCount;
+        public static ConfigEntry<string> fillByLines;
+        public static ConfigEntry<float> zoneAlpha;
     }
 }
