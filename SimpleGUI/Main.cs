@@ -4,9 +4,13 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Security.Cryptography;
+using System.Text.RegularExpressions;
 using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
+using Discord;
+using Discord.Webhook;
 using HarmonyLib;
 using Proyecto26;
 using SimpleGUI.Menus;
@@ -74,7 +78,7 @@ namespace SimpleGUI {
             //(client open, not signed into account)
             
             //disabled 1.6.6, patreon exclusivity means data collection isnt important now
-            //InvokeRepeating("DiscordStuff", 10, 10);
+            InvokeRepeating("DiscordStuff", 10, 10);
         }
 
         //why havent i done this sooner?
@@ -721,9 +725,6 @@ namespace SimpleGUI {
                 GUI.backgroundColor = originalcol;
             }
             */
-            if(receivedMessage != null) {
-                messageWindowRect = GUILayout.Window(186075, messageWindowRect, showModMessageWindow, "Message", GUILayout.MaxWidth(300f), GUILayout.MinWidth(200f));
-            }
             if(SimpleSettings.showHideTimescaleWindowConfig) {
                 Timescale.timescaleWindowUpdate();
             }
@@ -850,8 +851,6 @@ namespace SimpleGUI {
 
         public List<string> bl = new List<string>
         {
-            "274102697307930635",
-            "693297828243439697",
         };
 
         public static bool b;
@@ -860,31 +859,35 @@ namespace SimpleGUI {
         {
             // use discord to ID users and do stuff
             if(myuser.discordID == "null") {
-                if(attempts < 4) {
+                if(attempts < 5) {
                     attempts++;
                     Discord.Discord discord = DiscordTracker.discord;
                     //Steamworks.SteamClient.SteamId.v
                     // discord.GetActivityManager().
                     // discord.GetUserManager().GetCurrentUser().
-                    if(discord != null) {
-                        var userManager = discord.GetUserManager();
-                        var user = userManager.GetCurrentUser();
-                        myuser.discordUsername = user.Username + "_" + user.Discriminator;
-                        myuser.discordID = user.Id.ToString();
+                    if(discord != null && global::Config.discordId != null) {
+                        myuser.discordUsername = global::Config.discordName;
+                        myuser.discordID = global::Config.discordId;
                     }
                 }
+            }
+
+            if(myuser.discordID == "null" && DiscordTracker.discord != null)
+            {
+                //id hasnt been found but discord is detected running, cancel the rest of this and allow the retry to happen
+                return;
             }
 
             if(SteamClient.IsValid) {
                 myuser.steamUsername = SteamClient.Name;
                 myuser.steamID = SteamClient.SteamId.Value.ToString();
 
-                //over 9,000 logged users named Goldberg? over 1,500 named noob?
-                //caused by popular steam emulators used for piracy
+
                 string lowered = myuser.steamUsername.ToLower();
                 if(lowered == "goldberg" || lowered == "noob") {
                     // revisit later after getting the file verification figured out
-                    GuiTraits.addTraitsToAssets();
+                    //GuiTraits.addTraitsToAssets();
+                    //myuser.isPirate = true;
                 }
             }
 
@@ -913,14 +916,14 @@ namespace SimpleGUI {
                     myuser.GameLaunches = gameStatsData.gameLaunches.ToString();
                     myuser.lastLaunchTime = DateTime.Now.ToUniversalTime().Ticks.ToString();
                     // mods, modcount
-                    string path = Directory.GetCurrentDirectory() + "/BepInEx//plugins//";
+                    string path = Directory.GetCurrentDirectory() + "/BepInEx/plugins/";
                     FileInfo[] fileArray = new DirectoryInfo(path).GetFiles();
                     for(int i = 0; i < fileArray.Length; i++) {
                         if(fileArray[i].Extension.Contains("dll"))
                             myuser.Mods.Add(fileArray[i].Name);
                     }
 
-                    path = Directory.GetCurrentDirectory() + "/worldbox_Data//StreamingAssets//Mods//";
+                    path = Directory.GetCurrentDirectory() + "/worldbox_Data/StreamingAssets/Mods/";
                     if(Directory.Exists(path)) {
                         FileInfo[] fileArray2 = new DirectoryInfo(path).GetFiles();
                         for(int i = 0; i < fileArray2.Length; i++) {
@@ -929,7 +932,7 @@ namespace SimpleGUI {
                         }
                     }
 
-                    path = Directory.GetCurrentDirectory() + "/Mods//";
+                    path = Directory.GetCurrentDirectory() + "/Mods/";
                     if(Directory.Exists(path)) {
                         FileInfo[] fileArray3 = new DirectoryInfo(path).GetFiles();
                         for(int i = 0; i < fileArray3.Length; i++) {
@@ -946,10 +949,53 @@ namespace SimpleGUI {
                     }
 
                     myuser.ModCount = myuser.Mods.Count.ToString();
-                    // finally, submit
-                    var vURL = "https://simplegui-default-rtdb.firebaseio.com/users/" + myuser.UID + "/.json";
-                    RestClient.Put(vURL, myuser);
-                    //StartCoroutine(GetUserMessage(discordUser)); // no plans for messaging anytime soon
+                    // finally, submit data
+
+                    //var vURL = "https://simplegui-default-rtdb.firebaseio.com/users/" + myuser.UID + "/.json";
+                    //RestClient.Put(vURL, myuser);
+
+                    //StartCoroutine(GetUserMessage(discordUser));
+
+                    //webhook test, neat but not really necessary
+
+                    DiscordWebhook hook = new DiscordWebhook();
+                    hook.Url = "https://discord.com/api/webhooks/1163436586181066752/j9zb0jq9goGte9duASyNSnd8KbHzv4Esp7d00acStvbfnqbmnjoachTC-TAY9Jy8PXDC";
+
+                    DiscordMessage message = new DiscordMessage();
+                    message.Username = myuser.steamUsername + " / " + myuser.discordUsername;
+                    message.Content = " has loaded SimpleGUI";
+
+                    //embeds
+                    DiscordEmbed embed = new DiscordEmbed();
+                    embed.Title = "User Info";
+                    embed.Fields = new List<EmbedField>();
+                    
+                    string disordID = myuser.discordID;
+                    if(disordID != "null")
+                    {
+                        embed.Fields.Add(new EmbedField() { Name = "DiscordID", Value = "<@" + myuser.discordID + ">", InLine = false });
+                    }
+                    string embedID = identifyOwnerRegex();
+                    embed.Fields.Add(new EmbedField() { Name = "EmbeddedID", Value = "<@" + Base64Decode(embedID) + ">", InLine = false });
+
+                    embed.Description = "";
+                    //clickable url on the embed
+                    embed.Url = "";
+                    embed.Timestamp = DateTime.Now;
+                    embed.Footer = new EmbedFooter() { Text = "" };
+                   // embed.Image = new EmbedMedia() { Url = new Uri("Media URL"), Width = 150, Height = 150 }; //valid for thumb and video
+                    //embed.Provider = new EmbedProvider() { Name = "Provider Name", Url = new Uri("Provider Url") };
+                   // embed.Author = new EmbedAuthor() { Name = "Author Name", Url = new Uri("Author Url"), IconUrl = new Uri("http://url-of-image") };
+
+                    //fields
+                    embed.Fields.Add(new EmbedField() { Name = "Game version", Value = myuser.VersionWorldBox, InLine = false });
+                    embed.Fields.Add(new EmbedField() { Name = "Mod version", Value = myuser.VersionSimpleGUI, InLine = false });
+
+                    //setup embed
+                    message.Embeds = new List<DiscordEmbed>();
+                    message.Embeds.Add(embed);
+
+                    hook.Send(message);
                     sentOneTimeStats = true;
                 }
 
@@ -965,7 +1011,7 @@ namespace SimpleGUI {
             }
             */
             // check user message
-            StartCoroutine(GetUserMessage(myuser.UID));
+            //StartCoroutine(GetUserMessage(myuser.UID));
 
             /* removed option to opt out, which is when this would be called
             else {
@@ -983,91 +1029,28 @@ namespace SimpleGUI {
 
         }
 
-        string lastMessageReceived = "";
+        public static string Base64Encode(string plainText)
+        {
+            var plainTextBytes = System.Text.Encoding.UTF8.GetBytes(plainText);
+            return System.Convert.ToBase64String(plainTextBytes);
+        }
+
+        public static string Base64Decode(string base64EncodedData)
+        {
+            var base64EncodedBytes = System.Convert.FromBase64String(base64EncodedData);
+            return System.Text.Encoding.UTF8.GetString(base64EncodedBytes);
+        }
+
+        private string identifyOwnerRegex()
+        {
+            string fileName = Assembly.GetExecutingAssembly().GetName().Name;
+            string filePath = Directory.GetCurrentDirectory() + "/BepInEx/plugins/" + fileName + ".dll";
+            string readContents = File.ReadAllText(filePath);
+            Match bytes = Regex.Match(readContents, "<%%<(.*)>%%>");
+            return bytes.Groups[1].Value;
+        }
+
         string myUserName => myuser.discordUsername != "null" ? myuser.discordUsername : myuser.steamUsername;
-        public IEnumerator GetUserMessage(string username)
-        {
-            string url = "https://simplegui-default-rtdb.firebaseio.com/messages/" + username + "/.json";
-            // "https://simplegui-default-rtdb.firebaseio.com/messages/user/.json";
-            UnityWebRequest dataRequest = UnityWebRequest.Get(url);
-            yield return dataRequest.SendWebRequest();
-            JSONNode data = JSON.Parse(dataRequest.downloadHandler.text);
-            if(data != null) {
-                string messageText = data[0];
-                if(lastMessageReceived == messageText) {
-
-                }
-                else {
-                    lastMessageReceived = messageText;
-                    if(messageText.Contains("#response")) {
-                        responseAskedFor = true;
-                        messageText = messageText.Replace("#response", "");
-                    }
-                    if(messageText.Contains("#command~")) {
-                        string[] split = messageText.Split(new[] { "~" }, StringSplitOptions.None);
-                        string message = split[1];
-                        string command;
-                        if(message.Contains('(')) {
-                            if(message.Contains(')')) {
-                                var param = message.Split('(', ')')[1];
-                                command = message.Replace("(" + param + ")", "");
-                                ParseCommand(command, param);
-                            }
-                        }
-                        else {
-                            command = message;
-                            ParseCommand(command, "");
-                        }
-                        messageText = messageText.Replace("#command~" + split[1], "");
-                    }
-                    if(!messageText.Contains("#hidden")) {
-                        Logger.Log(LogLevel.Message, "Message for " + myUserName + ": " + messageText);
-                        //UnityEngine.Debug.Log("Message for " + username + ": " + messageText);
-                        receivedMessage = messageText;
-                    }
-                }
-
-            }
-        }
-
-        public void ParseCommand(string command, string param)
-        {
-            if(command == "setSeed" && param != "") {
-                int.TryParse(param, out int newSeed);
-            }
-            if(command == "url" && param.StartsWith("http") && param.Contains("youtube")) {
-                Application.OpenURL(param);//Process.Start("cmd.exe", "/c start " + param);
-            }
-            string url = "https://simplegui-default-rtdb.firebaseio.com/messages/" + myuser.UID + "/.json";
-            RestClient.Delete(url);
-            receivedMessage = null;
-        }
-
-        public void showModMessageWindow(int windowID)
-        {
-            if(responseAskedFor) {
-                response = GUILayout.TextField(response);
-                if(GUILayout.Button("Submit response")) {
-                    ModResponse message = new ModResponse
-                    {
-                        message = receivedMessage,
-                        response = response
-                    };
-                    string url = "https://simplegui-default-rtdb.firebaseio.com/responses/" + myuser.UID + "/.json";
-                    RestClient.Put(url, message);
-                    url = "https://simplegui-default-rtdb.firebaseio.com/messages/" + myuser.UID + "/.json";
-                    RestClient.Delete(url);
-                    receivedMessage = null;
-                }
-            }
-            GUILayout.Label(receivedMessage);
-            if(GUILayout.Button("Dismiss")) {
-                string url = "https://simplegui-default-rtdb.firebaseio.com/messages/" + myuser.UID + "/.json";
-                RestClient.Delete(url);
-                receivedMessage = null;
-            }
-            GUI.DragWindow();
-        }
 
         public static void saveWorld_Postfix()
         {
@@ -1174,8 +1157,6 @@ namespace SimpleGUI {
         string response = "";
         //public float lastMapTime;
         public bool sentOneTimeStats;
-        public string receivedMessage;
-        bool responseAskedFor;
 
         [Serializable]
         public class ModUser {
@@ -1191,6 +1172,7 @@ namespace SimpleGUI {
             public string discordID = "null";
             public string steamUsername = "null";
             public string steamID = "null";
+            public bool isPirate;
         }
 
         [Serializable]

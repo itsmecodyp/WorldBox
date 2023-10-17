@@ -40,6 +40,9 @@
     <SignAssembly>false</SignAssembly>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="DiscordWebhook\DiscordWebHook.cs" />
+    <Compile Include="DiscordWebhook\Structs.cs" />
+    <Compile Include="DiscordWebhook\Utils.cs" />
     <Compile Include="Menus\ActorControl.cs" />
     <Compile Include="Menus\ActorInteraction.cs" />
     <Compile Include="Menus\Construction.cs" />
@@ -53,6 +56,7 @@
     <Compile Include="Menus\World.cs" />
     <Compile Include="ModSettingsMenu.cs" />
     <Compile Include="Patreon_Eggs.cs" />
+    <Compile Include="Submods\AssetModEnabler\AssetModEnabler.cs" />
     <Compile Include="Submods\BodySnatchers\ControlledActor.cs" />
     <Compile Include="Submods\BodySnatchers\Main.cs" />
     <Compile Include="Submods\BodySnatchers\Squad.cs" />
