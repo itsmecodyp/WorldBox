@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using ai.behaviours;
+using System.Collections.Generic;
 using System.Globalization;
 using UnityEngine;
 
@@ -10,6 +11,8 @@ namespace SimpleGUI.Menus {
 
         public static bool showCultureSelectionWindow;
         public static string currentCultureFromSelectionWindow = "";
+
+        public static bool forcingSettlement;
 
         public void diplomacyCultureSelectWindow(int windowID)
         {
@@ -100,33 +103,61 @@ namespace SimpleGUI.Menus {
             GUILayout.Button("Relation:");
             GUI.backgroundColor = Color.grey;
             if(selectedCity1 != null && selectedCity2 != null) {   // does this look better or does the normal format?
-                //isEnemy
-                bool isEnemy = selectedCity1Kingdom.getEnemiesKingdoms().Contains(selectedCity2Kingdom);
-                //isEnemyv2
-                bool isEnemyv2 = selectedCity1Kingdom.isEnemy(selectedCity2Kingdom);
-                //isAlly
-                Alliance city1KingdomAlliance = selectedCity1Kingdom.getAlliance();
-                Alliance city2KingdomAlliance = selectedCity2Kingdom.getAlliance();
-                bool isAlly = Alliance.isSame(city1KingdomAlliance, city2KingdomAlliance);
-                //selectedCity1Kingdom.allies.TryGetValue(selectedCity2Kingdom, out bool isAlly); //????????
-                //selectedCity1Kingdom.civs_allies.TryGetValue(selectedCity2Kingdom, out bool isAlly2);
-                if(isAlly/*|| isAlly2*/) {
+                bool isAlly = false;
+                bool isEnemy = false;
+                Alliance alliance = selectedCity1.kingdom.getAlliance();
+                if (alliance == null)
+                {
+                    
+                }
+                else
+                {
+                    if (alliance.kingdoms_list.Contains(selectedCity2.kingdom))
+                    {
+                        isAlly = true;
+                    }
+                }
+                if(isAlly == false)
+                {
+                    if (selectedCity1.kingdom.isEnemy(selectedCity2.kingdom))
+                    {
+                        isEnemy = true;
+                    }
+                }
+                if (isAlly) {
                     GUI.backgroundColor = Color.green;
                 }
                 else {
                     GUI.backgroundColor = Color.red;
                 }
                 if(GUILayout.Button("Alliance")) {
-					if(selectedCity1Kingdom.hasAlliance()) {
-                        Alliance city1Alliance = selectedCity1Kingdom.getAlliance();
-                        //MapBox.instance.alliances.
-                        city1KingdomAlliance.join(selectedCity2Kingdom); // selectedCity2Kingdom.allianceJoin(city1Alliance);
-                        //selectedCity2Kingdom.allianceJoin(city1Alliance);
+                    //dej's method of doing this
+                    foreach (War war in World.world.wars.getWars(selectedCity1.kingdom))
+                    {
+                        if (war.isInWarWith(selectedCity1.kingdom, selectedCity2.kingdom))
+                        {
+                            war.removeFromWar(selectedCity1.kingdom);
+                            war.removeFromWar(selectedCity2.kingdom);
+                        }
                     }
-                    else {
-                        MapBox.instance.alliances.newAlliance(selectedCity1Kingdom, selectedCity2Kingdom);
+                    if (Alliance.isSame(selectedCity1.kingdom.getAlliance(), selectedCity2.kingdom.getAlliance()))
+                    {
+                        selectedCity2.kingdom = null;
                     }
-                   
+                    Alliance allianceA = selectedCity1.kingdom.getAlliance();
+                    Alliance allianceB = selectedCity2.kingdom.getAlliance();
+                    if (allianceA != null)
+                    {
+                        if (allianceB != null)
+                        {
+                            World.world.alliances.dissolveAlliance(allianceB);
+                        }
+                        forceAllianceJoin(allianceA, selectedCity2.kingdom, true);
+                    }
+                    else
+                    {
+                        forceNewAlliance(selectedCity1.kingdom, selectedCity2.kingdom);
+                    }
                 }
                 if(isEnemy) {
                     GUI.backgroundColor = Color.green;
@@ -134,22 +165,22 @@ namespace SimpleGUI.Menus {
                 else {
                     GUI.backgroundColor = Color.red;
                 }
-                if(GUILayout.Button("Start war") && isEnemy == false) {
-					if(isAlly == false) {
+                if(GUILayout.Button("At war")) {
+                    if (isAlly)
+                    {
+                        selectedCity1.kingdom.getAlliance().leave(selectedCity2.kingdom, true);
                         MapBox.instance.diplomacy.startWar(selectedCity1Kingdom, selectedCity2Kingdom, WarTypeLibrary.whisper_of_war);
+                        return;
                     }
-					else {
-                        selectedCity2Kingdom.allianceLeave(city1KingdomAlliance);
-                        MapBox.instance.diplomacy.startWar(selectedCity1Kingdom, selectedCity2Kingdom, WarTypeLibrary.normal);
-                    }
+                    MapBox.instance.diplomacy.startWar(selectedCity1Kingdom, selectedCity2Kingdom, WarTypeLibrary.whisper_of_war);
                 }
                 GUILayout.EndHorizontal(); 
                 GUI.backgroundColor = Color.grey;
             }
             else {
                 GUI.backgroundColor = Color.yellow;
-                GUILayout.Button("City1");
-                GUILayout.Button("City2");
+                GUILayout.Button("Need City1");
+                GUILayout.Button("Need City2");
                 GUILayout.EndHorizontal();
             }
             if(selectedCity1 != null) {
@@ -157,11 +188,6 @@ namespace SimpleGUI.Menus {
                 GUI.backgroundColor = Color.cyan;
                 GUILayout.Button("City1:");
                 GUI.backgroundColor = Color.grey;
-                if(GUILayout.Button("Send settler out")) {
-                    Actor selectedNewSettler = selectedCity1.units.GetRandom();
-                    //selectedNewSettler.removeFromCity(); //missing method exception?
-                    selectedNewSettler.ai.setTask("nomad_try_build_city", true, true);
-                }
                 Culture city1Culture = selectedCity1.getCulture();
                 if(city1Culture != null) {
                     if(GUILayout.Button("Culture: " + city1Culture.name)) {
@@ -175,36 +201,6 @@ namespace SimpleGUI.Menus {
                     if(GUILayout.Button("Transfer")) {
                         selectedCity1.joinAnotherKingdom(selectedCity2Kingdom);
                     }
-                    //merge stuff
-                    /*
-                    if (GUILayout.Button("Merge"))
-                    {
-                        
-                        //check if city needs settlers, if not slaughter 50% for room
-                        if (selectedCity2.needSettlers() == false) {
-                            //number of people joining the city
-                            int halfsies = selectedCity2.units.Count / 2;
-                            for (int i = 0; i < halfsies; i++)
-                            {
-                                selectedCity2.units.GetRandom().killHimself();
-                            }
-                        }
-                        //excess after this will settle a new city? maybe new feature to suicide instead?
-                        //assign refugees their new home
-                        foreach (Actor cityActor in selectedCity1.units)
-                        {
-                            cityActor.setKingdom(selectedCity2Kingdom);
-                            cityActor.joinCity(selectedCity2);
-                        }
-                        
-
-                        //foreach()
-
-                        //unassign the city that is about to no longer exist anyway, save the menu
-                        //selectedCity1 = null;
-
-                    }
-                    */
                 }
                 /*
                 if(GUILayout.Button("War everyone")) {
@@ -232,10 +228,12 @@ namespace SimpleGUI.Menus {
                 GUI.backgroundColor = Color.cyan;
                 GUILayout.Button("City2:");
                 GUI.backgroundColor = Color.grey;
-                if(GUILayout.Button("Send settler out")) {
-                    Actor selectedNewSettler = selectedCity2.units.GetRandom();
-                    //selectedNewSettler.removeFromCity(); missing method exception?
-                    selectedNewSettler.ai.setTask("nomad_try_build_city", true, true);
+                if(forcingSettlement)
+                {
+                    GUI.backgroundColor = Color.yellow;
+                }
+                if (GUILayout.Button("Force new settlement")) {
+                    forcingSettlement = !forcingSettlement;
                 }
                 if(selectedCity1 == null) {
                     GUILayout.Button("NeedCity1");
@@ -245,21 +243,6 @@ namespace SimpleGUI.Menus {
                         selectedCity2.joinAnotherKingdom(selectedCity1Kingdom);
                     }
                 }
-               
-                /*
-                if(GUILayout.Button("War everyone")) {
-                    foreach(Kingdom kingdom in MapBox.instance.kingdoms.list) {
-                        if(kingdom != selectedCity2Kingdom) {
-                            MapBox.instance.diplomacy.startWar(selectedCity2Kingdom, kingdom, WarTypeLibrary.normal, false);
-                        }
-                    }
-                }
-                if(GUILayout.Button("Peace everyone")) {
-                    foreach(War kingdomWar in MapBox.instance.wars.getWars(selectedCity2Kingdom)) {
-                        kingdomWar.removeFromWar(selectedCity2Kingdom);
-                    }
-                }
-                */
                 GUILayout.EndHorizontal();
             }
             else {
@@ -267,8 +250,8 @@ namespace SimpleGUI.Menus {
                 GUILayout.Button("NeedCity2");
             }
             GUI.backgroundColor = Color.grey;
-            GUILayout.Button("Add/Remove zones:");
             GUILayout.BeginHorizontal();
+            GUILayout.Button("Add/Remove zones:");
             GUI.backgroundColor = Color.grey;
             if(selectedCity1 != null) {
                 if(city1PaintZone) {
@@ -277,7 +260,7 @@ namespace SimpleGUI.Menus {
                 else {
                     GUI.backgroundColor = Color.red;
                 }
-                if(GUILayout.Button("City1 border")) {
+                if(GUILayout.Button("City1")) {
                     city1PaintZone = !city1PaintZone;
                     if(city1PaintZone) {
                         city2PaintZone = false;
@@ -301,7 +284,7 @@ namespace SimpleGUI.Menus {
                 else {
                     GUI.backgroundColor = Color.red;
                 }
-                if(GUILayout.Button("City2 border")) {
+                if(GUILayout.Button("City2")) {
                     city2PaintZone = !city2PaintZone;
                     if(city2PaintZone) {
                         city1PaintZone = false;
@@ -336,6 +319,7 @@ namespace SimpleGUI.Menus {
                 }
             }
             if(GUILayout.Button("Peaceful World")) {
+                EnableConstantWar = false;
                 MapBox.instance.wars.stopAllWars();
                 /*
                 foreach(Kingdom kingdom in MapBox.instance.kingdoms.list_civs) {
@@ -355,7 +339,40 @@ namespace SimpleGUI.Menus {
 
         public void diplomacyWindowUpdate()
         {
-            if(selectingCity1 && Input.GetMouseButton(0)) {
+            WorldTile targetTile = MapBox.instance.getMouseTilePos();
+            if (forcingSettlement && Input.GetMouseButton(0))
+            {
+                if (targetTile != null)
+                {
+                    if (targetTile.zone.city != null)
+                    {
+                       //city exists here already, dont force settle
+                    }
+                    else
+                    {
+                        City newCity = MapBox.instance.cities.buildNewCity(targetTile.zone, selectedCity2.race, selectedCity2.kingdom);
+                        if (newCity == null)
+                        {
+                            return;
+                        }
+                        newCity.newCityEvent();
+                        if(selectedCity2.data != null && selectedCity2.data.culture != null)
+                        {
+                            newCity.setCulture(selectedCity2.data.culture);
+                        }
+                        selectedCity2.kingdom.newCityBuiltEvent(newCity);
+                        Actor startingCitizen = World.world.units.spawnNewUnit("unit_" + selectedCity2.race.id, targetTile.zone.tiles.GetRandom(), false, 0f);
+                        Actor startingCitizen2 = World.world.units.spawnNewUnit("unit_" + selectedCity2.race.id, targetTile.zone.tiles.GetRandom(), false, 0f);
+                        Actor startingCitizen3 = World.world.units.spawnNewUnit("unit_" + selectedCity2.race.id, targetTile.zone.tiles.GetRandom(), false, 0f);
+                        startingCitizen.joinCity(newCity);
+                        startingCitizen2.joinCity(newCity);
+                        startingCitizen3.joinCity(newCity);
+                        WorldLog.logNewCity(newCity);
+                    }
+                }
+                forcingSettlement = false;
+            }
+            if (selectingCity1 && Input.GetMouseButton(0)) {
                 if(MapBox.instance.getMouseTilePos() != null) {
                     if(MapBox.instance.getMouseTilePos().zone.city != null) {
                         selectedCity1 = MapBox.instance.getMouseTilePos().zone.city;
@@ -460,6 +477,37 @@ namespace SimpleGUI.Menus {
         }
 
         public Rect cultureSelectWindowRect;
+
+        private static void forceAllianceJoin(Alliance alliance, Kingdom pKingdom, bool pRecalc)
+        {
+            alliance.kingdoms_hashset.Add(pKingdom);
+            pKingdom.allianceJoin(alliance);
+            if (pRecalc)
+            {
+                alliance.recalculate();
+            }
+            alliance.data.timestamp_member_joined = World.world.getCurWorldTime();
+        }
+
+        public static Alliance forceNewAlliance(Kingdom pKingdom, Kingdom pKingdom2)
+        {
+            Alliance alliance = World.world.alliances.newObject(null);
+            alliance.createAlliance();
+            forceAddFounders(alliance, pKingdom, pKingdom2);
+            WorldLog.logAllianceCreated(alliance);
+            return alliance;
+        }
+
+        public static void forceAddFounders(Alliance alliance, Kingdom pKingdom1, Kingdom pKingdom2)
+        {
+            alliance.data.founder_kingdom_1 = pKingdom1.data.name;
+            if (pKingdom1.king != null)
+            {
+                alliance.data.founder_name_1 = pKingdom1.king.getName();
+            }
+            forceAllianceJoin(alliance, pKingdom1, true);
+            forceAllianceJoin(alliance, pKingdom2, true);
+        }
 
         public static string ColorToHex(Color32 color)
         {
