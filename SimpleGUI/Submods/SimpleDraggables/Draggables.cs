@@ -3,10 +3,10 @@ using System.Linq;
 using System.Reflection;
 using BepInEx;
 using HarmonyLib;
-using SimpleGUI.Menus;
+using SimplerGUI.Menus;
 using UnityEngine;
 
-namespace SimpleGUI.Submods.SimpleDraggables {
+namespace SimplerGUI.Submods.SimpleDraggables {
     [BepInPlugin(pluginGuid, pluginName, pluginVersion)]
     public class Draggables_Main : BaseUnityPlugin {
         public const string pluginGuid = "cody.worldbox.draggables";

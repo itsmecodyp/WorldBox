@@ -1,7 +1,7 @@
-﻿using SimpleGUI.Submods.SimpleGamba.LargeNumbers;
+﻿using SimplerGUI.Submods.SimpleGamba.LargeNumbers;
 using UnityEngine;
 
-namespace SimpleGUI.Submods.SimpleGamba {
+namespace SimplerGUI.Submods.SimpleGamba {
 	public class Clicker {
 
         public static BlackjackPlayer humanPlayer => Main.humanPlayer; // main player

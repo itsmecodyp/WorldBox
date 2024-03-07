@@ -16,7 +16,7 @@ using System;
 using System.Globalization;
 using System.Text;
 
-namespace SimpleGUI.Submods.SimpleGamba.LargeNumbers {
+namespace SimplerGUI.Submods.SimpleGamba.LargeNumbers {
     /// <summary>
     /// An Alphabetic Notation based number.
     /// This is a similar number sysem used by other popular idle clicker games, with a slight difference. The

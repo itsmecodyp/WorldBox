@@ -10,7 +10,7 @@ using HarmonyLib;
 using OpenAI_API;
 using UnityEngine;
 
-namespace SimpleGUI.Submods.MapSizes {
+namespace SimplerGUI.Submods.MapSizes {
 	[BepInPlugin(pluginGuid, pluginName, pluginVersion)]
 	public class MapSizes : BaseUnityPlugin {
         public const string pluginGuid = "cody.worldbox.map.sizes";
@@ -42,27 +42,39 @@ namespace SimpleGUI.Submods.MapSizes {
 
             Debug.Log("MapSizes loaded");
         }
+        public bool showSubMod = true;
+
         public void OnGUI()
         {
-            if(GUI.Button(new Rect(Screen.width - 120, 20, 120, 20), "MapSizes")) {
-                showHideMapSizeWindow = !showHideMapSizeWindow;
-            }
-            if(showHideMapSizeWindow) {
-                mapSizeWindowRect = GUILayout.Window(102, mapSizeWindowRect, new GUI.WindowFunction(mapSizesWindow), "Map Stuff", new GUILayoutOption[]
-                    {
+            if (showSubMod)
+            {
+                if (GUI.Button(new Rect(Screen.width - 120, 20, 95, 20), "MapSizes"))
+                {
+                    showHideMapSizeWindow = !showHideMapSizeWindow;
+                }
+                if (GUI.Button(new Rect(Screen.width - 25, 20, 25, 20), "x"))
+                {
+                    showHideMapSizeWindow = false;
+                    showSubMod = false;
+                }
+                if (showHideMapSizeWindow)
+                {
+                    mapSizeWindowRect = GUILayout.Window(102, mapSizeWindowRect, new GUI.WindowFunction(mapSizesWindow), "Map Stuff", new GUILayoutOption[]
+                        {
                 GUILayout.MaxWidth(300f),
                 GUILayout.MinWidth(200f)
-                    });
+                        });
 
-                if (showCustomTemplateWindow)
-                {
-                    customTemplateWindowRect = GUILayout.Window(43095, customTemplateWindowRect, customTemplateWindow, "Custom Template", GUILayout.MaxWidth(300f), GUILayout.MinWidth(200f));
-                    customTemplateWindowRect.position = new Vector2(mapSizeWindowRect.x + mapSizeWindowRect.width, (mapSizeWindowRect.y));
+                    if (showCustomTemplateWindow)
+                    {
+                        customTemplateWindowRect = GUILayout.Window(43095, customTemplateWindowRect, customTemplateWindow, "Custom Template", GUILayout.MaxWidth(300f), GUILayout.MinWidth(200f));
+                        customTemplateWindowRect.position = new Vector2(mapSizeWindowRect.x + mapSizeWindowRect.width, (mapSizeWindowRect.y));
+                    }
                 }
+                tooltipRect.x = Input.mousePosition.x + 5f;
+                tooltipRect.y = (float)Screen.height - Input.mousePosition.y + 5f;
+                GUI.Label(new Rect(tooltipRect), GUI.tooltip);
             }
-            tooltipRect.x = Input.mousePosition.x + 5f;
-            tooltipRect.y = (float)Screen.height - Input.mousePosition.y + 5f;
-            GUI.Label(new Rect(tooltipRect), GUI.tooltip);
         }
 
         //this stuff shouldnt be necessary once AssetModLoader works

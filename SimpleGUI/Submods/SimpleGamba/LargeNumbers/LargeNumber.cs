@@ -16,7 +16,7 @@ using System;
 using System.Runtime.CompilerServices;
 using System.Text;
 
-namespace SimpleGUI.Submods.SimpleGamba.LargeNumbers {
+namespace SimplerGUI.Submods.SimpleGamba.LargeNumbers {
     /// <summary>
     /// A Conway & Guy Latin based number.
     /// </summary>

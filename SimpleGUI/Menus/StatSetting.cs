@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using UnityEngine;
 
-namespace SimpleGUI.Menus
+namespace SimplerGUI.Menus
 {
 	class GuiStatSetting {
 		public void StatSettingWindowUpdate()
@@ -13,26 +13,35 @@ namespace SimpleGUI.Menus
 			}
 		}
 
-		public void StatSettingWindow(int windowID)
+        public Vector2 scrollPositionStats;
+
+        public void StatSettingWindow(int windowID)
 		{
-			GuiMain.SetWindowInUse(windowID);
+            GuiMain.SetWindowInUse(windowID);
 			if(lastSelected == null || Config.selectedUnit != null && Config.selectedUnit != lastSelected) {
 				lastSelected = Config.selectedUnit;
 				GUILayout.Button("Inspect an actor");
 			}
-			if(lastSelected != null) {
+            if (lastSelected != null) {
 				GUILayout.Button("Name: " + lastSelected.data.name);
-				if(statNames.Count > 1) {
+                scrollPositionStats = GUILayout.BeginScrollView(
+ // maybe modify height later
+ scrollPositionStats, GUILayout.Width(300f), GUILayout.Height(200f));
+                if (statNames.Count > 1) {
 					foreach(string statNameInList in statNames.Keys) {
-						string statNameWithoutPrefix = statNameInList.Remove(0, 1);
+						//removing the c before stat names
 						GUILayout.BeginHorizontal();
-						GUILayout.Button(statNameWithoutPrefix); // display stat name
-						// why is there no Convert.ToFloat?
-						statsToAdd[statNameWithoutPrefix] = (float)Convert.ToDouble(GUILayout.TextField(statsToAdd[statNameWithoutPrefix].ToString(CultureInfo.CurrentCulture)));
-						GUILayout.EndHorizontal();
-					}
-				}
-				if(GUILayout.Button("Apply stats")) {
+						string statNameWithoutPrefix = statNameInList.Remove(0, 1);
+                        // display stat name
+                        GUILayout.Button(statNameWithoutPrefix);
+                        statsToAdd[statNameWithoutPrefix] = (float)Convert.ToDouble(GUILayout.TextField(statsToAdd[statNameWithoutPrefix].ToString(CultureInfo.CurrentCulture)));
+                        //GUILayout.Button(statNameWithoutPrefix + ": " + statsToAdd[statNameWithoutPrefix]);
+                        //statsToAdd[statNameWithoutPrefix] = GUILayout.HorizontalSlider(statsToAdd[statNameWithoutPrefix], 0, 10000);
+                        GUILayout.EndHorizontal();
+                    }
+                }
+                GUILayout.EndScrollView();
+                if (GUILayout.Button("Apply stats")) {
 					foreach(string statNameInList in statNames.Keys) {
 						string statNameWithoutPrefix = statNameInList.Remove(0, 1);
 						float statValue = statsToAdd[statNameWithoutPrefix];
@@ -53,28 +62,43 @@ namespace SimpleGUI.Menus
 						{"cspeed", 0},
 						{"chealth", 0},
 						{"cdamage", 0},
-						{"cattack_speed", 0},
+                        {"carmor", 0},
+                        {"cdodge", 0},
+                        {"caccuracy", 0},
+                        {"cattack_speed", 0},
 						{"cknockback", 0},
-						{"ctargets", 0},
-						{"carea_of_effect", 0},
+                        {"cknockback_reduction", 0},
+                        {"ctargets", 0},
+                        {"cprojectiles", 0},
+                        {"carea_of_effect", 0},
 						{"csize", 0},
 						{"crange", 0},
-						{"ccritical_damage_multiplier", 0},
 						{"cscale", 0},
 						{"cmod_supply_timer", 0},
 						{"cfertility", 0},
 						{"cmax_age", 0},
 						{"cmax_children", 0},
 						{"cdiplomacy", 0},
-						{"cstewardship", 0},
+                        {"cwarfare", 0},
+                        {"cstewardship", 0},
 						{"cintelligence", 0},
-						{"cloyalty_traits", 0},
-						{"cdamage_range", 0},
 						{"ccities", 0},
-						{"cpersonality_rationality", 0},
-						{"ccritical_chance", 0},
-						{"carmy", 0},
-		};
+                        {"carmy", 0},
+                        {"ccritical_chance", 0},
+                        {"ccritical_damage_multiplier", 0},
+                        {"cpersonality_aggression", 0},
+                        {"cpersonality_administration", 0},
+                        {"cpersonality_diplomatic", 0},
+                        {"cpersonality_rationality", 0},
+                        {"cbonus_towers", 0},
+                        {"czone_range", 0},
+                        {"cloyalty_traits", 0},
+                        {"cloyalty_mood", 0},
+                        {"copinion", 0},
+                        {"cclan_members", 0},
+						{"cstatus_chance", 0},
+                        {"cdamage_range", 0}
+        };
 
 		public BaseStats statsToAdd = new BaseStats();
 		public Rect StatSettingWindowRect;

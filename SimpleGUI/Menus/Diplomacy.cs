@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using UnityEngine;
 
-namespace SimpleGUI.Menus {
+namespace SimplerGUI.Menus {
     class GuiDiplomacy {
 
         public Dictionary<Kingdom, List<Kingdom>> eternalAllies = new Dictionary<Kingdom, List<Kingdom>>();
@@ -132,7 +132,7 @@ namespace SimpleGUI.Menus {
                 }
                 if(GUILayout.Button("Alliance")) {
                     //dej's method of doing this
-                    foreach (War war in World.world.wars.getWars(selectedCity1.kingdom))
+                        foreach (War war in World.world.wars.getWars(selectedCity1.kingdom))
                     {
                         if (war.isInWarWith(selectedCity1.kingdom, selectedCity2.kingdom))
                         {
@@ -395,9 +395,21 @@ namespace SimpleGUI.Menus {
                         city.removeZone(MapBox.instance.getMouseTilePos().zone);
                     }
                     selectedCity1.addZone(MapBox.instance.getMouseTilePos().zone);
+                    if(Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.LeftAlt)) {
+                    }
+                    else
+                    {
+                        city1PaintZone = false;
+                    }
                 }
                 if (Input.GetMouseButton(1) && MapBox.instance.getMouseTilePos().zone.city == selectedCity1 && selectedCity1.zones.Count > 1) {
                     selectedCity1.removeZone(MapBox.instance.getMouseTilePos().zone);
+                    if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.LeftAlt)){
+                    }
+                    else
+                    {
+                        city1PaintZone = false;
+                    }
                 }
             }
             if(city2PaintZone && selectedCity2 != null) {
@@ -406,9 +418,23 @@ namespace SimpleGUI.Menus {
                         city.removeZone(MapBox.instance.getMouseTilePos().zone);
                     }
                     selectedCity2.addZone(MapBox.instance.getMouseTilePos().zone);
+                    if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.LeftAlt))
+                    {
+                    }
+                    else
+                    {
+                        city2PaintZone = false;
+                    }
                 }
                 if(Input.GetMouseButton(1) && MapBox.instance.getMouseTilePos().zone.city == selectedCity2 && selectedCity2.zones.Count > 1) {
                     selectedCity2.removeZone(MapBox.instance.getMouseTilePos().zone);
+                    if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.LeftAlt))
+                    {
+                    }
+                    else
+                    {
+                        city2PaintZone = false;
+                    }
                 }
             }
             /* pretty sure kingdom coloring is vanilla feature now

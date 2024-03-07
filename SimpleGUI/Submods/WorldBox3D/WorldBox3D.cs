@@ -5,12 +5,12 @@ using System.Reflection;
 using BepInEx;
 using BepInEx.Configuration;
 using HarmonyLib;
-using SimpleGUI.Submods.WorldBox3D;
+using SimplerGUI.Submods.WorldBox3D;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 using Random = UnityEngine.Random;
 
-namespace SimpleGUI.Submods.WorldBox3D {
+namespace SimplerGUI.Submods.WorldBox3D {
     [BepInPlugin(pluginGuid, pluginName, pluginVersion)]
     [Obsolete]
     class _3D_Main : BaseUnityPlugin {
@@ -564,15 +564,30 @@ namespace SimpleGUI.Submods.WorldBox3D {
         
         public bool showHide3D;
         public Rect window3DRect;
+
+        public bool showSubMod = true;
         public void OnGUI()
         {
-            if (GUI.Button(new Rect(Screen.width - 120, 40, 120, 20), "WorldBox3D"))
+            if (showSubMod)
             {
-                showHide3D = !showHide3D;
-            }
-            if(showHide3D) {
-                GUI.contentColor = Color.white;
-                window3DRect = GUILayout.Window(11015, window3DRect, window3D, "WorldBox3D", GUILayout.MaxWidth(300f), GUILayout.MinWidth(200f));
+                if (GUI.Button(new Rect(Screen.width - 120, 40, 95, 20), "WorldBox3D"))
+                {
+                    showHide3D = !showHide3D;
+                }
+                if (GUI.Button(new Rect(Screen.width - 25, 40, 25, 20), "x"))
+                {
+                    if (Camera.main != null) Camera.main.transform.rotation = Quaternion.Euler(cameraX, cameraY, cameraZ);
+                    autoPlacement = false;
+                    _3dEnabled = false;
+                    tile3Denabled = false;
+                    showHide3D = false;
+                    showSubMod = false;
+                }
+                if (showHide3D)
+                {
+                    GUI.contentColor = Color.white;
+                    window3DRect = GUILayout.Window(11015, window3DRect, window3D, "WorldBox3D", GUILayout.MaxWidth(300f), GUILayout.MinWidth(200f));
+                }
             }
         }
         // unused thickening test
@@ -601,21 +616,11 @@ namespace SimpleGUI.Submods.WorldBox3D {
             extraLayers.Add(newSprite);
             extraLayers.Add(newSprite2);
         }
-        public void layerBuildingSprite(Building targetBuilding, bool twoLayer = false)
+        public void layerBuildingSprite(Building targetBuilding)
         {
             float height = 0f;
             WorldTile tTile = targetBuilding.currentTile;
             SpriteRenderer spriteRenderer = targetBuilding.spriteRenderer;
-            if (twoLayer) {
-                SpriteRenderer newSprite2 = Instantiate(spriteRenderer);
-                newSprite2.transform.rotation = Quaternion.Euler(0, 90, 90);
-                if(tile3Denabled) {
-                    height = (-targetBuilding.currentTile.Height) / dividerAmount;
-                    targetBuilding.curTransformPosition = new Vector3(targetBuilding.currentPosition.x, targetBuilding.currentPosition.y, height);
-                }
-                newSprite2.transform.position = new Vector3(targetBuilding.currentPosition.x, targetBuilding.currentPosition.y, height);
-                extraLayers.Add(newSprite2);
-            }
             SpriteRenderer newSprite = Instantiate(spriteRenderer);
 
             /* experimental test to fix layering, FAILED
@@ -625,14 +630,33 @@ namespace SimpleGUI.Submods.WorldBox3D {
             newSprite.sortingOrder = tTile.Type.render_z;
             */
 
-            newSprite.transform.rotation = Quaternion.Euler(-90, 0, 0);
-            if(tile3Denabled) {
+            if (tile3Denabled) {
                 height = (-targetBuilding.currentTile.Height) / dividerAmount;
             }
+
+            //detect intended rotation from vanilla data, not sure of better way right now
+
+            if (targetBuilding.asset.tower == false && targetBuilding.asset.tower_projectile == "90")
+            {
+                targetBuilding.m_transform.rotation = new Quaternion(-0.5f, 0.5f, -0.5f, 0.5f);
+                newSprite.transform.rotation = new Quaternion(-0.5f, 0.5f, -0.5f, 0.5f);
+
+            }
+            else
+            {
+                targetBuilding.m_transform.rotation = Quaternion.Euler(-90, 0, 0);
+                newSprite.transform.rotation = Quaternion.Euler(-90, 0, 0);
+            }
+
+            //do the same for height
+            if (targetBuilding.asset.tower == false && targetBuilding.asset.tower_projectile_offset > 1f)
+            {
+                height = targetBuilding.asset.tower_projectile_offset;
+            }
+            targetBuilding.m_transform.position = new Vector3(targetBuilding.currentPosition.x, targetBuilding.currentPosition.y, height);
             newSprite.transform.position = new Vector3(targetBuilding.currentPosition.x, targetBuilding.currentPosition.y, height);
             extraLayers.Add(newSprite);
-            targetBuilding.m_transform.rotation = Quaternion.Euler(-90, 0, 0);
-            targetBuilding.m_transform.position = new Vector3(targetBuilding.currentPosition.x, targetBuilding.currentPosition.y, height);
+
         }
         public void thickenActorSprite(Actor targetActor)
         {

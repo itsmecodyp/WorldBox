@@ -2,7 +2,7 @@
 
 #pragma warning disable CS0649
 
-namespace SimpleGUI.Menus
+namespace SimplerGUI.Menus
 {
     class GuiTimescale
     {

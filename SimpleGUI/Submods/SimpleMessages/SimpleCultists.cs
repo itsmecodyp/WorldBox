@@ -1,6 +1,6 @@
 ﻿using ai;
 using ai.behaviours;
-using SimpleGUI.Submods.SimpleMessages;
+using SimplerGUI.Submods.SimpleMessages;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
 
-namespace SimpleGUI.Submods {
+namespace SimplerGUI.Submods {
 	public class SimpleCultists {
 		//example use of SimpleMessages system
 		
@@ -85,7 +85,8 @@ namespace SimpleGUI.Submods {
 			ResponseData preachResponseExample2 = new ResponseData {
 				inputToRespondTo = preachInput,
 				actorAssetID = null,
-				actorReply = new List<string> { "I feel my " + temp + " surging!"},
+				actorReply = new List<string> { "I feel my " + temp + " surging!" },
+				//responseAction = recruitIntoCult();
 			};
 
 			preachStarters.Add("The key to salvation is " + godOfChoice + "'s " + emotions.GetRandom() + "!");

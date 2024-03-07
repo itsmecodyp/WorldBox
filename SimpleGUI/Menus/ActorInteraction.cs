@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using ai.behaviours;
 using UnityEngine;
 
-namespace SimpleGUI.Menus {
+namespace SimplerGUI.Menus {
     class ActorInteraction {
 
         public void actorInteractionWindowUpdate()
@@ -34,7 +34,7 @@ namespace SimpleGUI.Menus {
         public void actorTaskWindow(int windowID)
         {
             scrollPositionTask = GUILayout.BeginScrollView(
-         scrollPositionTask, GUILayout.Width(300f), GUILayout.Height(actorInteractionWindowRect.height - 50f));
+         scrollPositionTask, GUILayout.Width(300f), GUILayout.Height(200f));
             foreach(BehaviourTaskActor libTask in AssetManager.tasks_actor.list) {
                 if(GUILayout.Button(libTask.id)) {
                     selectedTask = libTask.id;
@@ -48,7 +48,7 @@ namespace SimpleGUI.Menus {
         public void actorJobWindow(int windowID)
         {
             scrollPositionJob = GUILayout.BeginScrollView(
-        scrollPositionJob, GUILayout.Width(300f), GUILayout.Height(actorInteractionWindowRect.height - 50f));
+        scrollPositionJob, GUILayout.Width(300f), GUILayout.Height(200f));
             foreach(ActorJob libJob in AssetManager.job_actor.list) {
                 if(GUILayout.Button(libJob.id)) {
                     selectedJob = libJob.id;
@@ -62,7 +62,7 @@ namespace SimpleGUI.Menus {
         public void actorSkinWindow(int windowID)
         {
             scrollPositionSkin = GUILayout.BeginScrollView(
-          scrollPositionSkin, GUILayout.Width(300f), GUILayout.Height(actorInteractionWindowRect.height - 50f));
+          scrollPositionSkin, GUILayout.Width(300f), GUILayout.Height(200f));
             foreach (string skinToSelect in textureSelectionList)
             {
                 if (GUILayout.Button(skinToSelect))
@@ -239,7 +239,7 @@ namespace SimpleGUI.Menus {
                 */
 
                 GUILayout.BeginHorizontal();
-                if(GUILayout.Button("Set texture:"))
+                if(GUILayout.Button("Set texture: " + newTexture))
                 {
                     if(string.IsNullOrEmpty(newTexture) == false)
                     {
@@ -268,7 +268,6 @@ namespace SimpleGUI.Menus {
                         }
                     }
                 }
-                newTexture = GUILayout.TextField(newTexture);
                 GUI.backgroundColor = Color.yellow;
                 string x = "->";
                 if (showSkinWindow)
@@ -391,24 +390,24 @@ namespace SimpleGUI.Menus {
                     {
                         if (__instance.data.custom_data_string.dict.ContainsKey("textureOverride"))
                         {
-                            Debug.Log("texture override, actor has a textureOverride: " + __instance.data.custom_data_string.dict["textureOverride"]);
+                            //Debug.Log("texture override, actor has a textureOverride: " + __instance.data.custom_data_string.dict["textureOverride"]);
                             return true;
                         }
                     }
                     else
                     {
-                        Debug.Log("texture override, actor custom_string_data DICT is null");
+                        //Debug.Log("texture override, actor custom_string_data DICT is null");
                     }
                 }
                 else
                 {
-                    Debug.Log("texture override, actor custom_string_data is null");
+                    //Debug.Log("texture override, actor custom_string_data is null");
                     __instance.data.custom_data_string = new CustomDataContainer<string>();
                 }
             }
             else
             {
-                Debug.Log("texture override, actor data is null");
+                //Debug.Log("texture override, actor data is null");
             }
             return false;
         }
@@ -587,7 +586,7 @@ namespace SimpleGUI.Menus {
                 }
                 
             }
-
+            actorInteractionWindowRect.height = 0f; 
         }
 
 

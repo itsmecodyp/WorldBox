@@ -2,14 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using BepInEx;
-using Discord;
 using Proyecto26;
-using SimpleGUI.Submods.SimpleGamba.LargeNumbers;
+using SimplerGUI.Submods.SimpleGamba.LargeNumbers;
 using SimpleJSON;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
-namespace SimpleGUI.Submods.SimpleGamba
+namespace SimplerGUI.Submods.SimpleGamba
 {
     [Serializable]
     public class ModStock
@@ -23,8 +22,6 @@ namespace SimpleGUI.Submods.SimpleGamba
     public class ModUserEcon
     {
         public string Id = "null";
-        public string DiscordName = "null";
-        public string DiscordAccountID = "null";
         public string money = "0";
         public string stocksAmount = "0";
         public string stocksCurrentValue = "0";

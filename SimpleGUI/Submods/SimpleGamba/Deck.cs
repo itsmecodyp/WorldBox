@@ -3,7 +3,7 @@ using System.Linq;
 using UnityEngine;
 using Random = System.Random;
 
-namespace SimpleGUI.Submods.SimpleGamba
+namespace SimplerGUI.Submods.SimpleGamba
 {
     public class Deck
     {

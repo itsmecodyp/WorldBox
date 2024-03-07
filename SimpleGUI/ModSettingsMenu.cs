@@ -1,4 +1,4 @@
-﻿namespace SimpleGUI {
+﻿namespace SimplerGUI {
 	class ModSettingsMenu {
 	//todo
 	}

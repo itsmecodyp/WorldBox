@@ -3,7 +3,7 @@ using UnityEngine;
 
 #pragma warning disable CS0649
 
-namespace SimpleGUI.Menus
+namespace SimplerGUI.Menus
 {
     class GuiTraits
     {
@@ -29,114 +29,6 @@ namespace SimpleGUI.Menus
         public static string StringWithFirstUpper(string targetstring)
         {
             return char.ToUpper(targetstring[0]) + targetstring.Substring(1);
-        }
-
-        /*
-        actorTrait.action_special_effect += actionTest;
-        public static bool turnIntoSkeleton(BaseSimObject pTarget, WorldTile pTile = null)
-        {
-            Actor a = pTarget.a;
-            if (a.gameObject == null)
-            {
-                return false;
-            }
-            if (string.IsNullOrEmpty(a.stats.skeletonID))
-            {
-                return false;
-            }
-            if (a == null)
-            {
-                return false;
-            }
-            if (!a.haveTrait("cursed"))
-            {
-                return false;
-            }
-            if (!a.inMapBorder())
-            {
-                return false;
-            }
-            string skeletonID = a.stats.skeletonID;
-            a.removeTrait("cursed");
-            a.removeTrait("infected");
-            Actor actor = MapBox.instance.createNewUnit(skeletonID, a.currentTile, null, 0f, null);
-            actor.currentPosition = a.currentPosition;
-            actor.transform.position = a.transform.position;
-            actor.curAngle = a.transform.localEulerAngles;
-            actor.transform.localEulerAngles = actor.curAngle;
-            actor.targetAngle = default(Vector3);
-            a.spriteRenderer.enabled = false;
-            foreach (SpriteRenderer spriteRenderer in a.bodyParts)
-            {
-                spriteRenderer.GetComponent<SpriteRenderer>().enabled = false;
-            }
-            actor.data.firstName = "Un" + Toolbox.LowerCaseFirst(a.data.firstName);
-            actor.data.age = a.data.age;
-            actor.data.kills = a.data.kills;
-            actor.data.children = a.data.children;
-            actor.data.favorite = a.data.favorite;
-            actor.checkFavoriteIcon();
-            actor.takeItems(a, true);
-            foreach (string text in a.data.traits)
-            {
-                if (!(text == "peaceful"))
-                {
-                    actor.addTrait(text);
-                }
-            }
-            actor.statsDirty = true;
-            if (!MapBox.instance.qualityChanger.lowRes)
-            {
-                MapBox.instance.stackEffects.startSpawnEffect(actor.currentTile, "spawn");
-            }
-            if (Config.spectatorMode && MoveCamera.focusUnit == pTarget)
-            {
-                MoveCamera.focusUnit = actor;
-            }
-            MapBox.instance.destroyActor((Actor)pTarget);
-            return true;
-        }
-        */
-        public static void GetObjects(WorldTile pTile, int pRadius, MapObjectType pObjectType)
-        {
-            MapBox.instance.CallMethod("getObjects", pTile, pRadius, pObjectType);
-        }
-
-        public static void ActorRadiusthing(Actor centerActor, int radius)
-        {
-            WorldTile currentTile = centerActor.currentTile;
-            GetObjects(currentTile, radius, MapObjectType.Actor);
-            List<BaseSimObject> tempUnits = MapBox.instance.temp_map_objects;
-            if (tempUnits != null)
-                foreach (BaseSimObject baseMapObject in tempUnits)
-                {
-                    Actor actor = (Actor)baseMapObject;
-                    bool flag = !(actor == centerActor);
-                    if (flag)
-                    {
-                        /* targeted actor stuff
-                    actor.restoreHealth(pVal);
-                    actor.spawnParticle(Toolbox.color_heal);
-                    actor.removeTrait("plague");
-                    */
-                    }
-                }
-        }
-
-        public static void BuildingRadiusthing(Actor centerActor, int radius)
-        {
-            WorldTile currentTile = Reflection.GetField(centerActor.GetType(), centerActor, "currentTile") as WorldTile;
-            GetObjects(currentTile, radius, MapObjectType.Building);
-            List<BaseSimObject> tempUnits = MapBox.instance.temp_map_objects;
-            foreach (BaseSimObject baseMapObject in tempUnits)
-            {
-                Building building = (Building)baseMapObject;
-
-                /* targeted building stuff
-               
-                */
-
-            }
         }
 
         public static void drawDivineLight_Postfix(WorldTile pCenterTile, string pPowerID, MapBox __instance)
@@ -167,7 +59,7 @@ namespace SimpleGUI.Menus
 
         public static void AddShieldToActor(Actor target)
         {
-            target.CallMethod("addStatusEffect", "shield", 5000f);
+            target.addStatusEffect("shield", 5000f);
         }
 
         public static void RemoveShieldFromActor(Actor target)
@@ -177,7 +69,7 @@ namespace SimpleGUI.Menus
                 Dictionary<string, StatusEffectData> activeStatus_dict = target.activeStatus_dict;
                 if (activeStatus_dict.ContainsKey("shield"))
                 {
-                    target.CallMethod("removeStatusEffect", "shield", null, -1);
+                    target.finishStatusEffect("shield");
                 }
             }
         }

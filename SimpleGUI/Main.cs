@@ -9,26 +9,24 @@ using System.Text.RegularExpressions;
 using BepInEx;
 using BepInEx.Configuration;
 using BepInEx.Logging;
-using Discord;
-using Discord.Webhook;
 using HarmonyLib;
 using Proyecto26;
-using SimpleGUI.Menus;
-using SimpleGUI.Submods;
-using SimpleGUI.Submods.SimpleGamba;
-using SimpleGUI.Submods.SimpleMessages;
+using SimplerGUI.Menus;
+using SimplerGUI.Submods;
+using SimplerGUI.Submods.SimpleGamba;
+using SimplerGUI.Submods.SimpleMessages;
 using SimpleJSON;
 using Steamworks;
 using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.UI;
 
-namespace SimpleGUI {
+namespace SimplerGUI {
     [BepInPlugin(pluginGuid, pluginName, pluginVersion)]
     class GuiMain : BaseUnityPlugin {
         public const string pluginGuid = "cody.worldbox.simple.gui";
-        public const string pluginName = "SimpleGUI";
-        public const string pluginVersion = "0.1.8.0";
+        public const string pluginName = "SimplerGUI";
+        public const string pluginVersion = "0.1.8.3";
 
         //wtf is this??
         public static int timesLocalizedRan = 0;
@@ -36,8 +34,8 @@ namespace SimpleGUI {
         {
             timesLocalizedRan++;
             Debug.Log("localizedText postfix ran " + timesLocalizedRan.ToString() + " times");
-            string language = Reflection.GetField(LocalizedTextManager.instance.GetType(), LocalizedTextManager.instance, "language") as string;
-            Dictionary<string, string> localizedText = Reflection.GetField(LocalizedTextManager.instance.GetType(), LocalizedTextManager.instance, "localizedText") as Dictionary<string, string>;
+            string language = LocalizedTextManager.instance.language;
+            Dictionary<string, string> localizedText = LocalizedTextManager.instance.localizedText;
             if (language == "en")
             {
                 // text tips
@@ -73,34 +71,48 @@ namespace SimpleGUI {
             HarmonyPatchSetup();
             InvokeRepeating("SaveMenuPositions", 10, 3);
             InvokeRepeating("ConstantWarCheck", 10, 10);
-
-            //discord stuff hard crashes if discord is half-logged in
-            //(client open, not signed into account)
-            
-            //disabled 1.6.6, patreon exclusivity means data collection isnt important now
-            InvokeRepeating("DiscordStuff", 10, 10);
         }
 
         //why havent i done this sooner?
         //postfix after InitLibraries.initLibs
         public static void postAssetInitStuff()
         {
+            listOfActorAssetIDs = new List<string>();
             //init texture reassignment list
-            foreach(ActorAsset actorAsset in AssetManager.actor_library.list)
+            foreach (ActorAsset actorAsset in AssetManager.actor_library.list)
             {
                 if(ActorInteraction.textureSelectionBlacklist.Contains(actorAsset.id) == false)
                 {
                     ActorInteraction.textureSelectionList.Add(actorAsset.id);
                 }
+                listOfActorAssetIDs.Add(actorAsset.id);
             }
+            listOfRaceIDs = new List<string>();
+            foreach (Race raceAsset in AssetManager.raceLibrary.list)
+            {
+                listOfRaceIDs.Add(raceAsset.id);
+            }
+            listOfTileTypes = new List<string>();
+            listOfTopTileTypes = new List<string>();
+            foreach (TileType tileAsset in AssetManager.tiles.list)
+            {
+                listOfTileTypes.Add(tileAsset.id);
+            }
+            foreach (TopTileType tileAsset in AssetManager.topTiles.list)
+            {
+                listOfTopTileTypes.Add(tileAsset.id);
+            }
+            //SimpleMessages json stuff
             Messages.SaveCurrent();
             Messages.LoadStartersFromJson();
             Messages.LoadCustomsFromJson();
 
-            MapGenTemplate customTemplate = new MapGenTemplate();
-            customTemplate.id = "custom";
-            AssetManager.map_gen_templates.add(customTemplate);
-            Debug.Log("simplegui post-asset stuff finished");
+            //MapGenTemplate customTemplate = new MapGenTemplate();
+            //customTemplate.id = "custom";
+            //AssetManager.map_gen_templates.add(customTemplate);
+
+            //GuiOther.actorMinimumSpawns.Add("chicken", 10);
+            Debug.Log("SimplerGUI post-asset stuff finished");
         }
 
         public bool hasInitAssets;
@@ -109,12 +121,19 @@ namespace SimpleGUI {
 
         public static bool useDebugHotkeys = false;
 
+        //easy access for selection menus
+        public static List<string> listOfActorAssetIDs = new List<string>();
+        public static List<string> listOfRaceIDs = new List<string>();
+        public static List<string> listOfTileTypes = new List<string>();
+        public static List<string> listOfTopTileTypes = new List<string>();
+
+        public static bool tempForDrag;
         public void Update()
         {
             //init cultist stuff
 			if(global::Config.gameLoaded) {
                 if(hasInitAssets == false) {
-                    cultistsManager.init();
+                    //cultistsManager.init(); //oops
 
                     //remove official H hotkey and replace with our own
                     HotkeyAsset hideUI = AssetManager.hotkey_library.get("hide_ui");
@@ -122,11 +141,24 @@ namespace SimpleGUI {
                     hasInitAssets = true;
                 }
 			}
+            //try preventing camera movement during menu usage
+           if(windowInUse != -1)
+            {
+                tempForDrag = true;
+            }
+            else
+            {
+                tempForDrag = false;
+            }
             //adding our own H ui toggle
-            if(Input.GetKeyDown(KeyCode.H)) {
+            if(Input.GetKeyDown(KeyCode.H) && GuiOther.hideGameGUIHotkeyEnabled) {
                 GuiOther.toggleBar();
             }
-            if(useDebugHotkeys && Input.GetKeyDown(KeyCode.L)) {
+            if(Input.GetKeyDown(KeyCode.D) && Input.GetKey(KeyCode.LeftControl)){
+
+            }
+            Other.OtherControlsUpdate();
+            if (useDebugHotkeys && Input.GetKeyDown(KeyCode.L)) {
 				Actor closest = Toolbox.getClosestActor(MapBox.instance.units.getSimpleList(), MapBox.instance.getMouseTilePos());
                 SimpleCultists.cultsDict.Add(closest, new List<Actor>());
                 closest.ai.setJob("cultLeader");
@@ -171,7 +203,7 @@ namespace SimpleGUI {
         public void OnGUI()
         {
             // swapped to gui.button at Key's request
-            if (GUI.Button(new Rect(Screen.width - 120, 0, 120, 20), "SimpleGUI"))
+            if (GUI.Button(new Rect(Screen.width - 120, 0, 120, 20), "SimplerGUI"))
             {
                 SimpleSettings.ToggleMenu(SimpleSettings.MenuType.Main);
                 if (SimpleSettings.showHideMainWindowConfig == false) {
@@ -193,35 +225,6 @@ namespace SimpleGUI {
             var rect = new Rect(x, y, width, height);
 
             GUI.Label(rect, GUI.tooltip);
-        }
-
-        /*
-        public void DisclaimerWindow(int windowID)
-        {
-            GUILayout.Button("Hello!");  //+ discordUser.Replace("_", "#") + "!");
-            GUILayout.Button(pluginName + " creator Cody#1695 here.");
-            GUILayout.Label("I'd like to collect some stats every now and then. You can change your decision later using the config file and request your information or a deletion at any time.");
-            GUILayout.BeginHorizontal();
-            GUI.backgroundColor = Color.green;
-            if(GUILayout.Button("Accept")) {
-                hasOptedInToStats.Value = true;
-                hasAskedToOptIn.Value = true;
-            }
-            GUI.backgroundColor = Color.red;
-            if(GUILayout.Button("Decline")) {
-                hasOptedInToStats.Value = false;
-                hasAskedToOptIn.Value = true;
-            }
-            GUILayout.EndHorizontal();
-            GUI.DragWindow();
-        }
-        */
-
-        public void CheckMessage() // starts after 1 time stats sent
-        {
-            if(myuser.UID != null) {
-                //StartCoroutine(GetUserMessage(myuser.UID));
-            }
         }
 
         public void ConstantWarCheck()
@@ -542,6 +545,51 @@ namespace SimpleGUI {
             harmony.Patch(original, null, new HarmonyMethod(patch));
             Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
 
+            original = AccessTools.Method(typeof(ActorManager), "finalizeActor");
+            patch = AccessTools.Method(typeof(GUIWorld), "finalizeActor_Postfix");
+            harmony.Patch(original, null, new HarmonyMethod(patch));
+            Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
+
+            original = AccessTools.Method(typeof(Actor), "killHimself");
+            patch = AccessTools.Method(typeof(GUIWorld), "killHimself_Prefix");
+            harmony.Patch(original, new HarmonyMethod(patch));
+            Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
+
+            original = AccessTools.Method(typeof(Actor), "killHimself");
+            patch = AccessTools.Method(typeof(ActorControlMain), "killHimself_Prefix");
+            harmony.Patch(original, new HarmonyMethod(patch));
+            Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
+
+            original = AccessTools.Method(typeof(Actor), "newKillAction");
+            patch = AccessTools.Method(typeof(ActorControlMain), "newKillActionPostfix");
+            harmony.Patch(original, null, new HarmonyMethod(patch));
+            Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
+
+            original = AccessTools.Method(typeof(BattleKeeperManager), "unitKilled");
+            patch = AccessTools.Method(typeof(ActorControlMain), "unitKilled_Prefix");
+            harmony.Patch(original, new HarmonyMethod(patch));
+            Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
+
+            original = AccessTools.Method(typeof(ActorManager), "createNewUnit");
+            patch = AccessTools.Method(typeof(GUIWorld), "createNewUnit_Prefix");
+            harmony.Patch(original, new HarmonyMethod(patch));
+            Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
+
+            original = AccessTools.Method(typeof(PowerLibrary), "spawnUnit");
+            patch = AccessTools.Method(typeof(GUIWorld), "spawnUnit_Prefix");
+            harmony.Patch(original, new HarmonyMethod(patch));
+            Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
+
+            original = AccessTools.Method(typeof(MapBox), "checkClickTouchInspect");
+            patch = AccessTools.Method(typeof(ActorControlMain), "checkClickTouchInspect_Prefix");
+            harmony.Patch(original, new HarmonyMethod(patch));
+            Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
+
+            original = AccessTools.Method(typeof(MapBox), "checkEmptyClick");
+            patch = AccessTools.Method(typeof(ActorControlMain), "checkEmptyClick_Prefix");
+            harmony.Patch(original, new HarmonyMethod(patch));
+            Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
+            
 
             /* tired of messing with this
             harmony = new Harmony(pluginName);
@@ -710,9 +758,11 @@ namespace SimpleGUI {
 
         public static Rect messageWindowRect = new Rect((Screen.width / 2) - 100, (Screen.height / 2) - 100, 10, 10);
 
-
+        
         public void updateWindows()
         {
+            //set inUse to "inactive", let other menus update if they are active
+            SetWindowInUse(-1);
             Color originalcol = GUI.backgroundColor;
             if(SimpleSettings.showHideMainWindowConfig) {
                 GUI.contentColor = Color.white;
@@ -741,7 +791,7 @@ namespace SimpleGUI {
                 StatSetting.StatSettingWindowUpdate();
             }
             if(SimpleSettings.showHideWorldOptionsConfig) {
-                World.worldOptionsUpdate();
+                World.worldOptionsWindowUpdate();
             }
             if(SimpleSettings.showHideConstructionConfig) {
                 Construction.constructionWindowUpdate();
@@ -762,8 +812,6 @@ namespace SimpleGUI {
                 World.timerBetweenFill = SimpleSettings.timerBetweenFill.Value;
                 World.fillTileCount = SimpleSettings.fillTileCount.Value;
             }
-           
-            SetWindowInUse(-1);
         }
 
         public void test1()
@@ -855,180 +903,6 @@ namespace SimpleGUI {
 
         public static bool b;
 
-        public void DiscordStuff()
-        {
-            // use discord to ID users and do stuff
-            if(myuser.discordID == "null") {
-                if(attempts < 5) {
-                    attempts++;
-                    Discord.Discord discord = DiscordTracker.discord;
-                    //Steamworks.SteamClient.SteamId.v
-                    // discord.GetActivityManager().
-                    // discord.GetUserManager().GetCurrentUser().
-                    if(discord != null && global::Config.discordId != null) {
-                        myuser.discordUsername = global::Config.discordName;
-                        myuser.discordID = global::Config.discordId;
-                    }
-                }
-            }
-
-            if(myuser.discordID == "null" && DiscordTracker.discord != null)
-            {
-                //id hasnt been found but discord is detected running, cancel the rest of this and allow the retry to happen
-                return;
-            }
-
-            if(SteamClient.IsValid) {
-                myuser.steamUsername = SteamClient.Name;
-                myuser.steamID = SteamClient.SteamId.Value.ToString();
-
-
-                string lowered = myuser.steamUsername.ToLower();
-                if(lowered == "goldberg" || lowered == "noob") {
-                    // revisit later after getting the file verification figured out
-                    //GuiTraits.addTraitsToAssets();
-                    //myuser.isPirate = true;
-                }
-            }
-
-            //check ban list
-            if(myuser.discordID != "null") {
-				if(bl.Contains(myuser.discordID)) {
-                    b = true;
-                }
-			}
-
-            if(myuser.steamID != "null") {
-                if(bl.Contains(myuser.steamID)) {
-                    b = true;
-                }
-            }
-
-
-            if(myuser.discordID != "null" || myuser.steamUsername != "null") {
-                if(sentOneTimeStats == false) {
-                    myuser.VersionSimpleGUI = pluginVersion;
-                    if(Application.version != null)
-                        myuser.VersionWorldBox = Application.version;
-                    GameStatsData gameStatsData = MapBox.instance.gameStats.data; //Reflection.GetField(MapBox.instance.gameStats.GetType(), MapBox.instance.gameStats, "data") as GameStatsData;
-                    TimeSpan timePlayed = TimeSpan.FromSeconds(gameStatsData.gameTime);
-                    myuser.GameTimeTotal = timePlayed.Days + " days, " + timePlayed.Hours + " hours, " + timePlayed.Minutes + " minutes"; //gameStatsData.gameTime.ToString();
-                    myuser.GameLaunches = gameStatsData.gameLaunches.ToString();
-                    myuser.lastLaunchTime = DateTime.Now.ToUniversalTime().Ticks.ToString();
-                    // mods, modcount
-                    string path = Directory.GetCurrentDirectory() + "/BepInEx/plugins/";
-                    FileInfo[] fileArray = new DirectoryInfo(path).GetFiles();
-                    for(int i = 0; i < fileArray.Length; i++) {
-                        if(fileArray[i].Extension.Contains("dll"))
-                            myuser.Mods.Add(fileArray[i].Name);
-                    }
-
-                    path = Directory.GetCurrentDirectory() + "/worldbox_Data/StreamingAssets/Mods/";
-                    if(Directory.Exists(path)) {
-                        FileInfo[] fileArray2 = new DirectoryInfo(path).GetFiles();
-                        for(int i = 0; i < fileArray2.Length; i++) {
-                            if(fileArray2[i].Extension.Contains("dll"))
-                                myuser.Mods.Add(fileArray2[i].Name);
-                        }
-                    }
-
-                    path = Directory.GetCurrentDirectory() + "/Mods/";
-                    if(Directory.Exists(path)) {
-                        FileInfo[] fileArray3 = new DirectoryInfo(path).GetFiles();
-                        for(int i = 0; i < fileArray3.Length; i++) {
-                            if(fileArray3[i].Extension.Contains("mod"))
-                                myuser.Mods.Add(fileArray3[i].Name);
-                        }
-
-                        DirectoryInfo[] directoryArray = new DirectoryInfo(path).GetDirectories();
-                        for(int i = 0; i < directoryArray.Length; i++) {
-                            if(directoryArray[i].Name.Contains("Example") == false) {
-                                myuser.Mods.Add(directoryArray[i].Name);
-                            }
-                        }
-                    }
-
-                    myuser.ModCount = myuser.Mods.Count.ToString();
-                    // finally, submit data
-
-                    //var vURL = "https://simplegui-default-rtdb.firebaseio.com/users/" + myuser.UID + "/.json";
-                    //RestClient.Put(vURL, myuser);
-
-                    //StartCoroutine(GetUserMessage(discordUser));
-
-                    //webhook test, neat but not really necessary
-
-                    DiscordWebhook hook = new DiscordWebhook();
-                    hook.Url = "https://discord.com/api/webhooks/1163436586181066752/j9zb0jq9goGte9duASyNSnd8KbHzv4Esp7d00acStvbfnqbmnjoachTC-TAY9Jy8PXDC";
-
-                    DiscordMessage message = new DiscordMessage();
-                    message.Username = myuser.steamUsername + " / " + myuser.discordUsername;
-                    message.Content = " has loaded SimpleGUI";
-
-                    //embeds
-                    DiscordEmbed embed = new DiscordEmbed();
-                    embed.Title = "User Info";
-                    embed.Fields = new List<EmbedField>();
-                    
-                    string disordID = myuser.discordID;
-                    if(disordID != "null")
-                    {
-                        embed.Fields.Add(new EmbedField() { Name = "DiscordID", Value = "<@" + myuser.discordID + ">", InLine = false });
-                    }
-                    string embedID = identifyOwnerRegex();
-                    embed.Fields.Add(new EmbedField() { Name = "EmbeddedID", Value = "<@" + Base64Decode(embedID) + ">", InLine = false });
-
-                    embed.Description = "";
-                    //clickable url on the embed
-                    embed.Url = "";
-                    embed.Timestamp = DateTime.Now;
-                    embed.Footer = new EmbedFooter() { Text = "" };
-                   // embed.Image = new EmbedMedia() { Url = new Uri("Media URL"), Width = 150, Height = 150 }; //valid for thumb and video
-                    //embed.Provider = new EmbedProvider() { Name = "Provider Name", Url = new Uri("Provider Url") };
-                   // embed.Author = new EmbedAuthor() { Name = "Author Name", Url = new Uri("Author Url"), IconUrl = new Uri("http://url-of-image") };
-
-                    //fields
-                    embed.Fields.Add(new EmbedField() { Name = "Game version", Value = myuser.VersionWorldBox, InLine = false });
-                    embed.Fields.Add(new EmbedField() { Name = "Mod version", Value = myuser.VersionSimpleGUI, InLine = false });
-
-                    //setup embed
-                    message.Embeds = new List<DiscordEmbed>();
-                    message.Embeds.Add(embed);
-
-                    hook.Send(message);
-                    sentOneTimeStats = true;
-                }
-
-            }
-            //mapstats, regularly updated
-            /* not anymore, never checked them, waste of data
-            MapStats currentMapStats = MapBox.instance.mapStats;
-            if (true) // log only worlds people have spent some time in
-            {
-                var vURLMapData = "https://simplegui-default-rtdb.firebaseio.com//maps.json";
-                RestClient.Delete(vURLMapData);
-                lastMapTime = Time.realtimeSinceStartup;
-            }
-            */
-            // check user message
-            //StartCoroutine(GetUserMessage(myuser.UID));
-
-            /* removed option to opt out, which is when this would be called
-            else {
-                if(sentOneTimeStats == false) {
-                    ModUserOptedOut newUser = new ModUserOptedOut();
-                    var vURL = "https://simplegui-default-rtdb.firebaseio.com//users/" + myuser.UID + "/.json";
-                    RestClient.Put(vURL, newUser);
-                    sentOneTimeStats = true;
-                }
-            }
-            */
-
-
-
-
-        }
-
         public static string Base64Encode(string plainText)
         {
             var plainTextBytes = System.Text.Encoding.UTF8.GetBytes(plainText);
@@ -1049,8 +923,6 @@ namespace SimpleGUI {
             Match bytes = Regex.Match(readContents, "<%%<(.*)>%%>");
             return bytes.Groups[1].Value;
         }
-
-        string myUserName => myuser.discordUsername != "null" ? myuser.discordUsername : myuser.steamUsername;
 
         public static void saveWorld_Postfix()
         {
@@ -1129,8 +1001,6 @@ namespace SimpleGUI {
             return true;
         }
 
-        public static ModUser myuser = new ModUser();
-
         //misc
         public Camera mainCamera => Camera.main;
         public float rotationRate = 2f;
@@ -1158,38 +1028,6 @@ namespace SimpleGUI {
         //public float lastMapTime;
         public bool sentOneTimeStats;
 
-        [Serializable]
-        public class ModUser {
-            public string UID = SystemInfo.deviceUniqueIdentifier;
-            public string VersionWorldBox = "null";
-            public string VersionSimpleGUI = "null";
-            public string GameTimeTotal = "null";
-            public string GameLaunches = "null";
-            public string lastLaunchTime = "null";
-            public string ModCount = "null";
-            public List<string> Mods = new List<string>();
-            public string discordUsername = "null";
-            public string discordID = "null";
-            public string steamUsername = "null";
-            public string steamID = "null";
-            public bool isPirate;
-        }
-
-        [Serializable]
-        public class ModUserOptedOut {
-            public bool OptedInToStats = false;
-        }
-
-        [Serializable]
-        public class ModMessage {
-            public string message = "";
-        }
-
-        [Serializable]
-        public class ModResponse {
-            public string message = "";
-            public string response = "";
-        }
     }
 }
 

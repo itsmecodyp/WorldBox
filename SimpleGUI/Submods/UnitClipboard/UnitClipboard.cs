@@ -1,10 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using BepInEx;
-using SimpleGUI.Menus;
+using BodySnatchers;
+using SimplerGUI.Menus;
 using UnityEngine;
 
-namespace SimpleGUI.Submods.UnitClipboard {
+namespace SimplerGUI.Submods.UnitClipboard {
     [BepInPlugin(pluginGuid, pluginName, pluginVersion)]
     public class UnitClipboard_Main : BaseUnityPlugin {
         public const string pluginGuid = "cody.worldbox.unit.clipboard";
@@ -30,19 +32,29 @@ namespace SimpleGUI.Submods.UnitClipboard {
             mainWindowRect.height = 0f;
         }
 
-        public static void PasteUnit(WorldTile targetTile, UnitData unitData)
+        public static Actor PasteUnit(WorldTile targetTile, UnitData unitData)
         {
-            if(targetTile != null && unitData != null) {
+            if (targetTile != null)
+            {
+                if (unitData == null)
+                {
+                    Debug.Log("Unit data on pasted unit was null, returning");
+                    return null;
+                }
                 Actor pastedUnit = MapBox.instance.units.createNewUnit(unitData.statsID, targetTile);
-                if(pastedUnit != null) {
-                    if(pastedUnit.data.traits != null && pastedUnit.data.traits.Count >= 1) {
+                if (pastedUnit != null)
+                {
+                    if (pastedUnit.data.traits != null && pastedUnit.data.traits.Count >= 1)
+                    {
                         pastedUnit.data.traits.Clear();
                         //pastedUnit.resetTraits(); // removed?
                     }
-                    if(unitData.equipment != null) {
+                    if (unitData.equipment != null)
+                    {
                         pastedUnit.equipment = unitData.equipment;
                     }
-                    if(unitData.data != null) {
+                    if (unitData.data != null)
+                    {
                         //pastedUnit.data = unitData.status;
                         //pastedUnit.data.traits = unitData.data.traits;
                         pastedUnit.data.created_time = unitData.data.created_time;
@@ -52,7 +64,8 @@ namespace SimpleGUI.Submods.UnitClipboard {
                         pastedUnit.data.experience = unitData.data.experience;
                         // pastedUnit.data.favorite = unitData.status.favorite;
                         pastedUnit.data.favoriteFood = unitData.data.favoriteFood;
-                        pastedUnit.data.name = unitData.data.name + " " + "Pasted";
+                        //do roman thing instead
+                        pastedUnit.data.name = unitData.data.name; // + " " + "Pasted"
                         pastedUnit.data.gender = unitData.data.gender;
                         pastedUnit.data.head = unitData.data.head;
                         pastedUnit.data.homeBuildingID = unitData.data.homeBuildingID;
@@ -67,60 +80,83 @@ namespace SimpleGUI.Submods.UnitClipboard {
                         pastedUnit.data.asset_id = unitData.data.asset_id;
                         pastedUnit.data.stewardship = unitData.data.stewardship;
                         pastedUnit.data.warfare = unitData.data.warfare;
-                        Debug.Log("made it to custom data");
                         pastedUnit.data.culture = unitData.data.culture;
                         pastedUnit.data.inventory = unitData.data.inventory;
                         pastedUnit.data.items = unitData.data.items;
                         pastedUnit.data.clan = unitData.data.clan;
-                        if(string.IsNullOrEmpty(unitData.data.clan) == false) {
+                        if (string.IsNullOrEmpty(unitData.data.clan) == false)
+                        {
                             Clan clan = MapBox.instance.clans.get(unitData.data.clan);
-                            if(clan != null) {
+                            if (clan != null)
+                            {
                                 clan.addUnit(pastedUnit);
                             }
-							else {
+                            else
+                            {
                                 Clan recreatedClan = MapBox.instance.clans.newClan(pastedUnit);
                                 recreatedClan.data.name = unitData.data.clan;
                                 recreatedClan.addUnit(pastedUnit);
                             }
                         }
-                       
+                        //Debug.Log("made it to custom data");
+
                         //original actor death is causing pasted actor deaths
                         //pastedUnit.setData(unitData.customData);
                         //i only wanted custom data
-                        pastedUnit.base_data.custom_data_bool = unitData.customData.custom_data_bool;
-                        pastedUnit.base_data.custom_data_flags = unitData.customData.custom_data_flags;
-                        pastedUnit.base_data.custom_data_float = unitData.customData.custom_data_float;
-                        pastedUnit.base_data.custom_data_int = unitData.customData.custom_data_int;
-                        pastedUnit.base_data.custom_data_string = unitData.customData.custom_data_string;
+                        if(pastedUnit.base_data != null)
+                        {
+                            pastedUnit.base_data.custom_data_bool = unitData.customData.custom_data_bool;
+                            pastedUnit.base_data.custom_data_flags = unitData.customData.custom_data_flags;
+                            pastedUnit.base_data.custom_data_float = unitData.customData.custom_data_float;
+                            pastedUnit.base_data.custom_data_int = unitData.customData.custom_data_int;
+                            pastedUnit.base_data.custom_data_string = unitData.customData.custom_data_string;
+                        }
+                      
 
                         //loading previous "prepared" item data. this allows transfer between worlds
-                        pastedUnit.equipment.load(pastedUnit.data.items);
-                        Debug.Log("made it to custom data2");
+                        if(pastedUnit.data.items != null)
+                        {
+                            pastedUnit.equipment.load(pastedUnit.data.items);
+                        }
+                        //Debug.Log("made it to custom data2");
                     }
-                    foreach(string trait in unitData.traits) {
+                    foreach (string trait in unitData.traits)
+                    {
                         pastedUnit.addTrait(trait);
                     }
                     pastedUnit.setStatsDirty();
-                   
+
                     pastedUnit.restoreHealth(10 ^ 9); //lazy
                     ActorInteraction.lastSelected = pastedUnit;
                     if (unitData.data != null) Debug.Log("Pasted " + unitData.data.name);
+                    return pastedUnit;
                 }
             }
-               
+            return null;
         }
+
         public static List<string> addedTraits = new List<string>(); // lazy
         public static bool showHideMainWindow;
         public static Rect mainWindowRect = new Rect(0f, 1f, 1f, 1f);
+        public bool showSubMod = true;
 
         public void OnGUI()
         {
-            if (GUI.Button(new Rect(Screen.width - 120, 60, 120, 20), "Clipboard"))
+            if (showSubMod)
             {
-                showHideMainWindow = !showHideMainWindow;
-            }
-            if(showHideMainWindow) {
-                mainWindowRect = GUILayout.Window(500701, mainWindowRect, UnitClipboardWindow, "Unit Clipboard", GUILayout.MaxWidth(300f), GUILayout.MinWidth(200f));
+                if (GUI.Button(new Rect(Screen.width - 120, 60, 95, 20), "Clipboard"))
+                {
+                    showHideMainWindow = !showHideMainWindow;
+                }
+                if (GUI.Button(new Rect(Screen.width - 25, 60, 25, 20), "x"))
+                {
+                    showHideMainWindow = false;
+                    showSubMod = false;
+                }
+                if (showHideMainWindow)
+                {
+                    mainWindowRect = GUILayout.Window(500701, mainWindowRect, UnitClipboardWindow, "Unit Clipboard", GUILayout.MaxWidth(300f), GUILayout.MinWidth(200f));
+                }
             }
         }
 
@@ -142,25 +178,117 @@ namespace SimpleGUI.Submods.UnitClipboard {
 
         public void UnitClipboardWindow(int windowID)
         {
-            if(unitClipboardDict.Count >= 1) {
+            Color ori = GUI.backgroundColor;
+            if (unitClipboardDict.Count >= 1) {
                 for(int i = 0; i < unitClipboardDict.Count(); i++) {
                     if(unitClipboardDict.ContainsKey(i.ToString())) {
                         GUILayout.BeginHorizontal();
                         if(GUILayout.Button(unitClipboardDict[i.ToString()].data.name)) {
                             selectedUnitToPaste = unitClipboardDict[i.ToString()];
                         }
+                        if (GUILayout.Button("x", new GUILayoutOption[] { GUILayout.Width(20f), GUILayout.MaxWidth(20f) }))
+                        {
+                            unitClipboardDict.Remove(i.ToString());
+                        }
                         GUILayout.EndHorizontal();
                     }
                 }
-                if(GUILayout.Button("Clear clipboard")) {
+                GUILayout.BeginHorizontal();
+                if (BodySnatchers.ControlledActor.GetActor() != null && BodySnatchers.Main.squad != null)
+                {
+                    if (GUILayout.Button("Copy squad"))
+                    {
+                        //need a special clipboard method for squads
+                        UnitClipboard_Main.CopySquad(BodySnatchers.Main.squad);
+                    }
+                }
+                if (UnitClipboard_Main.squadListForPaste != null)
+                {
+                    GUI.backgroundColor = Color.red;
+                    if (isPasting)
+                    {
+                        GUI.backgroundColor = Color.yellow;
+                    }
+                    if (GUILayout.Button("Paste squad"))
+                    {
+                        isPasting = !isPasting;
+                    }
+                    GUI.backgroundColor = ori;
+                }
+                GUILayout.EndHorizontal();
+                if (GUILayout.Button("Clear clipboard")) {
                     unitClipboardDict.Clear();
                     unitClipboardDictNum = 0;
                 }
             }
             GUI.DragWindow();
-        }        
+        }
 
-        private void CopyUnit(Actor targetActor)
+        public bool isPasting;
+
+        public static bool wasControlled;
+        public static List<string> squadListForPaste;
+        public static string leaderID;
+        public static int maxSize;
+        public static int x;
+        public static int y;
+        public static FormationType type;
+
+
+        public static void CopySquad (Squad targetSquad)
+        {
+            if(targetSquad != null) {
+                x = targetSquad.lineX;
+                y = targetSquad.lineY;
+                maxSize = targetSquad.maxSize;
+                type = targetSquad.formation;
+                squadListForPaste = new List<string>();
+                if (targetSquad.leader != null && targetSquad.leader.isAlive())
+                {
+                    CopyUnit(targetSquad.leader);
+                    //adds previous (the one we just copied) unit to unique paste list
+                    leaderID = (unitClipboardDictNum - 1).ToString();
+                    if (BodySnatchers.ControlledActor.GetActor() != null && BodySnatchers.ControlledActor.GetActor() == targetSquad.leader)
+                    {
+                        wasControlled = true;
+                    }
+                }
+                foreach (Actor squadActor in targetSquad.squad)
+                {
+                    if(squadActor != null && squadActor.isAlive()) {
+                        CopyUnit(squadActor);
+                        squadListForPaste.Add((unitClipboardDictNum - 1).ToString());
+                    }
+                }
+            }
+        }
+
+        public static void PasteSquad(WorldTile target)
+        {
+            if (squadListForPaste != null)
+            {
+                Actor leader = null;
+                if (leaderID != null) // it better not be null or the squad cant be created..
+                {
+                    Actor pastedUnit = PasteUnit(target, unitClipboardDict[leaderID]);
+                    unitClipboardDict.Remove(leaderID);
+                    leaderID = null;
+                    leader = pastedUnit;
+                    BodySnatchers.ControlledActor.SetActor(leader);
+                }
+                Squad newSquad = new BodySnatchers.Squad(leader, maxSize, x, y, type, FormationAction.Follow);
+                newSquad.SetLeader(leader);
+                foreach (string id in squadListForPaste)
+                {
+                    Actor pastedSquadUnit = PasteUnit(target, unitClipboardDict[id]);
+                    newSquad.HireActor(pastedSquadUnit, false);
+                    unitClipboardDict.Remove(id);
+                }
+                squadListForPaste = null;
+            }
+        }
+
+        public static void CopyUnit(Actor targetActor)
         {
             if(targetActor != null) {
                 ActorData data = targetActor.data;

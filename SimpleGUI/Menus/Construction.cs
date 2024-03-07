@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace SimpleGUI.Menus
+namespace SimplerGUI.Menus
 {
     class GUIConstruction
     {
@@ -23,7 +23,7 @@ namespace SimpleGUI.Menus
        
         public void constructionControl()
         {
-            if(GuiMain.windowInUse == 1007) return;
+            if(GuiMain.windowInUse == 1007) return;/////////
             if(Input.GetMouseButton(0))
             {
                 if (placingToggleEnabled && !placedOnce)

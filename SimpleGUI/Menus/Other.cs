@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Amazon.Runtime.Internal.Transform;
 using FMODUnity;
 using HarmonyLib;
 using UnityEngine;
 
-namespace SimpleGUI.Menus {
+namespace SimplerGUI.Menus {
     class GuiOther {
         public void otherWindow(int windowID)
         {
@@ -51,7 +52,7 @@ namespace SimpleGUI.Menus {
             }
             if (GUILayout.Button("Disable minimap")) {
                 disableMinimap = !disableMinimap;
-                QualityChanger qualityChanger = Reflection.GetField(MapBox.instance.GetType(), MapBox.instance, "qualityChanger") as QualityChanger;
+                QualityChanger qualityChanger = MapBox.instance.qualityChanger;
                 bool lowRes = qualityChanger.lowRes;
                 if (disableMinimap) {
                     lowRes = false;
@@ -228,12 +229,10 @@ namespace SimpleGUI.Menus {
             else {
                 GUI.backgroundColor = Color.red;
             }
-            GUILayout.BeginHorizontal();
-            if (GUILayout.Button("Dock limit: ")) {
+            if (GUILayout.Button("Dock limit: " + dockLimitOverrideAmount)) {
                 dockLimitOverride = !dockLimitOverride;
             }
-            dockLimitOverrideAmount = Convert.ToInt32(GUILayout.TextField(dockLimitOverrideAmount.ToString()));
-            GUILayout.EndHorizontal();
+            dockLimitOverrideAmount = (int)GUILayout.HorizontalSlider(dockLimitOverrideAmount, 0, 50);
 
             if (canDragCreaturesWithMouse) {
                 GUI.backgroundColor = Color.green;
@@ -244,7 +243,7 @@ namespace SimpleGUI.Menus {
             if (GUILayout.Button("Drag creatures")) {
                 canDragCreaturesWithMouse = !canDragCreaturesWithMouse;
             }
-
+            GUILayout.BeginHorizontal();
             if (hideGameGUI) {
                 GUI.backgroundColor = Color.green;
             }
@@ -254,6 +253,20 @@ namespace SimpleGUI.Menus {
             if (GUILayout.Button("Hide GUI")) {
                 toggleBar();
             }
+            if (hideGameGUIHotkeyEnabled)
+            {
+                GUI.backgroundColor = Color.green;
+            }
+            else
+            {
+                GUI.backgroundColor = Color.red;
+            }
+            if (GUILayout.Button("'H'otkey"))
+            {
+                hideGameGUIHotkeyEnabled = !hideGameGUIHotkeyEnabled;
+            }
+            GUILayout.EndHorizontal();
+
             if (disableDebugLog)
             {
                 GUI.backgroundColor = Color.green;
@@ -280,9 +293,7 @@ namespace SimpleGUI.Menus {
                 closeCities = !closeCities;
             }
 
-            GUILayout.BeginHorizontal();
             GUI.backgroundColor = original;
-           
             if (enableMaxCityZones)
             {
 
@@ -292,29 +303,14 @@ namespace SimpleGUI.Menus {
             {
                 GUI.backgroundColor = Color.red;
             }
-            if (GUILayout.Button("Max cityZones:"))
+            GUILayout.BeginHorizontal();
+            if (GUILayout.Button("Limit cityZones: " + maxCityZones))
             {
                 enableMaxCityZones = !enableMaxCityZones;
             }
-
-            //go ahead and parse, assign color based on it parsing correctly
-            int.TryParse(maxCityZonesToSet, out int newMaxZones);
-            if (newMaxZones != 0)
-            {
-                maxCityZones = newMaxZones;
-            }
-            if (maxCityZones != 0)
-            {
-
-                GUI.backgroundColor = Color.green;
-            }
-            else
-            {
-                GUI.backgroundColor = Color.red;
-            }
-            maxCityZonesToSet = GUILayout.TextField(maxCityZonesToSet);
-
+            maxCityZones = (int)GUILayout.HorizontalSlider(maxCityZones, 0, 50);
             GUILayout.EndHorizontal();
+            GUI.backgroundColor = original;
             GUI.DragWindow();
         }
 
@@ -418,6 +414,11 @@ namespace SimpleGUI.Menus {
                 return true;
             }
         }
+
+    
+
+        //true default since only 1 complaint so far
+        public static bool hideGameGUIHotkeyEnabled = true;
         public static bool hideGameGUI;
 
         public static bool canDragCreaturesWithMouse;
@@ -435,7 +436,7 @@ namespace SimpleGUI.Menus {
         public static bool toggleSandFarmable = true; // sand is farmable by default, player turns it off
         public static bool toggleSnowFarmable = true;
 
-        public static float dockLimitOverrideAmount = 1;
+        public static int dockLimitOverrideAmount = 1;
         public static bool dockLimitOverride;
 
         public static void docksAtBoatLimit_Postfix(ActorAsset pAsset, Docks __instance, ref bool __result)
@@ -653,14 +654,16 @@ namespace SimpleGUI.Menus {
 
         public static bool updateMouseCameraDrag_Prefix()
         {
-            if(disableMouseDrag) {
+            if(disableMouseDrag || GuiMain.tempForDrag) {
                 return false;
             }
 
             return true;
         }
 
-
+        public void OtherControlsUpdate()
+        {
+        }
 
         public bool allowMultipleSameTrait;
         public static bool disableMinimap = false; // needs to be used instead of bepinex config
@@ -703,7 +706,7 @@ namespace SimpleGUI.Menus {
         [HarmonyPatch("unselectAll", MethodType.Normal)] 
         public static bool Prefix(PowerButtonSelector __instance)
         {
-            PowerButton selectedButton = Reflection.GetField(__instance.GetType(), __instance, "selectedButton") as PowerButton;
+            PowerButton selectedButton = __instance.selectedButton;
 
             if(selectedButton != null) {
                 if(selectedButton != null) {
@@ -711,7 +714,7 @@ namespace SimpleGUI.Menus {
                 }
                 __instance.setPower(null);
                 __instance.buttonSelectionSprite.SetActive(false);
-                WorldTip.instance.CallMethod("startHide");
+                WorldTip.instance.startHide();
             }
             if(Config.controllableUnit != null) {
                 if(GuiMain.Other.powersDuringCrab) {
@@ -722,7 +725,7 @@ namespace SimpleGUI.Menus {
                 }
             }
             if(MoveCamera.focusUnit != null) {
-                MoveCamera.focusUnit = null;
+                MoveCamera.focusUnit = null;//da
             }
             return false;
         }

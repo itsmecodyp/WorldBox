@@ -4,7 +4,7 @@ using BepInEx.Configuration;
 using OpenAI_API;
 using UnityEngine;
 
-namespace SimpleGUI.Submods.SimpleAI {
+namespace SimplerGUI.Submods.SimpleAI {
 	[BepInPlugin(pluginGuid, pluginName, pluginVersion)]
 	public class SimpleAI : BaseUnityPlugin {
 		public const string pluginGuid = "cody.worldbox.simple.ai";
@@ -87,28 +87,39 @@ namespace SimpleGUI.Submods.SimpleAI {
 			customPersonWindowRect.height = 2f;
 			customPersonWindowRect.width = 2f;
 		}
+        public bool showSubMod = true;
 
-		public bool firstOpen;
+        public bool firstOpen;
 		public void OnGUI()
 		{
-			
-			if (GUI.Button(new Rect(Screen.width - 120, 100, 120, 20), "SimpleAI"))
+
+			if (showSubMod)
 			{
-				if(firstOpen == false) {
-					GenerateNewAI();
-					firstOpen = true;
+				if (GUI.Button(new Rect(Screen.width - 120, 120, 95, 20), "SimpleAI"))
+				{
+					if (firstOpen == false)
+					{
+						GenerateNewAI();
+						firstOpen = true;
+					}
+					showHideInputWindow = !showHideInputWindow;
+					showHideCustomPersonWindow = !showHideCustomPersonWindow;
 				}
-				showHideInputWindow = !showHideInputWindow;
-				showHideCustomPersonWindow = !showHideCustomPersonWindow;
+                if (GUI.Button(new Rect(Screen.width - 25, 120, 25, 20), "x"))
+                {
+                    showHideInputWindow = false;
+					showHideCustomPersonWindow = false;
+                    showSubMod = false;
+                }
+                if (showHideInputWindow)
+				{
+					inputWindowRect = GUILayout.Window(139021, inputWindowRect, InputWindow, "OpenAI WorldBox", GUILayout.MaxWidth(300f), GUILayout.MinWidth(200f));
+				}
+				if (showHideCustomPersonWindow)
+				{
+					customPersonWindowRect = GUILayout.Window(139022, customPersonWindowRect, CustomPersonWindow, "OpenAI WorldBox", GUILayout.MaxWidth(300f), GUILayout.MinWidth(200f));
+				}
 			}
-			
-			if(showHideInputWindow) {
-				inputWindowRect = GUILayout.Window(139021, inputWindowRect, InputWindow, "OpenAI WorldBox", GUILayout.MaxWidth(300f), GUILayout.MinWidth(200f));
-			}
-			if(showHideCustomPersonWindow) {
-				customPersonWindowRect = GUILayout.Window(139022, customPersonWindowRect, CustomPersonWindow, "OpenAI WorldBox", GUILayout.MaxWidth(300f), GUILayout.MinWidth(200f));
-			}
-			SetWindowInUse(-1);
 		}
 
 		public string customName = "";

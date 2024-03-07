@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using BepInEx;
 using BepInEx.Configuration;
-using SimpleGUI.Submods.SimpleGamba.LargeNumbers;
+using SimplerGUI.Submods.SimpleGamba.LargeNumbers;
 using UnityEngine;
 using UnityEngine.Networking;
 
-namespace SimpleGUI.Submods.SimpleGamba
+namespace SimplerGUI.Submods.SimpleGamba
 {
 
     // worldbox version with firebase support
@@ -293,53 +293,66 @@ namespace SimpleGUI.Submods.SimpleGamba
         public Blackjack blackjackManager = new Blackjack();
         public Stocks stocksStuff = new Stocks();
         public Mines minesStuff = new Mines();
+        public bool showSubMod = true;
 
         public void OnGUI()
         {
-            
 
-            if(showHideMainWindow)
+            if (showSubMod)
             {
-                if (blackjackManager.currentPlayers != null && blackjackManager.currentPlayers.Count > 0)
-                    foreach (BlackjackPlayer player in blackjackManager.currentPlayers)
-                    {
-                        player.personalWindowRect = GUILayout.Window(player.windowID, player.personalWindowRect,
-                            player.PlayerWindow, "Player: " + player.playername, GUILayout.MaxWidth(200f),
-                            GUILayout.MinWidth(200f));
-                    }
-                //main window = add ai window
-                //MainWindowRect = GUILayout.Window(4300, MainWindowRect, new GUI.WindowFunction(MainWindow), "Blackjack main", new GUILayoutOption[] { GUILayout.MaxWidth(200f), GUILayout.MinWidth(200f) });
-                blackjackManager.dealerWindowRect = GUILayout.Window(4303, blackjackManager.dealerWindowRect, blackjackManager.DealerWindow, "Dealer", GUILayout.MaxWidth(200f), GUILayout.MinWidth(200f));
-            }
+                if (showHideMainWindow)
+                {
+                    if (blackjackManager.currentPlayers != null && blackjackManager.currentPlayers.Count > 0)
+                        foreach (BlackjackPlayer player in blackjackManager.currentPlayers)
+                        {
+                            player.personalWindowRect = GUILayout.Window(player.windowID, player.personalWindowRect,
+                                player.PlayerWindow, "Player: " + player.playername, GUILayout.MaxWidth(200f),
+                                GUILayout.MinWidth(200f));
+                        }
+                    //main window = add ai window
+                    //MainWindowRect = GUILayout.Window(4300, MainWindowRect, new GUI.WindowFunction(MainWindow), "Blackjack main", new GUILayoutOption[] { GUILayout.MaxWidth(200f), GUILayout.MinWidth(200f) });
+                    blackjackManager.dealerWindowRect = GUILayout.Window(4303, blackjackManager.dealerWindowRect, blackjackManager.DealerWindow, "Dealer", GUILayout.MaxWidth(200f), GUILayout.MinWidth(200f));
+                }
 
-            //game selection menu, real "main"
-            if (showHideRealMain)
-            {
-                realMainWindowRect = GUILayout.Window(5725, realMainWindowRect, MainGambaMenu, "Select a minigame", GUILayout.MaxWidth(200f), GUILayout.MinWidth(200f));
-            }
+                //game selection menu, real "main"
+                if (showHideRealMain)
+                {
+                    realMainWindowRect = GUILayout.Window(5725, realMainWindowRect, MainGambaMenu, "Select a minigame", GUILayout.MaxWidth(200f), GUILayout.MinWidth(200f));
+                }
 
-            // idle game
-            if (showHideClicker)
-            {
-                WorkWindowRect = GUILayout.Window(43011, WorkWindowRect, idleClicker.ClickerWindow, "SimpleIdleClicker", GUILayout.MaxWidth(200f), GUILayout.MinWidth(200f));
-            }
-            if (GUI.Button(new Rect(Screen.width - 120, 80, 120, 20), "SimpleGamba"))
-            {
-                showHideRealMain = !showHideRealMain;
-            }
-            if(showHideCrashWindow) {
-                crashWindowRect = GUILayout.Window(4605, crashWindowRect, crashGame.CrashWindow, "SimpleCrash", GUILayout.MaxWidth(200f), GUILayout.MinWidth(200f));
-                //crashGame.CrashWindow(4605);
-            }
-            if (showHideStocks)
-            {
-                stockWindowRect = GUILayout.Window(43031, stockWindowRect, stocksStuff.StockWindow, "SimpleStocks", GUILayout.MaxWidth(200f), GUILayout.MinWidth(200f));
-            }
-            if (showHideMines)
-            {
-                minesWindowRect = GUILayout.Window(43032, minesWindowRect, minesStuff.MinesWindow, "SimpleMines", GUILayout.MaxWidth(200f), GUILayout.MinWidth(200f));
-            }
+                // idle game
+                if (showHideClicker)
+                {
+                    WorkWindowRect = GUILayout.Window(43011, WorkWindowRect, idleClicker.ClickerWindow, "SimpleIdleClicker", GUILayout.MaxWidth(200f), GUILayout.MinWidth(200f));
+                }
+                if (GUI.Button(new Rect(Screen.width - 120, 80, 95, 20), "SimpleGamba"))
+                {
+                    showHideRealMain = !showHideRealMain;
+                }
+                if (GUI.Button(new Rect(Screen.width - 25, 80, 25, 20), "x"))
+                {
+                    showHideRealMain = false;
+                    showHideCrashWindow = false;
+                    showHideStocks = false;
+                    showHideMines = false;
+                    showHideClicker = false;
 
+                    showSubMod = false;
+                }
+                if (showHideCrashWindow)
+                {
+                    crashWindowRect = GUILayout.Window(4605, crashWindowRect, crashGame.CrashWindow, "SimpleCrash", GUILayout.MaxWidth(200f), GUILayout.MinWidth(200f));
+                    //crashGame.CrashWindow(4605);
+                }
+                if (showHideStocks)
+                {
+                    stockWindowRect = GUILayout.Window(43031, stockWindowRect, stocksStuff.StockWindow, "SimpleStocks", GUILayout.MaxWidth(200f), GUILayout.MinWidth(200f));
+                }
+                if (showHideMines)
+                {
+                    minesWindowRect = GUILayout.Window(43032, minesWindowRect, minesStuff.MinesWindow, "SimpleMines", GUILayout.MaxWidth(200f), GUILayout.MinWidth(200f));
+                }
+            }
         }
         public bool showHideStocks;
         public Rect stockWindowRect;

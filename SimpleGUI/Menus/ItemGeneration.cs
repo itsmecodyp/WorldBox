@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace SimpleGUI.Menus
+namespace SimplerGUI.Menus
 {
 	class GuiItemGeneration
 	{
@@ -90,106 +90,136 @@ namespace SimpleGUI.Menus
 
 		public static List<string> notRealItems = new List<string> { "base", "hands", "jaws", "claws", "snowball", "fire_hands", "bite", "rocks" };
 
-		public static void ItemEquipSelectionWindow(int windowID)
-		{
-			ori = GUI.backgroundColor;
-			GuiMain.SetWindowInUse(windowID);
-			scrollPosition = GUILayout.BeginScrollView(
-		  scrollPosition, GUILayout.Height(itemGenerationWindowRect.height - 31.5f));
-			foreach(ItemAsset item in AssetManager.items.list) {
-				// i could use actual equipmentType type, idk if the speed matters
-				// if it does, could also just cache once instead of looping every frame
-				if(notRealItems.Contains(item.id) == false && item.id[0] != '_' && item.equipmentType.ToString() == selectedTypeString) {
-					GUILayout.BeginHorizontal();
-					if(selectedItems.Contains(item.id)) {
-						GUI.backgroundColor = Color.green;
-					}
-					else {
-						GUI.backgroundColor = Color.red;
-					}
-					GUILayout.Label(item.id);
-					GUI.backgroundColor = ori;
-					foreach(string materialForEquipment in item.materials) {
-						string equipString = item.equipmentType.ToString();
-						if(item.materials.Contains(materialForEquipment)) {
-							if(selectedItemMaterials.ContainsKey(item.id) && selectedItemMaterials[item.id] == materialForEquipment) {
-								GUI.backgroundColor = Color.green;
-							}
-							else {
-								GUI.backgroundColor = Color.red;
-							}
-							if(GUILayout.Button(materialForEquipment)) {
-								//does item list already have item?
-								if(selectedItems.Contains(item.id)) {
-									if(selectedItemMaterials[item.id] == materialForEquipment) {
-										//click matches exact item, remove
-										selectedItems.Remove(item.id);
-										selectedTypes.Remove(equipString);
-										selectedItemMaterials.Remove(item.id);
-									}
-									else {
-										//material is different, item is same, update item
-										selectedItemMaterials[item.id] = materialForEquipment;
-									}
-								}
-								//items list did not contain item
-								else {
-									//do we have another item of same type already?
-									if(selectedTypes.ContainsKey(equipString)) {
-										//if yes, remove that item
-										selectedItems.Remove(selectedTypes[equipString]);
-										selectedItemMaterials.Remove(item.id);
-										//then add the new id
-										selectedItems.Add(item.id);
-										selectedItemMaterials.Add(item.id, materialForEquipment);
-										//and update the other list
-										selectedTypes[equipString] = item.id;
-									}
-									else {
-										//no item of same type, add item fresh
-										selectedItems.Add(item.id);
-										selectedTypes.Add(equipString, item.id);
-										selectedItemMaterials.Add(item.id, materialForEquipment);
-									}
-								}
-							}
-							GUI.backgroundColor = ori;
-						}
-						GUI.backgroundColor = ori;
+        public static void ItemEquipSelectionWindow(int windowID)
+        {
+            ori = GUI.backgroundColor;
+            GuiMain.SetWindowInUse(windowID);
+            scrollPosition = GUILayout.BeginScrollView(
+          scrollPosition, GUILayout.Height(itemGenerationWindowRect.height - 31.5f));
+            if (GUILayout.Button("Reset"))
+            {
+                selectedTypes = new Dictionary<string, string>();
+                selectedItemMaterials = new Dictionary<string, string>();
+                selectedItemModifiers = new Dictionary<string, List<string>>();
+            }
+            foreach (ItemAsset item in AssetManager.items.list)
+            {
+                // i could use actual equipmentType type, idk if the speed matters
+                // if it does, could also just cache once instead of looping every frame
+                if (notRealItems.Contains(item.id) == false && item.id[0] != '_' && item.equipmentType.ToString() == selectedTypeString)
+                {
+                    GUILayout.BeginHorizontal();
+                    if (selectedItems.Contains(item.id))
+                    {
+                        GUI.backgroundColor = Color.green;
+                    }
+                    else
+                    {
+                        GUI.backgroundColor = Color.red;
+                    }
+                    GUILayout.Label(item.id);
+                    GUI.backgroundColor = ori;
+                    foreach (string materialForEquipment in item.materials)
+                    {
+                        string equipString = item.equipmentType.ToString();
+                        if (item.materials.Contains(materialForEquipment))
+                        {
+                            if (selectedItemMaterials.ContainsKey(item.id) && selectedItemMaterials[item.id] == materialForEquipment)
+                            {
+                                GUI.backgroundColor = Color.green;
+                            }
+                            else
+                            {
+                                GUI.backgroundColor = Color.red;
+                            }
+                            if (GUILayout.Button(materialForEquipment))
+                            {
+                                //does item list already have item?
+                                if (selectedItems.Contains(item.id))
+                                {
+                                    if (selectedItemMaterials[item.id] == materialForEquipment)
+                                    {
+                                        //click matches exact item, remove
+                                        selectedItems.Remove(item.id);
+                                        selectedTypes.Remove(equipString);
+                                        selectedItemMaterials.Remove(item.id);
+                                    }
+                                    else
+                                    {
+                                        //material is different, item is same, update item
+                                        selectedItemMaterials[item.id] = materialForEquipment;
+                                    }
+                                }
+                                //items list did not contain item
+                                else
+                                {
+                                    //do we have another item of same type already?
+                                    if (selectedTypes.ContainsKey(equipString))
+                                    {
+                                        //if yes, remove that item
+                                        selectedItems.Remove(selectedTypes[equipString]);
+                                        selectedItemMaterials.Remove(item.id);
+                                        //then add the new id
+                                        selectedItems.Add(item.id);
+                                        selectedItemMaterials.Add(item.id, materialForEquipment);
+                                        //and update the other list
+                                        selectedTypes[equipString] = item.id;
+                                    }
+                                    else
+                                    {
+                                        //no item of same type, add item fresh
+                                        selectedItems.Add(item.id);
+                                        selectedTypes.Add(equipString, item.id);
+                                        selectedItemMaterials.Add(item.id, materialForEquipment);
+                                    }
+                                }
+                            }
+                            GUI.backgroundColor = ori;
+                        }
+                        GUI.backgroundColor = ori;
 
-					}
-					GUILayout.EndHorizontal();
-				}
-			}
-			if(lastSelectedItemID != "") {
-				foreach(ItemAsset modifier in AssetManager.items_modifiers.dict.Values) {
-					GUI.backgroundColor = Color.red;
-					if(selectedItemModifiers.TryGetValue(lastSelectedItemID, out var itemModifier)) {
-						if(itemModifier.Contains(modifier.id)) {
-							GUI.backgroundColor = Color.green;
-						}
-					}
-					if(GUILayout.Button("Modifier: " + modifier.id)) {
-						if(selectedItemModifiers.TryGetValue(lastSelectedItemID, out var existingList)) {
-							if(existingList.Contains(modifier.id)) {
-								existingList.Remove(modifier.id);
-							}
-							else {
-								existingList.Add(modifier.id);
-							}
-						}
-						else {
-							selectedItemModifiers.Add(lastSelectedItemID, new List<string> { modifier.id });
-						}
-					}
-					GUI.backgroundColor = ori;
-				}
-			}
-			GUILayout.EndScrollView();
-			GUI.DragWindow();
-		}
+                    }
+                    GUILayout.EndHorizontal();
+                }
+            }
+            if (lastSelectedItemID != "")
+            {
+                foreach (ItemAsset modifier in AssetManager.items_modifiers.dict.Values)
+                {
+                    GUI.backgroundColor = Color.red;
+                    if (selectedItemModifiers.TryGetValue(lastSelectedItemID, out var itemModifier))
+                    {
+                        if (itemModifier.Contains(modifier.id))
+                        {
+                            GUI.backgroundColor = Color.green;
+                        }
+                    }
+                    if (GUILayout.Button("Modifier: " + modifier.id))
+                    {
+                        if (selectedItemModifiers.TryGetValue(lastSelectedItemID, out var existingList))
+                        {
+                            if (existingList.Contains(modifier.id))
+                            {
+                                existingList.Remove(modifier.id);
+                            }
+                            else
+                            {
+                                existingList.Add(modifier.id);
+                            }
+                        }
+                        else
+                        {
+                            selectedItemModifiers.Add(lastSelectedItemID, new List<string> { modifier.id });
+                        }
+                    }
+                    GUI.backgroundColor = ori;
+                }
+            }
+            GUILayout.EndScrollView();
+            GUI.DragWindow();
+        }
 
-		public static Color ori;
+        public static Color ori;
 
 		public static List<string> selectedItems = new List<string>();
 		public static Dictionary<string, string> selectedTypes = new Dictionary<string, string>();

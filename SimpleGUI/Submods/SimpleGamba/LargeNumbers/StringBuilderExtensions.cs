@@ -11,7 +11,7 @@
 
 using System.Text;
 
-namespace SimpleGUI.Submods.SimpleGamba.LargeNumbers {
+namespace SimplerGUI.Submods.SimpleGamba.LargeNumbers {
     public static class StringBuilderExtensions {
         private static readonly long[] _powers = {
             1,

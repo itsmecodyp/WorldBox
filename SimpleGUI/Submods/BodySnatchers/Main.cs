@@ -1,5 +1,8 @@
 ﻿using BepInEx;
+using SimplerGUI;
+using SimplerGUI.Menus;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 namespace BodySnatchers {
     [BepInPlugin(pluginGuid, pluginName, pluginVersion)]
@@ -50,12 +53,21 @@ namespace BodySnatchers {
             if (Input.GetKeyDown(KeyCode.V)) {
                 //squad.CycleAction();
             }
-            */
-            ControlledActor.Update();
 
-            if (squad != null) {
-                squad.Update();
+           
+            */
+
+            if (Input.GetKeyDown(KeyCode.Z) && ActorControlMain.preventClicksOpeningWindows == false)
+            {
+                ControlledActor.Attack(MapBox.instance.getActorNearCursor());
             }
+            if (Input.GetMouseButtonDown(0) && ActorControlMain.preventClicksOpeningWindows == true)
+            {
+                ControlledActor.Attack(MapBox.instance.getActorNearCursor());
+            }
+
+            Squad.UpdateAll();
+            ControlledActor.Update();
         }
     }
 }

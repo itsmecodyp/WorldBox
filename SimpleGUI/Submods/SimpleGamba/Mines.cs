@@ -1,8 +1,8 @@
 ﻿using System;
-using SimpleGUI.Submods.SimpleGamba.LargeNumbers;
+using SimplerGUI.Submods.SimpleGamba.LargeNumbers;
 using UnityEngine;
 
-namespace SimpleGUI.Submods.SimpleGamba {
+namespace SimplerGUI.Submods.SimpleGamba {
 	public class Mines {
 		//need some auto-logic for mines based on x*y total?
 		public int mineRowAmountX = 5;

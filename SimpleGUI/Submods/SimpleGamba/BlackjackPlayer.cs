@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
-using SimpleGUI.Submods.SimpleGamba.LargeNumbers;
+using SimplerGUI.Submods.SimpleGamba.LargeNumbers;
 using UnityEngine;
-using static SimpleGUI.Submods.SimpleGamba.Blackjack;
+using static SimplerGUI.Submods.SimpleGamba.Blackjack;
 
-namespace SimpleGUI.Submods.SimpleGamba {
+namespace SimplerGUI.Submods.SimpleGamba {
     public class BlackjackPlayer {
 
         public HandStatus lastRoundStatus = HandStatus.None;

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace SimpleGUI.Submods.SimpleGamba
+namespace SimplerGUI.Submods.SimpleGamba
 {
     public static class ListExtensions
     {

@@ -1,25 +1,18 @@
-﻿using SimpleGUI.Menus;
+﻿using SimplerGUI.Menus;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
-namespace SimpleGUI
+namespace SimplerGUI
 {
     class GuiPatreon
     {
         public void patreonWindow(int windowID)
         {
             GuiMain.SetWindowInUse(windowID);
-            if (GUILayout.Button("Click to visit my patreon"))
-            {
-                Application.OpenURL("https://www.patreon.com/codysmods");
-            }
-            if (GUILayout.Button("Click to visit my discord"))
-            {
-                Application.OpenURL("https://discord.gg/fQFAZPV");
-            }
+          
             GUI.DragWindow();
         }
 
@@ -73,6 +66,7 @@ namespace SimpleGUI
                         actorTrait.base_stats["diplomacy"] = 50;
                         actorTrait.base_stats["personality_administration"] = 50f;
                         actorTrait.inherit = 0f;
+                        actorTrait.path_icon = __instance.a.asset.icon;
                         actorTrait.id = "customTraitJuan";
                         AssetManager.traits.add(actorTrait);
                         __instance.addTrait(actorTrait.id);
@@ -166,6 +160,7 @@ namespace SimpleGUI
                     ActorTrait actorTrait = new ActorTrait();
                     actorTrait.base_stats["speed"] = 50f;
                     actorTrait.inherit = 0f;
+                    actorTrait.path_icon = __instance.a.asset.icon;
                     actorTrait.id = "customTraitPoly";
                     AssetManager.traits.add(actorTrait);
                     __instance.addTrait(actorTrait.id);
@@ -283,8 +278,8 @@ namespace SimpleGUI
                 }
             }
             if(__instance.tipText != null) {
-                // add simplegui tag on new line so people arent thinking these messages came from maxim
-                __instance.tipText.text.text = text + " \n (SimpleGUI)";
+                // add SimplerGUI tag on new line so people arent thinking these messages came from maxim
+                __instance.tipText.text.text = text + " \n (SimplerGUI)";
             }
         }
 

@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace SimpleGUI
+namespace SimplerGUI
 {
     public static class RectTransformExtensions
     {

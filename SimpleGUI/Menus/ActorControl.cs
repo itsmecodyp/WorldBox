@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 using BodySnatchers;
-using SimpleGUI.Submods.SimpleMessages;
-using SimpleGUI.Submods;
+using SimplerGUI.Submods.SimpleMessages;
+using SimplerGUI.Submods;
 using FMOD;
 using static UnityEngine.UI.Image;
 using System;
@@ -13,10 +13,13 @@ using System.Linq;
 using UnityEngine.Tilemaps;
 using Amazon.Runtime.Internal.Transform;
 using System.Reflection.Emit;
+using SimpleJSON;
+using SimplerGUI.Submods.UnitClipboard;
+using SimplerGUI.Submods.MapSizes;
 
 #pragma warning disable CS0649
 
-namespace SimpleGUI.Menus
+namespace SimplerGUI.Menus
 {
     public class ActorControlMain : MonoBehaviour
     {
@@ -43,7 +46,7 @@ namespace SimpleGUI.Menus
             GuiMain.SetWindowInUse(windowID);
             if (controlledActorSc != null)
             {
-                if(GUILayout.Button(new GUIContent("ControlledName: " + controlledActorSc.data.name, "Name of the actor being controlled")))
+                if (GUILayout.Button(new GUIContent("ControlledName: " + controlledActorSc.data.name, "Name of the actor being controlled")))
                 {
                     BodySnatchers.ControlledActor.SetActor(null);
                 }
@@ -63,6 +66,12 @@ namespace SimpleGUI.Menus
                 {
                     settingUpControl = !settingUpControl;
                 }
+            }
+            if (preventClicksOpeningWindows) { GUI.backgroundColor = Color.yellow; }
+            else { GUI.backgroundColor = originalColor; }
+            if (GUILayout.Button("Attack with left click"))
+            {
+                preventClicksOpeningWindows = !preventClicksOpeningWindows;
             }
             GUI.backgroundColor = originalColor;
             if (GUILayout.Button("Clear escorts"))
@@ -88,6 +97,10 @@ namespace SimpleGUI.Menus
             {
                 showSquadControlWindow = !showSquadControlWindow;
             }
+            if (GUILayout.Button("Survivor"))
+            {
+                showSurvivorWindow = !showSurvivorWindow;
+            }
             GUI.DragWindow();
         }
 
@@ -102,7 +115,7 @@ namespace SimpleGUI.Menus
             if (actorBeingEscorted != null)
             {
                 GUILayout.Button("Escorted Name: " + actorBeingEscorted.data.name);
-                if(GUILayout.Button("Kill escorted"))
+                if (GUILayout.Button("Kill escorted"))
                 {
                     actorBeingEscorted.getHit(1000000);
                     actorBeingEscorted = null;
@@ -112,6 +125,14 @@ namespace SimpleGUI.Menus
                     //apex converted this to bool, can check if successful and do new action later
                     BodySnatchers.Main.squad.HireActor(actorBeingEscorted);
                     actorBeingEscorted = null;
+                }
+                if (GUILayout.Button("Make escorted speak"))
+                {
+                    if (Messages.actorStartPhrases.ContainsKey(actorBeingEscorted.asset.id))
+                    {
+                        string phraseToSay = Messages.actorStartPhrases[actorBeingEscorted.asset.id].starterPhrases.GetRandom();
+                        Messages.ActorSay(actorBeingEscorted, phraseToSay, 3);
+                    }
                 }
             }
         }
@@ -129,7 +150,7 @@ namespace SimpleGUI.Menus
                 //recruit action??
                 if (GUILayout.Button("Dig test"))
                 {
-                    squadSc.actionToDo = new SquadAction(squadActions.FindTilesToDig);
+                    squadSc.squadAction = new SquadAction(squadActions.FindTilesToDig);
                 }
                 if (GUILayout.Button("Single escort"))
                 {
@@ -142,21 +163,21 @@ namespace SimpleGUI.Menus
                 }
                 if (GUILayout.Button("Mass escort"))
                 {
-                    squadSc.actionToDo = new SquadAction(squadActions.StartMassEscort);
+                    squadSc.squadAction = new SquadAction(squadActions.StartMassEscort);
                 }
 
                 if (GUILayout.Button("SacrificialSpell"))
                 {
-                    squadSc.actionToDo = new SquadAction(squadActions.StartSacrificeSpell);
+                    squadSc.squadAction = new SquadAction(squadActions.StartSacrificeSpell);
                 }
 
                 //way to stop actions that accidentally (or not) loop
-                if ((squadSc.actionToDo != null || squadSc.nextActionToDo != null))
+                if ((squadSc.squadAction != null || squadSc.squadAction != null))
                 {
                     if (GUILayout.Button("Stop SquadAction"))
                     {
-                        squadSc.actionToDo = null;
-                        squadSc.nextActionToDo = null;
+                        squadSc.squadAction = null;
+                        squadSc.nextSquadAction = null;
                     }
                 }
             }
@@ -239,8 +260,387 @@ namespace SimpleGUI.Menus
                 {
                     squadSc.action = FormationAction.Roam;
                 }
+                if (squadSc.action == FormationAction.Aggression) { GUI.backgroundColor = Color.green; }
+                else { GUI.backgroundColor = Color.red; }
+                if (GUILayout.Button("Aggression"))
+                {
+                    squadSc.action = FormationAction.Aggression;
+                }
                 GUILayout.EndHorizontal();
+                GUILayout.BeginHorizontal();
+                GUI.backgroundColor = Color.red;
+                if (startingTarget) { GUI.backgroundColor = Color.yellow; }
+                if (squadSc.targetedActor != null && squadSc.targetedActor.isAlive()) { GUI.backgroundColor = Color.green; }
+                if(GUILayout.Button("Aggression target (actor)"))
+                {
+                    startingTarget = true;
+                }
                 GUI.backgroundColor = originalColor;
+                if(GUILayout.Button("Reset target"))
+                {
+                    squadSc.targetedActor = null;
+                    startingTarget = false;
+                }
+                GUILayout.EndHorizontal();
+
+                GUI.backgroundColor = originalColor;
+            }
+        }
+
+        public bool startingTarget;
+        public bool isOverridingSpawnCount;
+
+        public void survivorWindow(int windowID)
+        {
+            GuiMain.SetWindowInUse(windowID);
+            Color ori = GUI.backgroundColor;
+            /*
+            if (controlledActorSc != null && squadSc != null)
+            {
+                if(GUILayout.Button("Copy squad"))
+                {
+                    UnitClipboard_Main.CopySquad(squadSc);
+                }
+            }
+            if(UnitClipboard_Main.squadListForPaste != null)
+            {
+                GUI.backgroundColor = Color.red;
+                if (isPasting)
+                {
+                    GUI.backgroundColor = Color.yellow;
+                }
+                if(GUILayout.Button("Paste squad"))
+                {
+                    isPasting = !isPasting;
+                }
+                GUI.backgroundColor = ori;
+            }
+
+              if (GUILayout.Button("test"))
+            {
+                if(controlledActorSc != null)
+                {
+                    GodPower godPower = AssetManager.powers.get("crabzilla");
+                    //prep the patches blocking camera movement etc
+                    hasStartedCrabMode = true;
+                    //spawn the giantzilla out of view hopefully
+                    World.world.units.createNewUnit(godPower.actor_asset_id, MapBox.instance.tilesList.Last(), godPower.actorSpawnHeight);
+                }
+            }
+            if (GUILayout.Button("test2"))
+            {
+                crabThing();
+            }
+            */
+            GUILayout.Button("Time survived: " + ((int)timeSurvivedSoFar).ToString());
+            GUILayout.Button("Enemies killed: " + enemyKills.ToString());
+            GUILayout.Button("Active creatures: " + validEnemyTargets.Count.ToString());
+            GUILayout.Button("Max creatures: " + maxCreatureCountFromDifficulty.ToString());
+            GUILayout.Button("Creatures each wave: " + creaturesToActuallySpawn().ToString());
+            GUILayout.BeginHorizontal();
+            GUILayout.Button("Select creatures");
+            if (showSpawnSelectWindow) GUI.backgroundColor = Color.yellow;
+            else GUI.backgroundColor = ori;
+            string s = "->";
+            if (showSpawnSelectWindow)
+            {
+                s = "<-";
+            }
+            if (GUILayout.Button(s))
+            {
+                showSpawnSelectWindow = !showSpawnSelectWindow;
+
+            }
+            GUILayout.EndHorizontal();
+            if (isOverridingSpawnCount) GUI.backgroundColor = Color.green;
+            else GUI.backgroundColor = Color.red;
+            if(GUILayout.Button("Override wave spawn")) { isOverridingSpawnCount = !isOverridingSpawnCount; }
+            creaturesToSpawnOverride = (int)GUILayout.HorizontalSlider(creaturesToSpawnOverride, 0f, 100f);
+            if (survivorActive) GUI.backgroundColor = Color.green;
+            else GUI.backgroundColor = Color.red;
+            if (GUILayout.Button("Start") && !survivorActive)
+            {
+                if (controlledActorSc != null)
+                {
+                    if(firstSurvivorRun)
+                    {
+                        AddSurvivorTrait();
+                        firstSurvivorRun = false;
+                    }
+                    float camZoom = MoveCamera.instance.targetZoom;
+                    UnitClipboard_Main.CopySquad(squadSc);
+                    MapBox.instance.generateNewMap(false);
+                    SmoothLoader.add(delegate
+                    {
+                        WorldTile validTile = MapBox.instance.tilesList.GetRandom();
+                        int attempt = 1;
+                        while (validTile.Type.liquid && attempt < 10)
+                        {
+                            validTile = MapBox.instance.tilesList.GetRandom();
+                            attempt++;
+                        }
+                        //if its still liquid after those attempts, assume world is liquid and cannot proceed
+                        if (validTile.Type.liquid)
+                        {
+                            Debug.Log("World might be all liquid, cannot start survivor mode");
+                        }
+                        UnitClipboard_Main.PasteSquad(validTile);
+                        MoveCamera.instance.targetZoom = camZoom;
+                        survivorActive = true;
+                        timeSurviveStarted = Time.realtimeSinceStartup;
+                    }, "gen: Cody's Suvivor Mode", false);
+                }
+            }
+            GUI.backgroundColor = ori;
+          
+
+            GUI.DragWindow();
+        }
+        public static Vector2 scrollPosition;
+
+        public void spawnSelectWindow(int windowID)
+        {
+            GuiMain.SetWindowInUse(windowID);
+            Color ori = GUI.backgroundColor;
+            scrollPosition = GUILayout.BeginScrollView(
+         scrollPosition, GUILayout.Height(survivorWindowRect.height - 31.5f), GUILayout.Width(200f));
+            foreach (string actorType in GuiMain.listOfActorAssetIDs)
+            {
+                if (monstersToSpawn.Contains(actorType)){
+                    GUI.backgroundColor = Color.green;
+                }
+                else
+                {
+                    GUI.backgroundColor = Color.red;
+                }
+                if (GUILayout.Button(actorType)) {
+                    if (monstersToSpawn.Contains(actorType)){
+                        monstersToSpawn.Remove(actorType);
+                    }
+                    else
+                    {
+                        monstersToSpawn.Add(actorType);
+                    }
+                }
+            }
+            GUILayout.EndScrollView();
+            GUI.DragWindow();
+        }
+        public bool showSpawnSelectWindow;
+
+        public static void newKillActionPostfix(Actor pDeadUnit, Kingdom pPrevKingdom, Actor __instance)
+        {
+            if (__instance == controlledActorSc && validEnemyTargets.Contains(pDeadUnit))
+            {
+                enemyKills++;
+            }
+        }
+
+        public static bool killHimself_Prefix(bool pDestroy, AttackType pType, bool pCountDeath, bool pLaunchCallbacks, bool pLogFavorite, Actor __instance)
+        {
+            if(validEnemyTargets.Contains(__instance))
+            {
+                validEnemyTargets.Remove(__instance);
+            }
+            return true;
+        }
+
+        public bool firstSurvivorRun = true;
+
+        public bool isPasting;
+        public static bool survivorActive;
+        public float timeSurviveStarted;
+        public static float timeSurvivedSoFar;
+        public static int enemyKills;
+        public float lastSpawnUpdate = 0f;
+        public static bool preventClicksOpeningWindows = true;
+
+
+        public void SurvivorUpdate()
+        {
+            if (survivorActive)
+            {
+                if(global::Config.paused == false)
+                {
+                    timeSurvivedSoFar += Time.deltaTime;
+                }
+                if(controlledActorSc == null || controlledActorSc.data.alive == false)
+                {
+                    //controlled actor has died, mode should finish
+                    float lastTime = timeSurvivedSoFar;
+                    WorldTip.showNow("You died. Kills: " + enemyKills.ToString(), false, "center", 10f);
+                    //maybe save highest stats for record
+                    survivorActive = false;
+                    timeSurvivedSoFar = 0f;
+                    timeSurviveStarted = 0f;
+                }
+                else
+                {
+                    UpdateMonsterSpawn();
+                    //show status text at top of screen
+                    WorldTip.showNow("Kills: " + enemyKills.ToString(), false, "top");
+                }
+            }
+        }
+
+        public void AddSurvivorTrait()
+        {
+            ActorTrait survivorEnemy = new ActorTrait();
+            survivorEnemy.id = "survivor_enemy";
+            survivorEnemy.path_icon = "ui/Icons/iconGreedy";
+            survivorEnemy.action_special_effect = new WorldAction(SurvivorAction);
+            AssetManager.traits.add(survivorEnemy);
+        }
+
+
+        public static int difficultyScaling = 10; // higher = easier
+        public int difficultyHealth => (int)timeSurvivedSoFar / difficultyScaling; // 5 = 10 seconds = +2hp, 120seconds = +24, 600sec = +120 etc
+
+        public BaseStats IntendedStats(BaseStats original)
+        {
+            int intendedHealth = difficultyHealth;
+            BaseStats returnBaseStats = new BaseStats();
+
+            returnBaseStats["health"] = 1 + (intendedHealth - original["health"]);
+            returnBaseStats["damage"] = 2 + (intendedHealth - original["damage"]);
+            return returnBaseStats;
+        }
+
+
+        // vamp survivor has 500 creatures max
+        public static int maxCreatureCountFromDifficulty => 10 + ((int)timeSurvivedSoFar / 2); // 10 sec = 15max, 120sec = 70max, 600sec = 310max etc
+        public static int creaturesToSpawnEachUpdate => 1 + (maxCreatureCountFromDifficulty / 10); // 10sec = 2, 120sec = 13, 600sec = 61
+        public static int creaturesToSpawnOverride = 0;
+
+        public int creaturesToActuallySpawn()
+        {
+            if (creaturesToSpawnOverride != 0)
+            {
+                return creaturesToSpawnOverride;
+            }
+            else
+            {
+                return creaturesToSpawnEachUpdate;
+            }
+        }
+
+        public List<string> monstersToSpawn = new List<string>() { "baby_orc" }; 
+                                                                                 
+        public static int bossesToSpawn = 0;
+        public static int lastBossAmount = 0;
+        public void UpdateMonsterSpawn()
+        {
+            if (lastSpawnUpdate + 5f < Time.realtimeSinceStartup)
+            {
+                int minutes = ((int)timeSurvivedSoFar / 60);
+                if (minutes % 3 == 0)
+                {
+                    if ((minutes / 3) > lastBossAmount)
+                    {
+                        bossesToSpawn = (minutes / 3);
+                        //Debug.Log("+3 minutes detected, bosses spawning: " + bossesToSpawn.ToString());
+                        lastBossAmount = bossesToSpawn;
+                    }
+
+                }
+                if (validEnemyTargets.Count < maxCreatureCountFromDifficulty)
+                {
+                    for (int i = 0; i < creaturesToActuallySpawn(); i++)
+                    {
+                        string monsterID = monstersToSpawn.GetRandom();
+                        WorldTile spawnTile = MapBox.instance.tilesList.GetRandom();
+                        // keep monster spawns a certain distance away
+                        if (Toolbox.DistTile(spawnTile, controlledActorSc.currentTile) > 20f)
+                        {
+                            Actor newMonster = MapBox.instance.units.createNewUnit(monsterID, spawnTile, 5f);
+                            validEnemyTargets.Add(newMonster);
+                            ActorTrait customTrait = new ActorTrait(); // create trait that applies "balanced" stats
+                            customTrait.id = "customT" + monsterID;
+                            customTrait.base_stats = IntendedStats(AssetManager.actor_library.get(monsterID).base_stats); // newMonster.curStats
+                            if (bossesToSpawn > 0)
+                            {
+                                customTrait.id = "customT" + monsterID + "Boss";
+                                customTrait.base_stats["speed"] = 20f;
+                                customTrait.base_stats["damage"] = 20;
+                                //customTrait.baseStats.size = 1.25f;
+                                customTrait.base_stats["scale"] = 0.75f;
+                                bossesToSpawn--;
+                            }
+                            AssetManager.traits.add(customTrait); // constant update and replace
+                            newMonster.data.removeTrait("peaceful");
+                            newMonster.addTrait(customTrait.id);
+                            newMonster.addTrait("survivor_enemy");
+                            newMonster.updateStats();
+                        }
+                    }
+                    //creaturesToSpawnOverride = 0; // after potential override, reset
+                }
+                lastSpawnUpdate = Time.realtimeSinceStartup;
+            }
+        }
+
+
+        //direct enemies towards controlled actor(s) and force attacks
+        public static bool SurvivorAction(BaseSimObject pTarget, WorldTile pTile = null)
+        {
+            if (survivorActive == false)
+            {
+                return false;
+            }
+            if (controlledActorSc != null && controlledActorSc.data.alive)
+            {
+                if (pTarget.a.isInAttackRange(controlledActorSc) == false)
+                {
+                    pTarget.a.goTo(controlledActorSc.currentTile);
+                    //Debug.Log("Survivor attack status: " + "running to target");
+                }
+                else
+                {
+                    bool wasSuccessful = pTarget.a.tryToAttack(controlledActorSc, false);
+                    //Debug.Log("Survivor attack status: " + wasSuccessful);
+                }
+            }
+            else
+            {
+                return false;
+            }
+
+
+            return true;
+        }
+
+        //runs after pActor dies, but before newKillAction
+        public static bool unitKilled_Prefix(Actor pActor)
+        {
+            if (survivorActive)
+            {
+                if (pActor.hasTrait("survivor_enemy"))
+                {
+                    Actor newTarget = validEnemyTargets.GetRandom();
+                    if (newTarget != pActor)
+                    {
+                        if(controlledActorSc != null)
+                        {
+                            //shootAtTile(controlledActorSc, newTarget.currentTile);
+                        }
+                    }
+                }
+            }
+            return true;
+        }
+
+        public static void shootAtTile(BaseSimObject pTarget, WorldTile pTile)
+        {
+            if(pTile != null)
+            {
+                Vector3 pos = pTile.posV3;
+                float num = Vector2.Distance(pTarget.currentPosition, pos);
+                Vector3 newPoint = Toolbox.getNewPoint(pTarget.currentPosition.x, pTarget.currentPosition.y, (float)pos.x, (float)pos.y, num, true);
+                Vector3 newPoint2 = Toolbox.getNewPoint(pTarget.currentPosition.x, pTarget.currentPosition.y, (float)pos.x, (float)pos.y, pTarget.a.stats[S.size], true);
+                newPoint2.y += 0.5f;
+                Projectile arrow = EffectsLibrary.spawnProjectile("arrow", newPoint2, newPoint, pTarget.getZ());
+                arrow.byWho = pTarget;
+                arrow.setStats(pTarget.stats);
             }
         }
 
@@ -270,6 +670,8 @@ namespace SimpleGUI.Menus
             return returnActor;
         }
 
+        //self-updating list of actors to target easier
+        public static List<Actor> validEnemyTargets = new List<Actor>();
 
         public static int sacrificeCount = 1;
 
@@ -300,20 +702,54 @@ namespace SimpleGUI.Menus
             return true;
         }
 
+        public static bool checkClickTouchInspect_Prefix()
+        {
+            if(controlledActorSc != null && controlledActorSc.data.alive)
+            {
+                if (preventClicksOpeningWindows)
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        public static bool checkEmptyClick_Prefix()
+        {
+            if (controlledActorSc != null && controlledActorSc.data.alive)
+            {
+                if (preventClicksOpeningWindows)
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
 
         public List<CrabArm> customArms = new List<CrabArm>();
         public void updateCrabArms()
         {
-            foreach (CrabArm arm in customArms)
+            if(controlledActorSc != null && controlledActorSc.isAlive())
             {
-                arm.update(MapBox.instance.deltaTime);
-                if (arm.giantzilla == null || (arm.giantzilla.actor != null && arm.giantzilla.actor.data.alive == false))
+                foreach (CrabArm arm in customArms)
                 {
-                    arm.gameObject.SetActive(false);
+                    arm.update(MapBox.instance.deltaTime);
+                    if (arm.giantzilla == null || (arm.giantzilla.actor != null && arm.giantzilla.actor.data.alive == false))
+                    {
+                        arm.gameObject.SetActive(false);
+                    }
+                    if (Input.GetMouseButton(0))
+                    {
+                        //UnityEngine.Random.ColorHSV(0f, 1f, 1f, 1f, 0.5f, 1f); // rgb laser
+                    }
                 }
-                if (Input.GetMouseButton(0))
+            }
+            else
+            {
+                if(customArms.Count > 1)
                 {
-                    //UnityEngine.Random.ColorHSV(0f, 1f, 1f, 1f, 0.5f, 1f); // rgb laser
+                    customArms.GetRandom().giantzilla.actor.killHimself();
+                    customArms = new List<CrabArm>();
                 }
             }
         }
@@ -326,6 +762,7 @@ namespace SimpleGUI.Menus
         public bool showSingleActionWindow;
         public bool showSquadActionWindow;
         public bool showSquadControlWindow;
+        public bool showSurvivorWindow;
 
 
         public Rect controlWindowRect = new Rect(126f, 1f, 1f, 1f);
@@ -333,6 +770,10 @@ namespace SimpleGUI.Menus
         public Rect singleActorActionWindowRect;
         public Rect squadActionWindowRect;
         public Rect squadControlsWindow;
+        public Rect survivorWindowRect;
+        public static Rect spawnSelectWindowRect;
+
+
         public void actorControlWindowUpdate()
         {
             if (SimpleSettings.showHideActorControlConfig)
@@ -354,13 +795,23 @@ namespace SimpleGUI.Menus
                     squadControlsWindow = GUILayout.Window(17067, squadControlsWindow, actorSquadControlWindow, "Squad Control");
                     squadControlsWindow.position = new Vector2(controlWindowRect.x, (controlWindowRect.y + controlWindowRect.height));
                 }
+                if (showSurvivorWindow)
+                {
+                    survivorWindowRect = GUILayout.Window(17068, survivorWindowRect, survivorWindow, "Survivor");
+                    if (showSpawnSelectWindow)
+                    {
+                        spawnSelectWindowRect = GUILayout.Window(17069, spawnSelectWindowRect, spawnSelectWindow, "Select creatures");
+                        spawnSelectWindowRect.position = new Vector2(survivorWindowRect.x + survivorWindowRect.width, (survivorWindowRect.y));
+                    }
+                }
+
             }
         }
 
         public void actorControlUpdate()
         {
+            SurvivorUpdate();
             updateCrabArms();
-
             //this is ugly, cant we do it better?
             if ((Input.GetMouseButtonDown(1) || Input.GetMouseButtonDown(0)) && settingUpEscort)
             {
@@ -413,9 +864,18 @@ namespace SimpleGUI.Menus
                 }
                 settingUpHire = false;
             }
+            if ((Input.GetMouseButtonDown(1) || Input.GetMouseButtonDown(0)) && startingTarget)
+            {
+                Actor actor = MapBox.instance.getActorNearCursor();
+                if (actor != null)
+                {
+                    squadSc.targetedActor = actor;
+                }
+                startingTarget = false;
+            }
             if (actorBeingEscorted != null)
             {
-                if(controlledActorSc != null)
+                if (controlledActorSc != null)
                 {
                     actorBeingEscorted.moveTo(controlledActorSc.currentTile.tile_down);
                 }
@@ -424,9 +884,9 @@ namespace SimpleGUI.Menus
                     actorBeingEscorted = null;
                 }
             }
-            if(escortsAndTheirClients.Count > 0)
+            if (escortsAndTheirClients.Count > 0)
             {
-                foreach(KeyValuePair<Actor, Actor> escortDictPair in escortsAndTheirClients)
+                foreach (KeyValuePair<Actor, Actor> escortDictPair in escortsAndTheirClients)
                 {
                     Actor following = escortDictPair.Key;
                     //should cleanup instead but im tired and dont want to, so we skip
@@ -448,7 +908,17 @@ namespace SimpleGUI.Menus
                     }
                 }
             }
-
+            if (Input.GetMouseButtonDown(0))
+            {
+                if (isPasting)
+                {
+                    if(MapBox.instance.getMouseTilePos() != null)
+                    {
+                        UnitClipboard_Main.PasteSquad(MapBox.instance.getMouseTilePos());
+                        isPasting = false;
+                    }
+                }
+            }
             controlWindowRect.height = 0f;
             singleActorActionWindowRect.height = 0f;
             squadActionWindowRect.height = 0f;
@@ -462,11 +932,11 @@ namespace SimpleGUI.Menus
             {
                 return false;
             }
-            if(controlledActorSc != null && __instance == controlledActorSc)
+            if (controlledActorSc != null && __instance == controlledActorSc)
             {
                 return false;
             }
-            if(squadSc != null && squadSc.squad.Contains(__instance))
+            if (squadSc != null && squadSc.squad.Contains(__instance))
             {
                 return false;
             }
@@ -482,7 +952,7 @@ namespace SimpleGUI.Menus
                     }
                     else
                     {
-                        if(following == __instance)
+                        if (following == __instance)
                         {
                             return false;
                         }
@@ -503,6 +973,10 @@ namespace SimpleGUI.Menus
                     {
                         //might have to revisit later to check dead escort, etc
                         Debug.Log("Actor is being escorted already, cancelling");
+                    }
+                    else if (squadSc.squad.Contains(target))
+                    {
+                        Debug.Log("Actor is in squad, cancelling");
                     }
                     else
                     {
@@ -537,18 +1011,29 @@ namespace SimpleGUI.Menus
                                 escortTargets.Remove(target1);
                                 target1 = escortTargets.GetRandom();
                             }
+                            target = target1;
                             //makes it here once valid target found?
-                            escortsAndTheirClients.Add(target1, toFollow);
+                            escortsAndTheirClients.Add(target, toFollow);
                         }
                         else
                         {
+                            target = target1;
                             escortsAndTheirClients.Add(target1, toFollow);
                         }
-                        Messages.ActorSay(toFollow, GuiMain.ActorControl.escortCommandLines.GetRandom());
-                        if (Toolbox.randomBool())
-                        {
-                            Messages.ActorSay(target1, GuiMain.ActorControl.fearLines.GetRandom());
-                        }
+                    }
+                }
+
+                if (target != null)
+                {
+
+
+                    Messages.ActorSay(toFollow, GuiMain.ActorControl.escortCommandLines.GetRandom());
+                    if (Toolbox.randomBool())
+                    {
+                        Messages.ActorSay(target, GuiMain.ActorControl.fearLines.GetRandom());
+                        WorldTile moveTile = target.currentTile;
+                        //move "leader" of escort towards captive, looks a little cleaner
+                        toFollow.goTo(moveTile);
                     }
                 }
             }
@@ -561,7 +1046,7 @@ namespace SimpleGUI.Menus
             {
                 WorldTile tile = controlledActorSc.currentTile;
                 List<Actor> escortTargets = new List<Actor>();
-                MapBox.instance.getObjectsInChunks(tile, 10, MapObjectType.Actor);
+                MapBox.instance.getObjectsInChunks(tile, 15, MapObjectType.Actor);
                 foreach (Actor actor in MapBox.instance.temp_map_objects)
                 {
                     if (squadSc.squad.Contains(actor) == false && controlledActorSc != actor)
@@ -569,7 +1054,11 @@ namespace SimpleGUI.Menus
                         escortTargets.Add(actor);
                     }
                 }
-
+                if(escortTargets.Count == 0)
+                {
+                    Messages.ActorSay(controlledActorSc, "No targets nearby!");
+                    return;
+                }
                 //setup pairs of followers and the people they follow
                 escortsAndTheirClients = new Dictionary<Actor, Actor>();
                 foreach (Actor target in escortTargets)
@@ -591,8 +1080,8 @@ namespace SimpleGUI.Menus
 
                     //nothing happens, they already had a command if theyre chosen to escort
                 }
-                squadSc.nextActionTimer = 3f;
-                squadSc.nextActionToDo = new SquadAction(EscortEncouragement);
+                squadSc.nextActionTime = 3f;
+                squadSc.nextSquadAction = new SquadAction(EscortEncouragement);
             }
 
             public void EscortEncouragement(List<Actor> squadTarget)
@@ -605,7 +1094,7 @@ namespace SimpleGUI.Menus
                         Messages.ActorSay(actor, GuiMain.ActorControl.escortEncourageLines.GetRandom());
                     }
                 }
-                squadSc.nextActionTimer = 3f;
+                squadSc.nextActionTime = 3f;
             }
             #endregion
 
@@ -626,7 +1115,7 @@ namespace SimpleGUI.Menus
                     WorldTile moveTile = actor.currentTile.zone.tiles.GetRandom();
                     actor.goTo(moveTile);
                 }
-                squadSc.nextActionToDo = new SquadAction(StopMoving);
+                squadSc.nextSquadAction = new SquadAction(StopMoving);
             }
             public void StopMoving(List<Actor> squadTarget)
             {
@@ -637,8 +1126,8 @@ namespace SimpleGUI.Menus
                     actor.setPosDirty();
                     actor.dirty_current_tile = true;
                 }
-                squadSc.nextActionTimer = 1f;
-                squadSc.nextActionToDo = new SquadAction(DigTiles);
+                squadSc.nextActionTime = 1f;
+                squadSc.nextSquadAction = new SquadAction(DigTiles);
             }
             public void DigTiles(List<Actor> squadTarget)
             {
@@ -650,7 +1139,7 @@ namespace SimpleGUI.Menus
                         MapAction.decreaseTile(actor.currentTile);
                     }
                 }
-                squadSc.nextActionTimer = 3f;
+                squadSc.nextActionTime = 3f;
             }
             #endregion
 
@@ -689,7 +1178,7 @@ namespace SimpleGUI.Menus
                         {
                             followed.equipment = new ActorEquipment();
                         }
-                        if (followed.equipment.weapon.isEmpty() == false)
+                        if (followed.equipment.weapon.isEmpty() == false && preSacrificeEquipment.ContainsKey(followed) == false)
                         {
                             preSacrificeEquipment.Add(followed, followed.equipment.weapon.data);
                         }
@@ -698,9 +1187,11 @@ namespace SimpleGUI.Menus
                     }
                 }
 
-                squadSc.nextActionTimer = 2f;
-                squadSc.nextActionToDo = new SquadAction(GuiMain.ActorControl.squadActions.SacrificeStep);
+                squadSc.nextActionTime = 2f;
+                squadSc.nextSquadAction = new SquadAction(GuiMain.ActorControl.squadActions.SacrificeStep);
             }
+
+     
 
             //make sacrifices die 1 by 1
             public void SacrificeStep(List<Actor> squadTarget)
@@ -726,61 +1217,38 @@ namespace SimpleGUI.Menus
                             Messages.ActorSay(squad, GuiMain.ActorControl.fearLines.GetRandom());
                         }
                     }
-                    squadSc.nextActionToDo = new SquadAction(SacrificeStep);
+                    squadSc.nextSquadAction = new SquadAction(SacrificeStep);
                 }
                 else
                 {
                     finaleStep = 0;
-                    squadSc.nextActionTimer = 0.25f;
+                    squadSc.nextActionTime = 0.25f;
                     GodPower godPower = AssetManager.powers.get("crabzilla");
                     //prep the patches blocking camera movement etc
                     hasStartedCrabMode = true;
                     //spawn the giantzilla out of view hopefully
                     World.world.units.createNewUnit(godPower.actor_asset_id, MapBox.instance.tilesList.Last(), godPower.actorSpawnHeight);
-                    squadSc.nextActionToDo = new SquadAction(SacrificeFinaleStep);
+                    squadSc.nextSquadAction = new SquadAction(SacrificeFinaleStep);
                 }
+                squadSc.nextActionTime = 0.5f;
             }
 
             //crazy looking finale? lightning striking many places back to back, then final action
             public int finaleStep = 0;
             public void SacrificeFinaleStep(List<Actor> squadTarget)
             {
-                WorldTile targetTile = controlledActorSc.currentTile;
-                if (Toolbox.randomBool())
-                {
-                    targetTile = controlledActorSc.currentTile.neighbours.GetRandom().neighbours.GetRandom().neighbours.GetRandom();
-                }
+                WorldTile targetTile = controlledActorSc.currentTile.neighbours.GetRandom().neighbours.GetRandom().neighbours.GetRandom();
                 BaseEffect lightningEffect = EffectsLibrary.spawnAtTile("fx_lightning_small", targetTile, 0.25f);
-                if (finaleStep > 7 && finaleStep < 14)
-                {
-                    WorldTile targetTile2 = controlledActorSc.currentTile;
-                    if (Toolbox.randomBool())
-                    {
-                        targetTile = controlledActorSc.currentTile.neighbours.GetRandom().neighbours.GetRandom().neighbours.GetRandom();
-                    }
-                    BaseEffect lightningEffect2 = EffectsLibrary.spawnAtTile("fx_lightning_small", targetTile, 0.25f);
-                    WorldTile targetTile3 = controlledActorSc.currentTile;
-                    if (Toolbox.randomBool())
-                    {
-                        targetTile = controlledActorSc.currentTile.neighbours.GetRandom().neighbours.GetRandom().neighbours.GetRandom();
-                    }
-                    BaseEffect lightningEffect3 = EffectsLibrary.spawnAtTile("fx_lightning_small", targetTile, 0.25f);
-                    WorldTile targetTile4 = controlledActorSc.currentTile;
-                    if (Toolbox.randomBool())
-                    {
-                        targetTile = controlledActorSc.currentTile.neighbours.GetRandom().neighbours.GetRandom().neighbours.GetRandom();
-                    }
-                    BaseEffect lightningEffect4 = EffectsLibrary.spawnAtTile("fx_lightning_small", targetTile, 0.25f);
-                }
-                if (finaleStep < 15)
+              
+                if (finaleStep < 5)
                 {
                     finaleStep++;
-                    squadSc.nextActionToDo = new SquadAction(SacrificeFinaleStep);
+                    squadSc.nextSquadAction = new SquadAction(SacrificeFinaleStep);
                 }
                 else
                 {
                     //final action here
-                    squadSc.nextActionToDo = new SquadAction(SacrificeFinale);
+                    squadSc.nextSquadAction = new SquadAction(SacrificeFinale);
                 }
             }
 
@@ -799,7 +1267,7 @@ namespace SimpleGUI.Menus
                         sm.setStatsDirty();
                     }
                 }
-                squadSc.nextActionTimer = 3f;
+                squadSc.nextActionTime = 3f;
             }
 
             //crabzilla gets spawned beforehand, then practically ripped apart, arms given away
@@ -807,6 +1275,15 @@ namespace SimpleGUI.Menus
             {
                 if (controlledActorSc != null)
                 {
+                    if(GuiMain.ActorControl.customArms.Count > 1)
+                    {
+                        for (int i = 0; i < GuiMain.ActorControl.customArms.Count; i++)
+                        {
+                            CrabArm arm = GuiMain.ActorControl.customArms[i];
+                            Destroy(arm);
+                        }
+                    }
+                    GuiMain.ActorControl.customArms = new List<CrabArm>();
                     foreach (Actor actor in MapBox.instance.units)
                     {
                         if (actor.asset.id == "crabzilla")

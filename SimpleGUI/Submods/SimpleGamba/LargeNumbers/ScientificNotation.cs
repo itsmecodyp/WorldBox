@@ -15,7 +15,7 @@
 using System;
 using System.Text;
 
-namespace SimpleGUI.Submods.SimpleGamba.LargeNumbers {
+namespace SimplerGUI.Submods.SimpleGamba.LargeNumbers {
     /// <summary>
     /// A Scientific Notation based number.
     /// For more details, visit https://en.wikipedia.org/wiki/Scientificnotation.

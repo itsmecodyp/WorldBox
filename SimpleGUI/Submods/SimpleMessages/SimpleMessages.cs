@@ -3,16 +3,17 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection.Emit;
 using Amazon.Runtime;
 using Amazon.Runtime.Internal.Transform;
 using BepInEx;
 using Google.MiniJSON;
 using Newtonsoft.Json;
-using SimpleGUI.Submods.UnitClipboard;
+using SimplerGUI.Submods.UnitClipboard;
 using SimpleJSON;
 using UnityEngine;
 
-namespace SimpleGUI.Submods.SimpleMessages
+namespace SimplerGUI.Submods.SimpleMessages
 {
     [BepInPlugin(pluginGuid, pluginName, pluginVersion)]
     public class Messages : BaseUnityPlugin {
@@ -59,8 +60,30 @@ namespace SimpleGUI.Submods.SimpleMessages
             replyString = null;
 
             //potential replier to the message being said right now
-            Actor potentialReplier = UnitClipboard_Main.ClosestActorToTile(targetActor.currentTile, 5f, targetActor);
-            if(potentialReplier != null && !actorsOnCooldown.Contains(potentialReplier /*do this part different*/)) {
+            Actor potentialReplier = null;
+            List<Actor> visibleMinusOriginal = new List<Actor>();
+
+            if (potentialReplier == null)
+            {
+                //maybe closest actor doesnt have reply, check visible units instead
+                if(MapBox.instance.units.visible_units.Count > 2)
+                {
+                    //make list of targets that dont include the person who just spoke
+                    foreach(Actor actor in MapBox.instance.units.visible_units)
+                    {
+                        if(actor != targetActor)
+                        {
+                            visibleMinusOriginal.Add(actor);
+                        }
+                    }
+                    if(visibleMinusOriginal.Count > 0)
+                    {
+                        Actor temp = visibleMinusOriginal.GetRandom();
+                        potentialReplier = temp;
+                    }
+                }
+            }
+            if(potentialReplier != null && !actorsOnCooldown.Contains(potentialReplier)) {
                 if(actorResponses.TryGetValue(messageText, out ResponseData response)) {
                     //make sure response has assigned actor asset id
                     if(response.actorAssetID != null) {
@@ -71,10 +94,14 @@ namespace SimpleGUI.Submods.SimpleMessages
                             actorReplyActorIsRespondingTo = targetActor;
                             stringToReplyTo = messageText;
                         }
+                        else
+                        {
+                            Debug.Log("Replier actor asset ID does not match assigned for response");
+                        }
                     }
-                    //actorAssetId is null, use any actor nearby
+                    //actorAssetId is null, use any actor
                     else {
-                        Debug.Log("Actor asset ID for reply not in list or list is null, choosing any available");
+                        Debug.Log("Replier actor asset ID not in list or list is null, choosing any available");
                         reply = response;
                         replyActor = potentialReplier;
                         actorReplyActorIsRespondingTo = targetActor;
@@ -426,7 +453,7 @@ namespace SimpleGUI.Submods.SimpleMessages
             {
                 inputToRespondTo = "If you wouldn't mind..",
                 actorAssetID = new List<string> { "unit_human", "unit_elf", "unit_dwarf" },
-                actorReply = new List<string> { "Okay, what do you need?", "I can help, let's go." }
+                actorReply = new List<string> { "Okay, what do you need?", "I can help, let's go.", "Lead the way!" }
             };
             actorResponses.Add(ifYouWouldntMind.inputToRespondTo, ifYouWouldntMind);
 

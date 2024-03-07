@@ -1,4 +1,4 @@
-﻿namespace SimpleGUI.Submods.SimpleGamba
+﻿namespace SimplerGUI.Submods.SimpleGamba
 {
     public class Card
     {
