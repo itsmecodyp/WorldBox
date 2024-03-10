@@ -364,9 +364,10 @@ namespace SimplerGUI.Menus
                 {
                     if(firstSurvivorRun)
                     {
-                        AddSurvivorTrait();
+                        AddSurvivorTraits();
                         firstSurvivorRun = false;
                     }
+                    wasLevelCapDisabled = GuiMain.Other.disableLevelCap;
                     float camZoom = MoveCamera.instance.targetZoom;
                     UnitClipboard_Main.CopySquad(squadSc);
                     MapBox.instance.generateNewMap(false);
@@ -397,6 +398,7 @@ namespace SimplerGUI.Menus
             GUI.DragWindow();
         }
         public static Vector2 scrollPosition;
+        public bool wasLevelCapDisabled;
 
         public void spawnSelectWindow(int windowID)
         {
@@ -428,13 +430,42 @@ namespace SimplerGUI.Menus
         }
         public bool showSpawnSelectWindow;
 
+
         public static void newKillActionPostfix(Actor pDeadUnit, Kingdom pPrevKingdom, Actor __instance)
         {
             if (__instance == controlledActorSc && validEnemyTargets.Contains(pDeadUnit))
             {
                 enemyKills++;
+                if (controlledActorSc.hasTrait("death_arrow")) // do this before multiply so multiplied units arent targeted
+                {
+                    //1 sec = 1, 60 sec = 3, 180sec = 7
+                    for (int i = 0; i < (1 + ((int)timeSurvivedSoFar / 30)); i++)
+                    {
+                        Actor validTarget = validEnemyTargets.GetRandom();
+                        shootAtTile(controlledActorSc, validTarget.currentTile);
+                    }
+                }
+                if (pDeadUnit.hasTrait("death_multiply"))
+                {
+                    //1 sec = 1, 60 sec = 7, 180sec = 19 (maybe this is high)
+                    for (int i = 0; i < (1 + ((int)timeSurvivedSoFar/10)); i++)
+                    {
+                        Actor newMonster = MapBox.instance.units.createNewUnit(pDeadUnit.asset.id, pDeadUnit.currentTile.neighboursAll.GetRandom().neighboursAll.GetRandom(), 5f);
+                        validEnemyTargets.Add(newMonster);
+                        ActorTrait customTrait = new ActorTrait(); // create trait that applies "balanced" stats
+                        customTrait.id = "customT" + pDeadUnit.asset.id;
+                        customTrait.base_stats = IntendedStats(AssetManager.actor_library.get(pDeadUnit.asset.id).base_stats); // newMonster.curStats
+                        AssetManager.traits.add(customTrait); // constant update and replace
+                        newMonster.data.removeTrait("peaceful");
+                        newMonster.addTrait(customTrait.id);
+                        newMonster.addTrait("survivor_enemy");
+                        newMonster.updateStats();
+                    }
+                }
+                
             }
         }
+
 
         public static bool killHimself_Prefix(bool pDestroy, AttackType pType, bool pCountDeath, bool pLaunchCallbacks, bool pLogFavorite, Actor __instance)
         {
@@ -473,6 +504,8 @@ namespace SimplerGUI.Menus
                     survivorActive = false;
                     timeSurvivedSoFar = 0f;
                     timeSurviveStarted = 0f;
+                    GuiMain.Other.disableLevelCap = wasLevelCapDisabled;
+                    wasLevelCapDisabled = false;
                 }
                 else
                 {
@@ -483,20 +516,32 @@ namespace SimplerGUI.Menus
             }
         }
 
-        public void AddSurvivorTrait()
+        public void AddSurvivorTraits()
         {
             ActorTrait survivorEnemy = new ActorTrait();
             survivorEnemy.id = "survivor_enemy";
             survivorEnemy.path_icon = "ui/Icons/iconGreedy";
             survivorEnemy.action_special_effect = new WorldAction(SurvivorAction);
             AssetManager.traits.add(survivorEnemy);
+
+            ActorTrait death_arrow = new ActorTrait();
+            death_arrow.id = "death_arrow";
+            death_arrow.path_icon = "ui/Icons/iconGreedy";
+            //survivorEnemy.action_special_effect = new WorldAction(SurvivorAction);
+            AssetManager.traits.add(death_arrow);
+
+            ActorTrait death_multiply = new ActorTrait();
+            death_multiply.id = "death_multiply";
+            death_multiply.path_icon = "ui/Icons/iconGreedy";
+            //survivorEnemy.action_special_effect = new WorldAction(SurvivorAction);
+            AssetManager.traits.add(death_multiply);
         }
 
 
         public static int difficultyScaling = 10; // higher = easier
-        public int difficultyHealth => (int)timeSurvivedSoFar / difficultyScaling; // 5 = 10 seconds = +2hp, 120seconds = +24, 600sec = +120 etc
+        public static int difficultyHealth => (int)timeSurvivedSoFar / difficultyScaling; // 5 = 10 seconds = +2hp, 120seconds = +24, 600sec = +120 etc
 
-        public BaseStats IntendedStats(BaseStats original)
+        public static BaseStats IntendedStats(BaseStats original)
         {
             int intendedHealth = difficultyHealth;
             BaseStats returnBaseStats = new BaseStats();
@@ -570,6 +615,10 @@ namespace SimplerGUI.Menus
                             newMonster.data.removeTrait("peaceful");
                             newMonster.addTrait(customTrait.id);
                             newMonster.addTrait("survivor_enemy");
+                            if (Toolbox.randomChance(0.05f))
+                            {
+                                newMonster.addTrait("death_multiply");
+                            }
                             newMonster.updateStats();
                         }
                     }
@@ -629,18 +678,18 @@ namespace SimplerGUI.Menus
             return true;
         }
 
-        public static void shootAtTile(BaseSimObject pTarget, WorldTile pTile)
+        public static void shootAtTile(BaseSimObject fromActor, WorldTile toTile)
         {
-            if(pTile != null)
+            if(toTile != null)
             {
-                Vector3 pos = pTile.posV3;
-                float num = Vector2.Distance(pTarget.currentPosition, pos);
-                Vector3 newPoint = Toolbox.getNewPoint(pTarget.currentPosition.x, pTarget.currentPosition.y, (float)pos.x, (float)pos.y, num, true);
-                Vector3 newPoint2 = Toolbox.getNewPoint(pTarget.currentPosition.x, pTarget.currentPosition.y, (float)pos.x, (float)pos.y, pTarget.a.stats[S.size], true);
+                Vector3 pos = toTile.posV3;
+                float num = Vector2.Distance(fromActor.currentPosition, pos);
+                Vector3 newPoint = Toolbox.getNewPoint(fromActor.currentPosition.x, fromActor.currentPosition.y, (float)pos.x, (float)pos.y, num, true);
+                Vector3 newPoint2 = Toolbox.getNewPoint(fromActor.currentPosition.x, fromActor.currentPosition.y, (float)pos.x, (float)pos.y, fromActor.a.stats[S.size], true);
                 newPoint2.y += 0.5f;
-                Projectile arrow = EffectsLibrary.spawnProjectile("arrow", newPoint2, newPoint, pTarget.getZ());
-                arrow.byWho = pTarget;
-                arrow.setStats(pTarget.stats);
+                Projectile arrow = EffectsLibrary.spawnProjectile("arrow", newPoint2, newPoint, fromActor.getZ());
+                arrow.byWho = fromActor;
+                arrow.setStats(fromActor.stats);
             }
         }
 
