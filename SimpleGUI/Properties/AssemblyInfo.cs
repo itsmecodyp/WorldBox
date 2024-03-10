@@ -8,6 +8,6 @@ using System.Resources;
 //      Minor Version
 //      MoreMinor Version
 //      Build/Revision
-[assembly: AssemblyVersion("1.8.3.0")]
-[assembly: AssemblyFileVersion("1.8.3.0")]
+[assembly: AssemblyVersion("1.8.4.0")]
+[assembly: AssemblyFileVersion("1.8.4.0")]
 
