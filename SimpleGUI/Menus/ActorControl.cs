@@ -355,7 +355,7 @@ namespace SimplerGUI.Menus
             if (isOverridingSpawnCount) GUI.backgroundColor = Color.green;
             else GUI.backgroundColor = Color.red;
             if(GUILayout.Button("Override wave spawn")) { isOverridingSpawnCount = !isOverridingSpawnCount; }
-            creaturesToSpawnOverride = (int)GUILayout.HorizontalSlider(creaturesToSpawnOverride, 0f, 100f);
+            creaturesToSpawnOverride = (int)GUILayout.HorizontalSlider(creaturesToSpawnOverride, 0f, 500f);
             if (survivorActive) GUI.backgroundColor = Color.green;
             else GUI.backgroundColor = Color.red;
             if (GUILayout.Button("Start") && !survivorActive)
@@ -436,13 +436,47 @@ namespace SimplerGUI.Menus
             if (__instance == controlledActorSc && validEnemyTargets.Contains(pDeadUnit))
             {
                 enemyKills++;
-                if (controlledActorSc.hasTrait("death_arrow")) // do this before multiply so multiplied units arent targeted
+                if (controlledActorSc.hasTrait("death_arrow") && Toolbox.randomChance(0.1f)) // do this before multiply so multiplied units arent targeted
                 {
                     //1 sec = 1, 60 sec = 3, 180sec = 7
                     for (int i = 0; i < (1 + ((int)timeSurvivedSoFar / 30)); i++)
                     {
                         Actor validTarget = validEnemyTargets.GetRandom();
-                        shootAtTile(controlledActorSc, validTarget.currentTile);
+                        shootAtTile(controlledActorSc, validTarget.currentTile, "arrow");
+                    }
+                }
+                if (controlledActorSc.hasTrait("death_bomb") && Toolbox.randomChance(0.1f)) // do this before multiply so multiplied units arent targeted
+                {
+                    //1 sec = 1, 60 sec = 2?, 180sec = 3
+                    for (int i = 0; i < (1 + ((int)timeSurvivedSoFar / 90)); i++)
+                    {
+                        Actor validTarget = validEnemyTargets.GetRandom();
+                        shootAtTile(controlledActorSc, validTarget.currentTile, "firebomb");
+                    }
+                }
+                //spawn unit x amount of times, increasing scale
+                if (pDeadUnit.hasTrait("death_undying"))
+                {
+                    int deathsSoFar = 0;
+                    if(pDeadUnit.data.custom_data_int.TryGetValue("deaths", out int deathCount) == true)
+                    {
+                        deathsSoFar = deathCount;
+                    }
+                    if(deathsSoFar < 5)
+                    {
+                        Actor newMonster = MapBox.instance.units.createNewUnit(pDeadUnit.asset.id, pDeadUnit.currentTile.neighboursAll.GetRandom().neighboursAll.GetRandom(), 5f);
+                        validEnemyTargets.Add(newMonster);
+                        ActorTrait customTrait = new ActorTrait(); // create trait that applies "balanced" stats
+                        customTrait.id = "customT" + pDeadUnit.asset.id + "undying";
+                        customTrait.base_stats = IntendedStats(AssetManager.actor_library.get(pDeadUnit.asset.id).base_stats, deathsSoFar); //scale
+                        AssetManager.traits.add(customTrait); // constant update and replace
+                        newMonster.data.removeTrait("peaceful");
+                        newMonster.addTrait(customTrait.id);
+                        newMonster.addTrait("survivor_enemy");
+                        newMonster.addTrait("death_undying");
+                        //newMonster.setData(pDeadUnit.data);
+                        newMonster.data.set("deaths", deathsSoFar);
+                        newMonster.updateStats();
                     }
                 }
                 if (pDeadUnit.hasTrait("death_multiply"))
@@ -454,7 +488,7 @@ namespace SimplerGUI.Menus
                         validEnemyTargets.Add(newMonster);
                         ActorTrait customTrait = new ActorTrait(); // create trait that applies "balanced" stats
                         customTrait.id = "customT" + pDeadUnit.asset.id;
-                        customTrait.base_stats = IntendedStats(AssetManager.actor_library.get(pDeadUnit.asset.id).base_stats); // newMonster.curStats
+                        customTrait.base_stats = IntendedStats(AssetManager.actor_library.get(pDeadUnit.asset.id).base_stats); //multiply
                         AssetManager.traits.add(customTrait); // constant update and replace
                         newMonster.data.removeTrait("peaceful");
                         newMonster.addTrait(customTrait.id);
@@ -506,6 +540,15 @@ namespace SimplerGUI.Menus
                     timeSurviveStarted = 0f;
                     GuiMain.Other.disableLevelCap = wasLevelCapDisabled;
                     wasLevelCapDisabled = false;
+
+                    for (int x = 0; x < AssetManager.traits.list.Count; x++)
+                    {
+                        ActorTrait trait = AssetManager.traits.list[x];
+                        if (trait.id.Contains("customT"))
+                        {
+                            AssetManager.traits.list.Remove(trait);
+                        }
+                    }
                 }
                 else
                 {
@@ -530,6 +573,18 @@ namespace SimplerGUI.Menus
             //survivorEnemy.action_special_effect = new WorldAction(SurvivorAction);
             AssetManager.traits.add(death_arrow);
 
+            ActorTrait death_bomb = new ActorTrait();
+            death_bomb.id = "death_bomb";
+            death_bomb.path_icon = "ui/Icons/iconGreedy";
+            //survivorEnemy.action_special_effect = new WorldAction(SurvivorAction);
+            AssetManager.traits.add(death_bomb);
+
+            ActorTrait death_undying = new ActorTrait();
+            death_undying.id = "death_undying";
+            death_undying.path_icon = "ui/Icons/iconGreedy";
+            //survivorEnemy.action_special_effect = new WorldAction(SurvivorAction);
+            AssetManager.traits.add(death_undying);
+
             ActorTrait death_multiply = new ActorTrait();
             death_multiply.id = "death_multiply";
             death_multiply.path_icon = "ui/Icons/iconGreedy";
@@ -541,13 +596,15 @@ namespace SimplerGUI.Menus
         public static int difficultyScaling = 10; // higher = easier
         public static int difficultyHealth => (int)timeSurvivedSoFar / difficultyScaling; // 5 = 10 seconds = +2hp, 120seconds = +24, 600sec = +120 etc
 
-        public static BaseStats IntendedStats(BaseStats original)
+        public static BaseStats IntendedStats(BaseStats original, float scale = 1)
         {
             int intendedHealth = difficultyHealth;
             BaseStats returnBaseStats = new BaseStats();
 
-            returnBaseStats["health"] = 1 + (intendedHealth - original["health"]);
-            returnBaseStats["damage"] = 2 + (intendedHealth - original["damage"]);
+            returnBaseStats["health"] = (scale * 1 + (intendedHealth - original["health"]));
+            returnBaseStats["damage"] = (scale * 2 + (intendedHealth - original["damage"]));
+            //am i stupid
+            returnBaseStats["scale"] = -0.25f + (scale * 0.25f);
             return returnBaseStats;
         }
 
@@ -559,7 +616,7 @@ namespace SimplerGUI.Menus
 
         public int creaturesToActuallySpawn()
         {
-            if (creaturesToSpawnOverride != 0)
+            if (isOverridingSpawnCount && creaturesToSpawnOverride != 0)
             {
                 return creaturesToSpawnOverride;
             }
@@ -601,7 +658,7 @@ namespace SimplerGUI.Menus
                             validEnemyTargets.Add(newMonster);
                             ActorTrait customTrait = new ActorTrait(); // create trait that applies "balanced" stats
                             customTrait.id = "customT" + monsterID;
-                            customTrait.base_stats = IntendedStats(AssetManager.actor_library.get(monsterID).base_stats); // newMonster.curStats
+                            customTrait.base_stats = IntendedStats(AssetManager.actor_library.get(monsterID).base_stats); // newMonster
                             if (bossesToSpawn > 0)
                             {
                                 customTrait.id = "customT" + monsterID + "Boss";
@@ -618,6 +675,18 @@ namespace SimplerGUI.Menus
                             if (Toolbox.randomChance(0.05f))
                             {
                                 newMonster.addTrait("death_multiply");
+                            }
+                            if (Toolbox.randomChance(0.05f))
+                            {
+                                newMonster.addTrait("death_undying");
+                            }
+                            if (Toolbox.randomChance(0.01f) && controlledActorSc.hasTrait("death_bomb") == false)
+                            {
+                                controlledActorSc.addTrait("death_bomb");
+                            }
+                            if (Toolbox.randomChance(0.01f) && controlledActorSc.hasTrait("death_arrow") == false)
+                            {
+                                controlledActorSc.addTrait("death_arrow");
                             }
                             newMonster.updateStats();
                         }
@@ -678,7 +747,7 @@ namespace SimplerGUI.Menus
             return true;
         }
 
-        public static void shootAtTile(BaseSimObject fromActor, WorldTile toTile)
+        public static void shootAtTile(BaseSimObject fromActor, WorldTile toTile, string projectileID)
         {
             if(toTile != null)
             {
@@ -687,7 +756,7 @@ namespace SimplerGUI.Menus
                 Vector3 newPoint = Toolbox.getNewPoint(fromActor.currentPosition.x, fromActor.currentPosition.y, (float)pos.x, (float)pos.y, num, true);
                 Vector3 newPoint2 = Toolbox.getNewPoint(fromActor.currentPosition.x, fromActor.currentPosition.y, (float)pos.x, (float)pos.y, fromActor.a.stats[S.size], true);
                 newPoint2.y += 0.5f;
-                Projectile arrow = EffectsLibrary.spawnProjectile("arrow", newPoint2, newPoint, fromActor.getZ());
+                Projectile arrow = EffectsLibrary.spawnProjectile(projectileID, newPoint2, newPoint, fromActor.getZ());
                 arrow.byWho = fromActor;
                 arrow.setStats(fromActor.stats);
             }
