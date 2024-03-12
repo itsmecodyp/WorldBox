@@ -275,13 +275,35 @@ namespace SimplerGUI.Submods.MapSizes {
 
         public void mapSizesWindow(int windowID)
         {
-            if (GUILayout.Button("Generate new map"))
+            GUILayout.BeginHorizontal();
+            if (GUILayout.Button("Generate new"))
             {
                 hasFinishedLoading = false;
                 intentionallyChangingMapSize = true;
                 WhyDoINeedThis.ChangeConfig(smallIslands, randomShapes);
                 MapBox.instance.generateNewMap(false); // was clickgenerate
             }
+            //should only be allowed on sizes bigger than current map
+            if(GUILayout.Button("Resize"))
+            {
+                CopyMapTest();
+                hasFinishedLoading = false;
+                intentionallyChangingMapSize = true;
+                WhyDoINeedThis.ChangeConfig(smallIslands, randomShapes);
+                MapBox.instance.generateNewMap(false); // was clickgenerate
+                SmoothLoader.add(delegate
+                {
+                    foreach (WorldTile tile in MapBox.instance.tilesList)
+                    {
+                        MapAction.terraformMain(tile, TileLibrary.deep_ocean);
+                    }
+                }, "gen: Clear map", false);
+                SmoothLoader.add(delegate
+                {
+                    PasteMapTest();
+                }, "gen: Paste map", false);
+            }
+            GUILayout.EndHorizontal();
             GUILayout.BeginHorizontal();
             GUILayout.Button("Map size x: " + mapSizeX.ToString());
             GUILayout.Button("Map size y: " + mapSizeY.ToString());
@@ -350,11 +372,8 @@ namespace SimplerGUI.Submods.MapSizes {
             {
                 showCustomTemplateWindow = !showCustomTemplateWindow;
             }
-            */
+           
 
-            if(GUILayout.Button("Test"))
-            {
-            }
             if (GUILayout.Button("CopyMap"))
             {
                 CopyMapTest();
@@ -371,6 +390,7 @@ namespace SimplerGUI.Submods.MapSizes {
                     MapAction.terraformMain(tile, TileLibrary.deep_ocean);
                 }
             }
+             */
             GUI.DragWindow();
         }
 
@@ -397,6 +417,7 @@ namespace SimplerGUI.Submods.MapSizes {
         public void CopyMapTest()
         {
             buildingDict = new Dictionary<Vector2Int, BuildingData>();
+            tileTypeDict = new Dictionary<Vector2Int, TileTypeData>();
             for (int x = 0; x < MapBox.width; x++)
             {
                 for (int y = 0; y < MapBox.height; y++)
