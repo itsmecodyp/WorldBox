@@ -1,4 +1,0 @@
-﻿namespace CustomBlackjack {
-	class Slot {
-	}
-}
