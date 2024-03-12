@@ -154,6 +154,28 @@ namespace BodySnatchers
             int xOffset = 0;
             int yOffset = 0;
 
+            if (ActorControlMain.isJoyEnabled)
+            {
+                float verticalAxis = UltimateJoystick.GetVerticalAxis("JoyRight");
+                float horizontalAxis = UltimateJoystick.GetHorizontalAxis("JoyRight");
+                if(verticalAxis > 0.1f)
+                {
+                    yOffset++;
+                }
+                if (verticalAxis < -0.1f)
+                {
+                    yOffset--;
+                }
+                if (horizontalAxis > 0.1f)
+                {
+                    xOffset++;
+                }
+                if (horizontalAxis < -0.1f)
+                {
+                    xOffset--;
+                }
+            }
+
             if (Input.GetKey(KeyCode.W))
             {
                 yOffset++;

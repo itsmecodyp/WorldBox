@@ -101,8 +101,26 @@ namespace SimplerGUI.Menus
             {
                 showSurvivorWindow = !showSurvivorWindow;
             }
+            if (GUILayout.Button("JoyTest: " + isJoyEnabled.ToString()))
+            {
+                isJoyEnabled = !isJoyEnabled;
+                if (isJoyEnabled)
+                {
+                    World.world.joys.SetActive(true);//UltimateJoystick.EnableJoystick("JoyLeft");
+                }
+                else
+                {
+                    World.world.joys.SetActive(false);//UltimateJoystick.DisableJoystick("JoyLeft");
+                }
+                UltimateJoystick.ResetJoysticks();
+                UltimateJoystick.DisableJoystick("JoyLeft");
+                UltimateJoystick.EnableJoystick("JoyRight");
+
+            }
             GUI.DragWindow();
         }
+
+        public static bool isJoyEnabled;
 
         public void actorSingleActionWindow(int windowID)
         {
@@ -436,7 +454,7 @@ namespace SimplerGUI.Menus
             if (__instance == controlledActorSc && validEnemyTargets.Contains(pDeadUnit))
             {
                 enemyKills++;
-                if (controlledActorSc.hasTrait("death_arrow") && Toolbox.randomChance(0.1f)) // do this before multiply so multiplied units arent targeted
+                if (controlledActorSc.hasTrait("death_arrow") && Toolbox.randomChance(0.1f))
                 {
                     //1 sec = 1, 60 sec = 3, 180sec = 7
                     for (int i = 0; i < (1 + ((int)timeSurvivedSoFar / 30)); i++)
@@ -445,7 +463,7 @@ namespace SimplerGUI.Menus
                         shootAtTile(controlledActorSc, validTarget.currentTile, "arrow");
                     }
                 }
-                if (controlledActorSc.hasTrait("death_bomb") && Toolbox.randomChance(0.1f)) // do this before multiply so multiplied units arent targeted
+                if (controlledActorSc.hasTrait("death_bomb") && Toolbox.randomChance(0.1f))
                 {
                     //1 sec = 1, 60 sec = 2?, 180sec = 3
                     for (int i = 0; i < (1 + ((int)timeSurvivedSoFar / 90)); i++)
@@ -457,25 +475,27 @@ namespace SimplerGUI.Menus
                 //spawn unit x amount of times, increasing scale
                 if (pDeadUnit.hasTrait("death_undying"))
                 {
-                    int deathsSoFar = 0;
-                    if(pDeadUnit.data.custom_data_int.TryGetValue("deaths", out int deathCount) == true)
+                    int deathsSoFar = 1;
+                    if(pDeadUnit.data.custom_data_int != null && pDeadUnit.data.custom_data_int.TryGetValue("deaths", out int deathCount) == true)
                     {
-                        deathsSoFar = deathCount;
+                        deathsSoFar = deathCount + 1;
                     }
                     if(deathsSoFar < 5)
                     {
-                        Actor newMonster = MapBox.instance.units.createNewUnit(pDeadUnit.asset.id, pDeadUnit.currentTile.neighboursAll.GetRandom().neighboursAll.GetRandom(), 5f);
+                        //all of this is the same as "default" enemy creations, except death_undying trait and death counter data
+                        Actor newMonster = MapBox.instance.units.createNewUnit(pDeadUnit.asset.id, pDeadUnit.currentTile.neighboursAll.GetRandom().neighboursAll.GetRandom(), 0f);
                         validEnemyTargets.Add(newMonster);
-                        ActorTrait customTrait = new ActorTrait(); // create trait that applies "balanced" stats
+                        ActorTrait customTrait = new ActorTrait();
                         customTrait.id = "customT" + pDeadUnit.asset.id + "undying";
-                        customTrait.base_stats = IntendedStats(AssetManager.actor_library.get(pDeadUnit.asset.id).base_stats, deathsSoFar); //scale
-                        AssetManager.traits.add(customTrait); // constant update and replace
+                        customTrait.base_stats = IntendedStats(AssetManager.actor_library.get(pDeadUnit.asset.id).base_stats, deathsSoFar); //scaling up with deaths
+                        AssetManager.traits.add(customTrait);
                         newMonster.data.removeTrait("peaceful");
                         newMonster.addTrait(customTrait.id);
                         newMonster.addTrait("survivor_enemy");
+                        
                         newMonster.addTrait("death_undying");
-                        //newMonster.setData(pDeadUnit.data);
                         newMonster.data.set("deaths", deathsSoFar);
+
                         newMonster.updateStats();
                     }
                 }
@@ -603,7 +623,7 @@ namespace SimplerGUI.Menus
 
             returnBaseStats["health"] = (scale * 1 + (intendedHealth - original["health"]));
             returnBaseStats["damage"] = (scale * 2 + (intendedHealth - original["damage"]));
-            //am i stupid
+
             returnBaseStats["scale"] = -0.25f + (scale * 0.25f);
             return returnBaseStats;
         }
@@ -722,8 +742,6 @@ namespace SimplerGUI.Menus
             {
                 return false;
             }
-
-
             return true;
         }
 
