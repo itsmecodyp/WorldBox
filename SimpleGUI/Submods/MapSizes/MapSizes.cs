@@ -376,11 +376,18 @@ namespace SimplerGUI.Submods.MapSizes {
 
         //key: tile position, value, tiletype
         public Dictionary<Vector2Int, TileTypeData> tileTypeDict = new Dictionary<Vector2Int, TileTypeData>();
+        public Dictionary<Vector2Int, BuildingData> buildingDict = new Dictionary<Vector2Int, BuildingData>();
 
         public class TileTypeData
         {
             public TileType tiletype;
             public TopTileType toptype;
+        }
+
+        public class BuildingData
+        {
+            public string buildingType;
+            //kingdoms? extra data?
         }
 
         public Vector2Int copiedCenterPos;
@@ -389,11 +396,22 @@ namespace SimplerGUI.Submods.MapSizes {
 
         public void CopyMapTest()
         {
+            buildingDict = new Dictionary<Vector2Int, BuildingData>();
             for (int x = 0; x < MapBox.width; x++)
             {
                 for (int y = 0; y < MapBox.height; y++)
                 {
                     WorldTile tile = MapBox.instance.tilesMap[x, y];
+
+                    if(tile.building != null)
+                    {
+                        //for now we only copy non-civ buildings since we dont take kingdoms or units
+                        if (tile.building.isCiv() == false)
+                        {
+                            buildingDict.Add(new Vector2Int(x, y), new BuildingData() { buildingType = tile.building.asset.id });
+                        }
+                    }
+
                     TileTypeData newTypeData = new TileTypeData();
                     if(tile.top_type != null)
                     {
@@ -440,6 +458,10 @@ namespace SimplerGUI.Submods.MapSizes {
                     {
                         MapAction.terraformMain(tileTarget, tileData.tiletype);
                     }
+                    if (buildingDict.ContainsKey(targetPos1))
+                    {
+                        MapBox.instance.buildings.addBuilding(buildingDict[targetPos1].buildingType, tileTarget, false, false, BuildPlacingType.New);
+                    }
                 }
             }
             for (int x = 0; x > -copiedCenterPos.x; x--)
@@ -459,6 +481,10 @@ namespace SimplerGUI.Submods.MapSizes {
                     else
                     {
                         MapAction.terraformMain(tileTarget, tileData.tiletype);
+                    }
+                    if (buildingDict.ContainsKey(targetPos1))
+                    {
+                        MapBox.instance.buildings.addBuilding(buildingDict[targetPos1].buildingType, tileTarget, false, false, BuildPlacingType.New);
                     }
                 }
             }
@@ -480,6 +506,10 @@ namespace SimplerGUI.Submods.MapSizes {
                     {
                         MapAction.terraformMain(tileTarget, tileData.tiletype);
                     }
+                    if (buildingDict.ContainsKey(targetPos1))
+                    {
+                        MapBox.instance.buildings.addBuilding(buildingDict[targetPos1].buildingType, tileTarget, false, false, BuildPlacingType.New);
+                    }
                 }
             }
             for (int x = 0; x > -copiedCenterPos.x; x--)
@@ -499,6 +529,10 @@ namespace SimplerGUI.Submods.MapSizes {
                     else
                     {
                         MapAction.terraformMain(tileTarget, tileData.tiletype);
+                    }
+                    if (buildingDict.ContainsKey(targetPos1))
+                    {
+                        MapBox.instance.buildings.addBuilding(buildingDict[targetPos1].buildingType, tileTarget, false, false, BuildPlacingType.New);
                     }
                 }
             }
