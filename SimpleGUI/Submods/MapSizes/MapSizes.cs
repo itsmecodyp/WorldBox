@@ -6,6 +6,7 @@ using System.Reflection;
 using Amazon.Runtime.Internal.Transform;
 using BepInEx;
 using BepInEx.Configuration;
+using Discord;
 using HarmonyLib;
 using OpenAI_API;
 using UnityEngine;
@@ -350,8 +351,159 @@ namespace SimplerGUI.Submods.MapSizes {
                 showCustomTemplateWindow = !showCustomTemplateWindow;
             }
             */
+
+            if(GUILayout.Button("Test"))
+            {
+            }
+            if (GUILayout.Button("CopyMap"))
+            {
+                CopyMapTest();
+            }
+            if (GUILayout.Button("PasteMap"))
+            {
+                PasteMapTest();
+            }
+
+            if (GUILayout.Button("Clear"))
+            {
+                foreach(WorldTile tile in MapBox.instance.tilesList)
+                {
+                    MapAction.terraformMain(tile, TileLibrary.deep_ocean);
+                }
+            }
             GUI.DragWindow();
         }
+
+        //key: tile position, value, tiletype
+        public Dictionary<Vector2Int, TileTypeData> tileTypeDict = new Dictionary<Vector2Int, TileTypeData>();
+
+        public class TileTypeData
+        {
+            public TileType tiletype;
+            public TopTileType toptype;
+        }
+
+        public Vector2Int copiedCenterPos;
+        public Vector2Int oldHeight => copiedCenterPos * 2;
+
+
+        public void CopyMapTest()
+        {
+            for (int x = 0; x < MapBox.width; x++)
+            {
+                for (int y = 0; y < MapBox.height; y++)
+                {
+                    WorldTile tile = MapBox.instance.tilesMap[x, y];
+                    TileTypeData newTypeData = new TileTypeData();
+                    if(tile.top_type != null)
+                    {
+                        newTypeData.toptype = tile.top_type;
+                    }
+                    newTypeData.tiletype = tile.main_type;
+                    tileTypeDict.Add(new Vector2Int(x, y), newTypeData);
+                }
+            }
+            copiedCenterPos = new Vector2Int(MapBox.width / 2, MapBox.height / 2);
+        }
+
+        //paste map starting from the center, so new map size is used to the max
+        public void PasteMapTest()
+        {
+            Vector2Int newCenterPos = new Vector2Int(MapBox.width / 2, MapBox.height / 2);
+
+            TileTypeData centerData = tileTypeDict[copiedCenterPos];
+            if(centerData.toptype != null)
+            {
+                MapAction.terraformTop(MapBox.instance.GetTile(newCenterPos.x, newCenterPos.y), centerData.toptype);
+            }
+            else
+            {
+                MapAction.terraformMain(MapBox.instance.GetTile(newCenterPos.x, newCenterPos.y), centerData.tiletype);
+            }
+            //copiedCenterPos has half the width/height of the old copied map
+            //can use it to also paste positive half, negative half, etc from center
+            for (int x = 0; x < copiedCenterPos.x; x++)
+            {
+                for (int y = 0; y < copiedCenterPos.y; y++)
+                {
+                    //pos1 is for referencing old data, pos2 for the new tile location
+                    Vector2Int targetPos1 = copiedCenterPos + new Vector2Int(x, y);
+                    Vector2Int targetPos2 = newCenterPos + new Vector2Int(x, y);
+
+                    WorldTile tileTarget = MapBox.instance.GetTile(targetPos2.x, targetPos2.y);
+                    TileTypeData tileData = tileTypeDict[targetPos1];
+                    if (tileData.toptype != null)
+                    {
+                        MapAction.terraformTop(tileTarget, tileData.toptype);
+                    }
+                    else
+                    {
+                        MapAction.terraformMain(tileTarget, tileData.tiletype);
+                    }
+                }
+            }
+            for (int x = 0; x > -copiedCenterPos.x; x--)
+            {
+                for (int y = 0; y > -copiedCenterPos.y; y--)
+                {
+                    //pos1 is for referencing old data, pos2 for the new tile location
+                    Vector2Int targetPos1 = copiedCenterPos + new Vector2Int(x, y);
+                    Vector2Int targetPos2 = newCenterPos + new Vector2Int(x, y);
+
+                    WorldTile tileTarget = MapBox.instance.GetTile(targetPos2.x, targetPos2.y);
+                    TileTypeData tileData = tileTypeDict[targetPos1];
+                    if (tileData.toptype != null)
+                    {
+                        MapAction.terraformTop(tileTarget, tileData.toptype);
+                    }
+                    else
+                    {
+                        MapAction.terraformMain(tileTarget, tileData.tiletype);
+                    }
+                }
+            }
+            for (int x = 0; x < copiedCenterPos.x; x++)
+            {
+                for (int y = 0; y > -copiedCenterPos.y; y--)
+                {
+                    //pos1 is for referencing old data, pos2 for the new tile location
+                    Vector2Int targetPos1 = copiedCenterPos + new Vector2Int(x, y);
+                    Vector2Int targetPos2 = newCenterPos + new Vector2Int(x, y);
+
+                    WorldTile tileTarget = MapBox.instance.GetTile(targetPos2.x, targetPos2.y);
+                    TileTypeData tileData = tileTypeDict[targetPos1];
+                    if (tileData.toptype != null)
+                    {
+                        MapAction.terraformTop(tileTarget, tileData.toptype);
+                    }
+                    else
+                    {
+                        MapAction.terraformMain(tileTarget, tileData.tiletype);
+                    }
+                }
+            }
+            for (int x = 0; x > -copiedCenterPos.x; x--)
+            {
+                for (int y = 0; y < copiedCenterPos.y; y++)
+                {
+                    //pos1 is for referencing old data, pos2 for the new tile location
+                    Vector2Int targetPos1 = copiedCenterPos + new Vector2Int(x, y);
+                    Vector2Int targetPos2 = newCenterPos + new Vector2Int(x, y);
+
+                    WorldTile tileTarget = MapBox.instance.GetTile(targetPos2.x, targetPos2.y);
+                    TileTypeData tileData = tileTypeDict[targetPos1];
+                    if (tileData.toptype != null)
+                    {
+                        MapAction.terraformTop(tileTarget, tileData.toptype);
+                    }
+                    else
+                    {
+                        MapAction.terraformMain(tileTarget, tileData.tiletype);
+                    }
+                }
+            }
+        }
+
 
         public GameObject testObjectFor2Worlds;
      
