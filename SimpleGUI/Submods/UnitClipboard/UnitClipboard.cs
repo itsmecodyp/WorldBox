@@ -34,14 +34,15 @@ namespace SimplerGUI.Submods.UnitClipboard {
 
         public static Actor PasteUnit(WorldTile targetTile, UnitData unitData)
         {
-            if (targetTile != null)
+            WorldTile tTile = targetTile;
+            if (tTile != null)
             {
                 if (unitData == null)
                 {
                     Debug.Log("Unit data on pasted unit was null, returning");
                     return null;
                 }
-                Actor pastedUnit = MapBox.instance.units.createNewUnit(unitData.statsID, targetTile);
+                Actor pastedUnit = MapBox.instance.units.createNewUnit(unitData.statsID, tTile);
                 if (pastedUnit != null)
                 {
                     if (pastedUnit.data.traits != null && pastedUnit.data.traits.Count >= 1)
@@ -182,15 +183,20 @@ namespace SimplerGUI.Submods.UnitClipboard {
             if (unitClipboardDict.Count >= 1) {
                 for(int i = 0; i < unitClipboardDict.Count(); i++) {
                     if(unitClipboardDict.ContainsKey(i.ToString())) {
-                        GUILayout.BeginHorizontal();
-                        if(GUILayout.Button(unitClipboardDict[i.ToString()].data.name)) {
-                            selectedUnitToPaste = unitClipboardDict[i.ToString()];
-                        }
-                        if (GUILayout.Button("x", new GUILayoutOption[] { GUILayout.Width(20f), GUILayout.MaxWidth(20f) }))
+                        UnitData data = unitClipboardDict[i.ToString()];
+                        if(data.isForResize == false)
                         {
-                            unitClipboardDict.Remove(i.ToString());
+                            GUILayout.BeginHorizontal();
+                            if (GUILayout.Button(data.data.name))
+                            {
+                                selectedUnitToPaste = data;
+                            }
+                            if (GUILayout.Button("x", new GUILayoutOption[] { GUILayout.Width(20f), GUILayout.MaxWidth(20f) }))
+                            {
+                                unitClipboardDict.Remove(i.ToString());
+                            }
+                            GUILayout.EndHorizontal();
                         }
-                        GUILayout.EndHorizontal();
                     }
                 }
                 GUILayout.BeginHorizontal();
@@ -288,7 +294,7 @@ namespace SimplerGUI.Submods.UnitClipboard {
             }
         }
 
-        public static void CopyUnit(Actor targetActor)
+        public static void CopyUnit(Actor targetActor, bool isForResize = false)
         {
             if(targetActor != null) {
                 ActorData data = targetActor.data;
@@ -331,7 +337,14 @@ namespace SimplerGUI.Submods.UnitClipboard {
                 };
                 newSavedUnit.customData = targetActor.data;
                 newSavedUnit.data = data0;
+                newSavedUnit.dictInt = unitClipboardDictNum;
                 unitClipboardDict.Add(unitClipboardDictNum.ToString(), newSavedUnit);
+                newSavedUnit.oldPos = targetActor.currentTile.pos;
+                if(actorPositionsOnMap.ContainsKey(targetActor.currentTile.pos) == false)
+                {
+                    actorPositionsOnMap.Add(targetActor.currentTile.pos, unitClipboardDictNum);
+                }
+                newSavedUnit.isForResize = isForResize;
                 unitClipboardDictNum++;
                 selectedUnitToPaste = newSavedUnit;
                 ActorInteraction.lastSelected = targetActor;
@@ -339,6 +352,8 @@ namespace SimplerGUI.Submods.UnitClipboard {
             }
 
         }
+
+        public static Dictionary<Vector2Int, int> actorPositionsOnMap = new Dictionary<Vector2Int, int>();
 
         public static int unitClipboardDictNum;
 
@@ -350,6 +365,9 @@ namespace SimplerGUI.Submods.UnitClipboard {
             public ActorEquipment equipment;
             public ActorData data;
             public BaseObjectData customData;
+            public int dictInt;
+            public bool isForResize;
+            public Vector2Int oldPos;
         }
 
         public void HarmonyPatchSetup()

@@ -1,14 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Amazon.Runtime.Internal.Transform;
 using BepInEx;
-using BepInEx.Configuration;
-using Discord;
 using HarmonyLib;
-using OpenAI_API;
 using UnityEngine;
 
 namespace SimplerGUI.Submods.MapSizes {
@@ -16,7 +10,7 @@ namespace SimplerGUI.Submods.MapSizes {
 	public class MapSizes : BaseUnityPlugin {
         public const string pluginGuid = "cody.worldbox.map.sizes";
         public const string pluginName = "MapSizes";
-        public const string pluginVersion = "0.0.0.6";
+        public const string pluginVersion = "0.0.0.7";
         public static int mapSizeX = 4;
         public static int mapSizeY = 4;
 
@@ -416,6 +410,12 @@ namespace SimplerGUI.Submods.MapSizes {
 
         public void CopyMapTest()
         {
+            UnitClipboard.UnitClipboard_Main.actorPositionsOnMap = new Dictionary<Vector2Int, int>();
+            foreach (Actor actor in MapBox.instance.units.ToList())
+            {
+                UnitClipboard.UnitClipboard_Main.CopyUnit(actor, true);
+            }
+
             buildingDict = new Dictionary<Vector2Int, BuildingData>();
             tileTypeDict = new Dictionary<Vector2Int, TileTypeData>();
             for (int x = 0; x < MapBox.width; x++)
@@ -470,6 +470,7 @@ namespace SimplerGUI.Submods.MapSizes {
                     Vector2Int targetPos2 = newCenterPos + new Vector2Int(x, y);
 
                     WorldTile tileTarget = MapBox.instance.GetTile(targetPos2.x, targetPos2.y);
+
                     TileTypeData tileData = tileTypeDict[targetPos1];
                     if (tileData.toptype != null)
                     {
@@ -482,6 +483,13 @@ namespace SimplerGUI.Submods.MapSizes {
                     if (buildingDict.ContainsKey(targetPos1))
                     {
                         MapBox.instance.buildings.addBuilding(buildingDict[targetPos1].buildingType, tileTarget, false, false, BuildPlacingType.New);
+                    }
+
+                    if (UnitClipboard.UnitClipboard_Main.actorPositionsOnMap.ContainsKey(targetPos1))
+                    {
+                        Debug.Log("found tile on resized map to paste unit on");
+                        int dictint = UnitClipboard.UnitClipboard_Main.actorPositionsOnMap[targetPos1];
+                        UnitClipboard.UnitClipboard_Main.PasteUnit(tileTarget, UnitClipboard.UnitClipboard_Main.unitClipboardDict[dictint.ToString()]);
                     }
                 }
             }
@@ -506,6 +514,13 @@ namespace SimplerGUI.Submods.MapSizes {
                     if (buildingDict.ContainsKey(targetPos1))
                     {
                         MapBox.instance.buildings.addBuilding(buildingDict[targetPos1].buildingType, tileTarget, false, false, BuildPlacingType.New);
+                    }
+
+                    if (UnitClipboard.UnitClipboard_Main.actorPositionsOnMap.ContainsKey(targetPos1))
+                    {
+                        Debug.Log("found tile on resized map to paste unit on");
+                        int dictint = UnitClipboard.UnitClipboard_Main.actorPositionsOnMap[targetPos1];
+                        UnitClipboard.UnitClipboard_Main.PasteUnit(tileTarget, UnitClipboard.UnitClipboard_Main.unitClipboardDict[dictint.ToString()]);
                     }
                 }
             }
@@ -531,6 +546,13 @@ namespace SimplerGUI.Submods.MapSizes {
                     {
                         MapBox.instance.buildings.addBuilding(buildingDict[targetPos1].buildingType, tileTarget, false, false, BuildPlacingType.New);
                     }
+
+                    if (UnitClipboard.UnitClipboard_Main.actorPositionsOnMap.ContainsKey(targetPos1))
+                    {
+                        Debug.Log("found tile on resized map to paste unit on");
+                        int dictint = UnitClipboard.UnitClipboard_Main.actorPositionsOnMap[targetPos1];
+                        UnitClipboard.UnitClipboard_Main.PasteUnit(tileTarget, UnitClipboard.UnitClipboard_Main.unitClipboardDict[dictint.ToString()]);
+                    }
                 }
             }
             for (int x = 0; x > -copiedCenterPos.x; x--)
@@ -554,6 +576,13 @@ namespace SimplerGUI.Submods.MapSizes {
                     if (buildingDict.ContainsKey(targetPos1))
                     {
                         MapBox.instance.buildings.addBuilding(buildingDict[targetPos1].buildingType, tileTarget, false, false, BuildPlacingType.New);
+                    }
+
+                    if (UnitClipboard.UnitClipboard_Main.actorPositionsOnMap.ContainsKey(targetPos1))
+                    {
+                        Debug.Log("found tile on resized map to paste unit on");
+                        int dictint = UnitClipboard.UnitClipboard_Main.actorPositionsOnMap[targetPos1];
+                        UnitClipboard.UnitClipboard_Main.PasteUnit(tileTarget, UnitClipboard.UnitClipboard_Main.unitClipboardDict[dictint.ToString()]);
                     }
                 }
             }
