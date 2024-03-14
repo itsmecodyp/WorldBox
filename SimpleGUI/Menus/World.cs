@@ -122,6 +122,7 @@ namespace SimplerGUI.Menus
 
         public List<WorldTile> CheckTilesBetween2(WorldTile target1, WorldTile target2)
         {
+            if(target1 == null || target2 == null) return null;
             List<WorldTile> tilesToCheck = new List<WorldTile>(); // list for later
             Vector2Int pos1 = target1.pos;
             Vector2Int pos2 = target2.pos;

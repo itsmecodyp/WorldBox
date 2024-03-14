@@ -3,6 +3,7 @@ using System.Linq;
 using System.Reflection;
 using BepInEx;
 using HarmonyLib;
+using SimplerGUI.Menus;
 using UnityEngine;
 
 namespace SimplerGUI.Submods.MapSizes {
@@ -272,6 +273,7 @@ namespace SimplerGUI.Submods.MapSizes {
             GUILayout.BeginHorizontal();
             if (GUILayout.Button("Generate new"))
             {
+                GUIWorld.lastSelectedTiles = null; //bandaid NRE fix
                 hasFinishedLoading = false;
                 intentionallyChangingMapSize = true;
                 WhyDoINeedThis.ChangeConfig(smallIslands, randomShapes);
@@ -280,6 +282,7 @@ namespace SimplerGUI.Submods.MapSizes {
             //should only be allowed on sizes bigger than current map
             if(GUILayout.Button("Resize"))
             {
+                GUIWorld.lastSelectedTiles = null; //bandaird NRE fix
                 CopyMapTest();
                 hasFinishedLoading = false;
                 intentionallyChangingMapSize = true;
@@ -453,11 +456,19 @@ namespace SimplerGUI.Submods.MapSizes {
             TileTypeData centerData = tileTypeDict[copiedCenterPos];
             if(centerData.toptype != null)
             {
-                MapAction.terraformTop(MapBox.instance.GetTile(newCenterPos.x, newCenterPos.y), centerData.toptype);
+                WorldTile tile = MapBox.instance.GetTile(newCenterPos.x, newCenterPos.y);
+                if(tile != null)
+                {
+                    MapAction.terraformTop(tile, centerData.toptype);
+                }
             }
             else
             {
-                MapAction.terraformMain(MapBox.instance.GetTile(newCenterPos.x, newCenterPos.y), centerData.tiletype);
+                WorldTile tile = MapBox.instance.GetTile(newCenterPos.x, newCenterPos.y);
+                if (tile != null)
+                {
+                    MapAction.terraformMain(MapBox.instance.GetTile(newCenterPos.x, newCenterPos.y), centerData.tiletype);
+                }
             }
             //copiedCenterPos has half the width/height of the old copied map
             //can use it to also paste positive half, negative half, etc from center
@@ -470,26 +481,28 @@ namespace SimplerGUI.Submods.MapSizes {
                     Vector2Int targetPos2 = newCenterPos + new Vector2Int(x, y);
 
                     WorldTile tileTarget = MapBox.instance.GetTile(targetPos2.x, targetPos2.y);
+                    if(tileTarget != null)
+                    {
+                        TileTypeData tileData = tileTypeDict[targetPos1];
+                        if (tileData.toptype != null)
+                        {
+                            MapAction.terraformTop(tileTarget, tileData.toptype);
+                        }
+                        else
+                        {
+                            MapAction.terraformMain(tileTarget, tileData.tiletype);
+                        }
+                        if (buildingDict.ContainsKey(targetPos1))
+                        {
+                            MapBox.instance.buildings.addBuilding(buildingDict[targetPos1].buildingType, tileTarget, false, false, BuildPlacingType.New);
+                        }
 
-                    TileTypeData tileData = tileTypeDict[targetPos1];
-                    if (tileData.toptype != null)
-                    {
-                        MapAction.terraformTop(tileTarget, tileData.toptype);
-                    }
-                    else
-                    {
-                        MapAction.terraformMain(tileTarget, tileData.tiletype);
-                    }
-                    if (buildingDict.ContainsKey(targetPos1))
-                    {
-                        MapBox.instance.buildings.addBuilding(buildingDict[targetPos1].buildingType, tileTarget, false, false, BuildPlacingType.New);
-                    }
-
-                    if (UnitClipboard.UnitClipboard_Main.actorPositionsOnMap.ContainsKey(targetPos1))
-                    {
-                        Debug.Log("found tile on resized map to paste unit on");
-                        int dictint = UnitClipboard.UnitClipboard_Main.actorPositionsOnMap[targetPos1];
-                        UnitClipboard.UnitClipboard_Main.PasteUnit(tileTarget, UnitClipboard.UnitClipboard_Main.unitClipboardDict[dictint.ToString()]);
+                        if (UnitClipboard.UnitClipboard_Main.actorPositionsOnMap.ContainsKey(targetPos1))
+                        {
+                            Debug.Log("found tile on resized map to paste unit on");
+                            int dictint = UnitClipboard.UnitClipboard_Main.actorPositionsOnMap[targetPos1];
+                            UnitClipboard.UnitClipboard_Main.PasteUnit(tileTarget, UnitClipboard.UnitClipboard_Main.unitClipboardDict[dictint.ToString()]);
+                        }
                     }
                 }
             }
@@ -502,25 +515,28 @@ namespace SimplerGUI.Submods.MapSizes {
                     Vector2Int targetPos2 = newCenterPos + new Vector2Int(x, y);
 
                     WorldTile tileTarget = MapBox.instance.GetTile(targetPos2.x, targetPos2.y);
-                    TileTypeData tileData = tileTypeDict[targetPos1];
-                    if (tileData.toptype != null)
+                    if (tileTarget != null)
                     {
-                        MapAction.terraformTop(tileTarget, tileData.toptype);
-                    }
-                    else
-                    {
-                        MapAction.terraformMain(tileTarget, tileData.tiletype);
-                    }
-                    if (buildingDict.ContainsKey(targetPos1))
-                    {
-                        MapBox.instance.buildings.addBuilding(buildingDict[targetPos1].buildingType, tileTarget, false, false, BuildPlacingType.New);
-                    }
+                        TileTypeData tileData = tileTypeDict[targetPos1];
+                        if (tileData.toptype != null)
+                        {
+                            MapAction.terraformTop(tileTarget, tileData.toptype);
+                        }
+                        else
+                        {
+                            MapAction.terraformMain(tileTarget, tileData.tiletype);
+                        }
+                        if (buildingDict.ContainsKey(targetPos1))
+                        {
+                            MapBox.instance.buildings.addBuilding(buildingDict[targetPos1].buildingType, tileTarget, false, false, BuildPlacingType.New);
+                        }
 
-                    if (UnitClipboard.UnitClipboard_Main.actorPositionsOnMap.ContainsKey(targetPos1))
-                    {
-                        Debug.Log("found tile on resized map to paste unit on");
-                        int dictint = UnitClipboard.UnitClipboard_Main.actorPositionsOnMap[targetPos1];
-                        UnitClipboard.UnitClipboard_Main.PasteUnit(tileTarget, UnitClipboard.UnitClipboard_Main.unitClipboardDict[dictint.ToString()]);
+                        if (UnitClipboard.UnitClipboard_Main.actorPositionsOnMap.ContainsKey(targetPos1))
+                        {
+                            Debug.Log("found tile on resized map to paste unit on");
+                            int dictint = UnitClipboard.UnitClipboard_Main.actorPositionsOnMap[targetPos1];
+                            UnitClipboard.UnitClipboard_Main.PasteUnit(tileTarget, UnitClipboard.UnitClipboard_Main.unitClipboardDict[dictint.ToString()]);
+                        }
                     }
                 }
             }
@@ -533,25 +549,28 @@ namespace SimplerGUI.Submods.MapSizes {
                     Vector2Int targetPos2 = newCenterPos + new Vector2Int(x, y);
 
                     WorldTile tileTarget = MapBox.instance.GetTile(targetPos2.x, targetPos2.y);
-                    TileTypeData tileData = tileTypeDict[targetPos1];
-                    if (tileData.toptype != null)
+                    if (tileTarget != null)
                     {
-                        MapAction.terraformTop(tileTarget, tileData.toptype);
-                    }
-                    else
-                    {
-                        MapAction.terraformMain(tileTarget, tileData.tiletype);
-                    }
-                    if (buildingDict.ContainsKey(targetPos1))
-                    {
-                        MapBox.instance.buildings.addBuilding(buildingDict[targetPos1].buildingType, tileTarget, false, false, BuildPlacingType.New);
-                    }
+                        TileTypeData tileData = tileTypeDict[targetPos1];
+                        if (tileData.toptype != null)
+                        {
+                            MapAction.terraformTop(tileTarget, tileData.toptype);
+                        }
+                        else
+                        {
+                            MapAction.terraformMain(tileTarget, tileData.tiletype);
+                        }
+                        if (buildingDict.ContainsKey(targetPos1))
+                        {
+                            MapBox.instance.buildings.addBuilding(buildingDict[targetPos1].buildingType, tileTarget, false, false, BuildPlacingType.New);
+                        }
 
-                    if (UnitClipboard.UnitClipboard_Main.actorPositionsOnMap.ContainsKey(targetPos1))
-                    {
-                        Debug.Log("found tile on resized map to paste unit on");
-                        int dictint = UnitClipboard.UnitClipboard_Main.actorPositionsOnMap[targetPos1];
-                        UnitClipboard.UnitClipboard_Main.PasteUnit(tileTarget, UnitClipboard.UnitClipboard_Main.unitClipboardDict[dictint.ToString()]);
+                        if (UnitClipboard.UnitClipboard_Main.actorPositionsOnMap.ContainsKey(targetPos1))
+                        {
+                            Debug.Log("found tile on resized map to paste unit on");
+                            int dictint = UnitClipboard.UnitClipboard_Main.actorPositionsOnMap[targetPos1];
+                            UnitClipboard.UnitClipboard_Main.PasteUnit(tileTarget, UnitClipboard.UnitClipboard_Main.unitClipboardDict[dictint.ToString()]);
+                        }
                     }
                 }
             }
@@ -564,25 +583,28 @@ namespace SimplerGUI.Submods.MapSizes {
                     Vector2Int targetPos2 = newCenterPos + new Vector2Int(x, y);
 
                     WorldTile tileTarget = MapBox.instance.GetTile(targetPos2.x, targetPos2.y);
-                    TileTypeData tileData = tileTypeDict[targetPos1];
-                    if (tileData.toptype != null)
+                    if (tileTarget != null)
                     {
-                        MapAction.terraformTop(tileTarget, tileData.toptype);
-                    }
-                    else
-                    {
-                        MapAction.terraformMain(tileTarget, tileData.tiletype);
-                    }
-                    if (buildingDict.ContainsKey(targetPos1))
-                    {
-                        MapBox.instance.buildings.addBuilding(buildingDict[targetPos1].buildingType, tileTarget, false, false, BuildPlacingType.New);
-                    }
+                        TileTypeData tileData = tileTypeDict[targetPos1];
+                        if (tileData.toptype != null)
+                        {
+                            MapAction.terraformTop(tileTarget, tileData.toptype);
+                        }
+                        else
+                        {
+                            MapAction.terraformMain(tileTarget, tileData.tiletype);
+                        }
+                        if (buildingDict.ContainsKey(targetPos1))
+                        {
+                            MapBox.instance.buildings.addBuilding(buildingDict[targetPos1].buildingType, tileTarget, false, false, BuildPlacingType.New);
+                        }
 
-                    if (UnitClipboard.UnitClipboard_Main.actorPositionsOnMap.ContainsKey(targetPos1))
-                    {
-                        Debug.Log("found tile on resized map to paste unit on");
-                        int dictint = UnitClipboard.UnitClipboard_Main.actorPositionsOnMap[targetPos1];
-                        UnitClipboard.UnitClipboard_Main.PasteUnit(tileTarget, UnitClipboard.UnitClipboard_Main.unitClipboardDict[dictint.ToString()]);
+                        if (UnitClipboard.UnitClipboard_Main.actorPositionsOnMap.ContainsKey(targetPos1))
+                        {
+                            Debug.Log("found tile on resized map to paste unit on");
+                            int dictint = UnitClipboard.UnitClipboard_Main.actorPositionsOnMap[targetPos1];
+                            UnitClipboard.UnitClipboard_Main.PasteUnit(tileTarget, UnitClipboard.UnitClipboard_Main.unitClipboardDict[dictint.ToString()]);
+                        }
                     }
                 }
             }
