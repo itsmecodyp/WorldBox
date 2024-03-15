@@ -3,6 +3,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using static Humanizer.On;
+using UnityEngine.Tilemaps;
 
 #pragma warning disable CS0649
 
@@ -279,11 +281,13 @@ namespace SimplerGUI.Menus
                     if (Input.GetKeyDown(KeyCode.Q) && Input.GetKey(KeyCode.LeftControl))
                     {
                         RotateTileSelectionLeft();
+                        potentialTileImage = RotateTexture90DegreesLeft(potentialTileImage);
                         WorldTip.showNowCenter("Copied tiles rotated left");
                     }
                     if (Input.GetKeyDown(KeyCode.E) && Input.GetKey(KeyCode.LeftControl))
                     {
                         RotateTileSelectionRight();
+                        potentialTileImage = RotateTexture90DegreesRight(potentialTileImage);
                         WorldTip.showNowCenter("Copied tiles rotated right");
                     }
                     if (Input.GetKeyDown(KeyCode.Slash))
@@ -304,10 +308,13 @@ namespace SimplerGUI.Menus
             //return texture2D;
         }
 
+        public Texture2D potentialTileImage;
+
         //tile copy paste, buildings, cityzones, actors come later (if ever)
         Dictionary<Vector2Int, string> tilesCopied;
         public void CopyTileSelection()
         {
+            rot = 0;
             tilesCopied = new Dictionary<Vector2Int, string>();
             Vector2Int firstPos = startTile.pos;
             foreach (WorldTile tile in lastSelectedTiles)
@@ -321,29 +328,231 @@ namespace SimplerGUI.Menus
                 }
                 tilesCopied.Add(offsetPos, tileType);
             }
-            /* preview of copied tiles using new texture, need to find a way to remove unused pixels
-			//setup texture width/height for preview of copied tiles
-			//whole section here will be moved to its own method later so rotations can recalculate
-			int difx = dif(startTile.x, endTile.x) + 1; //width of selection
-			int dify = dif(startTile.y, endTile.y) + 1; //height of selection
-			//actually lets use use whole world size and only set section for now
-			Texture2D texture = MapBox.instance.worldLayer.texture;
-			Texture2D texture2D = new Texture2D(texture.width, texture.height);
-			//Texture2D texture2D = new Texture2D(difx, dify);
-			foreach(KeyValuePair<Vector2Int, string> tile in tilesCopied) {
-				Vector2Int pos = tile.Key;
-				Vector2Int newPos = firstPos + pos;
-				WorldTile newTileSpot = MapBox.instance.GetTile(newPos.x, newPos.y);
-				//texture2D.Compress(false);
-				texture2D.SetPixel(newPos.x, newPos.y, newTileSpot.getColor());
-				texture2D.Apply();
-				lastCopiedTexture = texture2D;
-			}
-			//UnityEngine.Debug.Log("Difx:" + difx.ToString() + "/Dify:" + dify.ToString());
-			*/
+
+            // Find the maximum dimensions of the selected tiles relative to the start tile
+            int maxX = 0, maxY = 0;
+            foreach (var tile in lastSelectedTiles)
+            {
+                Vector2Int potentialPos = tile.pos - startTile.pos;
+
+                maxX = Math.Max(maxX, potentialPos.x);
+                maxY = Math.Max(maxY, potentialPos.y);
+            }
+
+            // Create a new texture with size to accommodate the copied tiles
+            int width = (maxX + 1) * 1;
+            int height = (maxY + 1) * 1;
+            Texture2D newTexture = new Texture2D(width, height);
+
+            // Draw the copied tiles onto the new texture
+            foreach (var tile in lastSelectedTiles)
+            {
+                // Calculate the position of the tile relative to the start tile
+                Vector2Int relativePos = tile.pos - startTile.pos;
+
+                // Set the pixel color for the tile position
+                Color color = tile.Type.color;
+                newTexture.SetPixel(relativePos.x, relativePos.y, color);
+            }
+
+            // Apply changes to the texture
+            newTexture.Apply();
+            lastWidth = newTexture.width;
+            lastHeight = newTexture.height;
+            // Assign the new texture to a material or use it as needed
+            potentialTileImage = newTexture;//ResizeTexture(newTexture, 100, 100);
+
         }
 
-        public static Texture2D lastCopiedTexture;
+        public static int lastWidth;
+        public static int lastHeight;
+        public static int rot;
+        //rot = 0: normal
+        //rot = 1: 90 degrees right, y goes negative
+        //rot = 2: 180, both are negative
+        //rot = 3: 90 left, x goes negative
+
+        public static Texture2D RotateTexture90DegreesLeft(Texture2D originalTexture)
+        {
+            int width = originalTexture.width;
+            int height = originalTexture.height;
+
+            // Create a new texture with swapped width and height
+            Texture2D rotatedTexture = new Texture2D(height, width);
+
+            // Iterate over each pixel in the original texture and set it to the corresponding pixel in the rotated texture
+            for (int x = 0; x < width; x++)
+            {
+                for (int y = 0; y < height; y++)
+                {
+                    // Calculate the rotated coordinates
+                    int rotatedX = height - y - 1;
+                    int rotatedY = x;
+
+                    // Get the color of the pixel from the original texture
+                    Color pixelColor = originalTexture.GetPixel(x, y);
+
+                    // Set the color of the pixel in the rotated texture
+                    rotatedTexture.SetPixel(rotatedX, rotatedY, pixelColor);
+                }
+            }
+
+            // Apply changes to the rotated texture
+            rotatedTexture.Apply();
+
+            rot--;
+            if (rot < 0) rot = 3;
+            switch (rot)
+            {
+                default:
+                    lastWidth = rotatedTexture.width;
+                    lastHeight = rotatedTexture.height;
+                    break;
+                case 0:
+                    lastWidth = rotatedTexture.width;
+                    lastHeight = rotatedTexture.height;
+                    break;
+                case 1:
+                    lastWidth = rotatedTexture.width;
+                    lastHeight = -rotatedTexture.height;
+                    break;
+                case 2:
+                    lastWidth = -rotatedTexture.width;
+                    lastHeight = -rotatedTexture.height;
+                    break;
+                case 3:
+                    lastWidth = -rotatedTexture.width;
+                    lastHeight = rotatedTexture.height;
+                    break;
+            }
+            return rotatedTexture;
+        }
+        
+        public static Texture2D RotateTexture90DegreesRight(Texture2D originalTexture)
+        {
+            int width = originalTexture.width;
+            int height = originalTexture.height;
+
+            // Create a new texture with swapped width and height
+            Texture2D rotatedTexture = new Texture2D(height, width);
+
+            // Iterate over each pixel in the original texture and set it to the corresponding pixel in the rotated texture
+            for (int x = 0; x < width; x++)
+            {
+                for (int y = 0; y < height; y++)
+                {
+                    // Calculate the rotated coordinates
+                    int rotatedX = y;
+                    int rotatedY = width - x - 1;
+
+                    // Get the color of the pixel from the original texture
+                    Color pixelColor = originalTexture.GetPixel(x, y);
+
+                    // Set the color of the pixel in the rotated texture
+                    rotatedTexture.SetPixel(rotatedX, rotatedY, pixelColor);
+                }
+            }
+
+            // Apply changes to the rotated texture
+            rotatedTexture.Apply();
+
+            rot++;
+            if (rot > 3) rot = 0;
+            switch (rot)
+            {
+                default:
+                    lastWidth = rotatedTexture.width;
+                    lastHeight = rotatedTexture.height;
+                    break;
+                case 0:
+                    lastWidth = rotatedTexture.width;
+                    lastHeight = rotatedTexture.height;
+                    break;
+                case 1:
+                    lastWidth = rotatedTexture.width;
+                    lastHeight = -rotatedTexture.height;
+                    break;
+                case 2:
+                    lastWidth = -rotatedTexture.width;
+                    lastHeight = -rotatedTexture.height;
+                    break;
+                case 3:
+                    lastWidth = -rotatedTexture.width;
+                    lastHeight = rotatedTexture.height;
+                    break;
+            }
+            return rotatedTexture;
+        }
+        
+
+        public Texture2D ResizeTexture(Texture2D texture, int targetWidth, int targetHeight)
+        {
+            // Create a new texture with the target dimensions
+            Texture2D resizedTexture = new Texture2D(targetWidth, targetHeight);
+
+            // Loop through each pixel of the new texture and set its color based on the original texture
+            for (int y = 0; y < targetHeight; y++)
+            {
+                for (int x = 0; x < targetWidth; x++)
+                {
+                    // Get the color of the corresponding pixel in the original texture
+                    Color color = texture.GetPixelBilinear((float)x / targetWidth, (float)y / targetHeight);
+
+                    // Set the color of the current pixel in the resized texture
+                    resizedTexture.SetPixel(x, y, color);
+                }
+            }
+
+            // Apply changes to the resized texture
+            resizedTexture.Apply();
+
+            return resizedTexture;
+        }
+
+        public Texture2D RemoveDeadPixels(Texture2D inputTexture)
+        {
+            Color[] pixels = inputTexture.GetPixels();
+            int width = inputTexture.width;
+            int height = inputTexture.height;
+
+            // Calculate new width and height without dead pixels
+            int newWidth = 0;
+            int newHeight = 0;
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    Color pixel = pixels[y * width + x];
+                    if (pixel.a > 0) // Check if pixel is not transparent
+                    {
+                        if (x > newWidth) newWidth = x;
+                        if (y > newHeight) newHeight = y;
+                    }
+                }
+            }
+            newWidth++; // Increment to include the last valid pixel
+            newHeight++; // Increment to include the last valid pixel
+
+            // Create a new Texture2D with the right size
+            Texture2D newTexture = new Texture2D(newWidth, newHeight);
+
+            // Fill the new texture with valid pixels
+            for (int y = 0; y < newHeight; y++)
+            {
+                for (int x = 0; x < newWidth; x++)
+                {
+                    Color pixel = pixels[y * width + x];
+                    if (pixel.a > 0) // Check if pixel is not transparent
+                    {
+                        newTexture.SetPixel(x, y, pixel);
+                    }
+                }
+            }
+
+            // Apply changes and return the new Texture2D
+            newTexture.Apply();
+            return newTexture;
+        }
 
         public void RotateTileSelectionRight()
         {
@@ -453,6 +662,67 @@ namespace SimplerGUI.Menus
                     foreach (WorldTile tile in lastSelectedTiles)
                     {
                         flashEffects.flashPixel(tile, 10);
+                    }
+                }
+
+                if(Input.GetKey(KeyCode.LeftControl) && tilesCopied != null && tilesCopied.Count > 0 && MapBox.instance.getMouseTilePos() != null)
+                {
+                    Vector2Int tilePos = MapBox.instance.getMouseTilePos().pos;
+                    if(lastWidth > 0 && lastHeight > 0)
+                    {
+                        for (int x = 0; x < lastWidth; x++)
+                        {
+                            for (int y = 0; y < lastHeight; y++)
+                            {
+                                WorldTile tile = MapBox.instance.GetTile(tilePos.x + x, tilePos.y + y);
+                                if (tile != null)
+                                {
+                                    flashEffects.flashPixel(tile);
+                                }
+                            }
+                        }
+                    }
+                    if (lastWidth < 0 && lastHeight > 0)
+                    {
+                        for (int x = lastWidth; x < 0; x++)
+                        {
+                            for (int y = 0; y < lastHeight; y++)
+                            {
+                                WorldTile tile = MapBox.instance.GetTile(tilePos.x + x, tilePos.y + y);
+                                if (tile != null)
+                                {
+                                    flashEffects.flashPixel(tile);
+                                }
+                            }
+                        }
+                    }
+                    if (lastWidth > 0 && lastHeight < 0)
+                    {
+                        for (int x = 0; x < lastWidth; x++)
+                        {
+                            for (int y = lastHeight; y < 0; y++)
+                            {
+                                WorldTile tile = MapBox.instance.GetTile(tilePos.x + x, tilePos.y + y);
+                                if (tile != null)
+                                {
+                                    flashEffects.flashPixel(tile);
+                                }
+                            }
+                        }
+                    }
+                    if (lastWidth < 0 && lastHeight < 0)
+                    {
+                        for (int x = lastWidth; x < 0; x++)
+                        {
+                            for (int y = lastHeight; y < 0; y++)
+                            {
+                                WorldTile tile = MapBox.instance.GetTile(tilePos.x + x, tilePos.y + y);
+                                if (tile != null)
+                                {
+                                    flashEffects.flashPixel(tile);
+                                }
+                            }
+                        }
                     }
                 }
                 //wip
@@ -1109,6 +1379,11 @@ namespace SimplerGUI.Menus
                 showTileWindowRight = !showTileWindowRight;
             }
             GUILayout.EndHorizontal();
+            if(potentialTileImage != null)
+            {
+                GUILayout.Button("v Copied tiles image v");
+                GUILayout.Button(potentialTileImage);
+            }
             GUI.backgroundColor = originalColor;
             GUILayout.BeginHorizontal();
             if (GUILayout.Button("replace tiles"))
@@ -1347,10 +1622,6 @@ namespace SimplerGUI.Menus
             if (GUILayout.Button("Terrain paste ignores lava"))
             {
                 terrainPasteIgnoresLava = !terrainPasteIgnoresLava;
-            }
-            if (lastCopiedTexture != null)
-            {
-                GUILayout.Button(lastCopiedTexture);
             }
             GUI.DragWindow();
         }
