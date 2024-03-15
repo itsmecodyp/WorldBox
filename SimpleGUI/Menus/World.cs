@@ -665,7 +665,7 @@ namespace SimplerGUI.Menus
                     }
                 }
 
-                if(Input.GetKey(KeyCode.LeftControl) && tilesCopied != null && tilesCopied.Count > 0 && MapBox.instance.getMouseTilePos() != null)
+                if(showHighlightPreview && Input.GetKey(KeyCode.LeftControl) && tilesCopied != null && tilesCopied.Count > 0 && MapBox.instance.getMouseTilePos() != null)
                 {
                     Vector2Int tilePos = MapBox.instance.getMouseTilePos().pos;
                     if(lastWidth > 0 && lastHeight > 0)
@@ -1165,6 +1165,8 @@ namespace SimplerGUI.Menus
             GUI.DragWindow();
         }
 
+        public static bool showHighlightPreview;
+
         public void worldOptionsWindow(int windowID)
         {
             GuiMain.SetWindowInUse(windowID);
@@ -1379,12 +1381,34 @@ namespace SimplerGUI.Menus
                 showTileWindowRight = !showTileWindowRight;
             }
             GUILayout.EndHorizontal();
+            GUI.backgroundColor = originalColor;
             if(potentialTileImage != null)
             {
-                GUILayout.Button("v Copied tiles image v");
+                GUILayout.BeginHorizontal();
+                if (GUILayout.Button("<-"))
+                {
+                    RotateTileSelectionLeft();
+                    potentialTileImage = RotateTexture90DegreesLeft(potentialTileImage);
+                    WorldTip.showNowCenter("Copied tiles rotated left");
+                }
+                if (potentialTileImage != null)
+                {
+                    if (showHighlightPreview) { GUI.backgroundColor = Color.green; }
+                    else { GUI.backgroundColor = Color.yellow; }
+                    if (GUILayout.Button("Tiles preview"))
+                    {
+                        showHighlightPreview = !showHighlightPreview;
+                    }
+                }
+                if (GUILayout.Button("->"))
+                {
+                    RotateTileSelectionRight();
+                    potentialTileImage = RotateTexture90DegreesRight(potentialTileImage);
+                    WorldTip.showNowCenter("Copied tiles rotated right");
+                }
+                GUILayout.EndHorizontal();
                 GUILayout.Button(potentialTileImage);
             }
-            GUI.backgroundColor = originalColor;
             GUILayout.BeginHorizontal();
             if (GUILayout.Button("replace tiles"))
             {
