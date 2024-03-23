@@ -9,6 +9,8 @@ using SimplerGUI.Submods.WorldBox3D;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 using Random = UnityEngine.Random;
+using System.Threading.Tasks;
+using System.IO;
 
 namespace SimplerGUI.Submods.WorldBox3D {
     [BepInPlugin(pluginGuid, pluginName, pluginVersion)]
@@ -62,7 +64,7 @@ namespace SimplerGUI.Submods.WorldBox3D {
             if (Camera.main != null) Camera.main.transform.rotation = Quaternion.Euler(cameraX, cameraY, cameraZ);
         }
 
-        public void window3D(int windowID)
+        public async void window3D(int windowID)
         {
             Color temp = GUI.backgroundColor;
             GUI.backgroundColor = Color.red;
@@ -121,7 +123,10 @@ namespace SimplerGUI.Submods.WorldBox3D {
             if(GUILayout.Button("Reset camera")) {
                 if(Camera.main != null) Camera.main.transform.rotation = Quaternion.Euler(cameraX, cameraY, cameraZ);
             }
-          
+            if (GUILayout.Button("Send map"))
+            {
+                await SaveMapDataAsync();
+            }
             CameraControls();
             if(publicBuild == false) {
                 try
@@ -137,10 +142,67 @@ namespace SimplerGUI.Submods.WorldBox3D {
             GUI.DragWindow();
         }
 
-        public static Dictionary<Sprite, Vector3> tileSprites = new Dictionary<Sprite, Vector3>();
-        public static Dictionary<Sprite, Vector3> buildingSprites = new Dictionary<Sprite, Vector3>();
-        public static Dictionary<Sprite, Vector3> actorSprites = new Dictionary<Sprite, Vector3>();
+        //chat-gpt
+        public async Task SaveMapDataAsync()
+        {
+            MapData data = new MapData();
+            HashSet<Vector3> posSet = new HashSet<Vector3>(); // Use HashSet for faster containment checks
+            object lockObject = new object(); // Create a lock object
 
+            // Parallelize the loop
+            Parallel.ForEach(MapBox.instance.tilesList, tile =>
+            {
+                Vector3 pos = tile.posV3;
+                pos.z = tile.Height / dividerAmount;
+
+                lock (lockObject) // Synchronize access to the HashSet
+                {
+                    if (posSet.Add(pos)) // Add to HashSet directly, returns true if added successfully (i.e., not already contained)
+                    {
+                        data.posList.Add(pos);
+                        data.idList.Add(tile.Type.id);
+                    }
+                }
+            });
+
+            // Batch writing to file using StreamWriter
+            await Task.Run(() =>
+            {
+                using (StreamWriter writer = new StreamWriter("C:/test/test.json"))
+                {
+                    writer.Write(JsonUtility.ToJson(data));
+                }
+            });
+        }
+
+        /*
+        //save map data for external use
+        public void SaveMapData()
+        {
+            MapData data = new MapData();
+            foreach(WorldTile tile in MapBox.instance.tilesList.ToList())
+            {
+                Vector3 pos = tile.posV3;
+                pos.z = tile.Height / dividerAmount;
+
+                if (data.posList.Contains(pos) == false)
+                {
+                    data.posList.Add(pos);
+                    data.idList.Add(tile.Type.id);
+                }
+            }
+
+            System.IO.File.WriteAllText("C:/test/test.json", JsonUtility.ToJson(data));
+        }
+        */
+        [Serializable]
+        public class MapData
+        {
+            public Dictionary<Vector3, string> tilePositions;
+            //hack to rebuild dict since dict cant be serialized
+            public List<Vector3> posList = new List<Vector3>();
+            public List<string> idList = new List<string>();
+        }
 
         public static Dictionary<string, int> buildingCustomHeight = new Dictionary<string, int>();
         public static Dictionary<string, int> buildingCustomThickness = new Dictionary<string, int>();
