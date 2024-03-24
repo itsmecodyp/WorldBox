@@ -614,16 +614,15 @@ namespace SimplerGUI {
 
         public static bool getText_Prefix(string pKey, Text text, ref string __result)
         {
-            if(pKey == null) {
+            if (pKey == null)
+            {
                 __result = "_placeholder?";
                 return false; // prevent error from random localized texts
             }
-            if(LocalizedTextManager.instance.localizedText.ContainsKey(pKey)) {
+            else
+            {
                 return true;
             }
-
-            __result = "_placeholder?";
-            return false; // prevent error from random localized texts
         }
 
         public static bool addTrait_Prefix(string pTrait, bool pRemoveOpposites, ActorBase __instance)
