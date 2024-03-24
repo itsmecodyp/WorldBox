@@ -159,8 +159,26 @@ namespace SimplerGUI.Submods.WorldBox3D {
                 {
                     if (posSet.Add(pos)) // Add to HashSet directly, returns true if added successfully (i.e., not already contained)
                     {
-                        data.posList.Add(pos);
-                        data.idList.Add(tile.Type.id);
+                        data.posListTile.Add(pos);
+                        data.idListTile.Add(tile.Type.id);
+                       
+                    }
+                }
+            });
+
+            HashSet<Vector3> posSet2 = new HashSet<Vector3>(); // Use HashSet for faster containment checks
+
+            Parallel.ForEach(MapBox.instance.buildings, building =>
+            {
+                Vector3 pos = building.currentPosition;
+                pos.z = building.currentTile.Height / dividerAmount;
+
+                lock (lockObject) // Synchronize access to the HashSet
+                {
+                    if (posSet2.Add(pos)) // Add to HashSet directly, returns true if added successfully (i.e., not already contained)
+                    {
+                        data.posListBuilding.Add(pos);
+                        data.idListBuilding.Add(building.asset.id);
                     }
                 }
             });
@@ -200,8 +218,11 @@ namespace SimplerGUI.Submods.WorldBox3D {
         {
             public Dictionary<Vector3, string> tilePositions;
             //hack to rebuild dict since dict cant be serialized
-            public List<Vector3> posList = new List<Vector3>();
-            public List<string> idList = new List<string>();
+            public List<Vector3> posListTile = new List<Vector3>();
+            public List<string> idListTile = new List<string>();
+
+            public List<Vector3> posListBuilding = new List<Vector3>();
+            public List<string> idListBuilding = new List<string>();
         }
 
         public static Dictionary<string, int> buildingCustomHeight = new Dictionary<string, int>();

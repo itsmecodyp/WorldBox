@@ -1,13 +1,16 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using Amazon.Runtime.Internal.Transform;
 using BepInEx;
+using DG.Tweening.Plugins.Core.PathCore;
 using HarmonyLib;
 using SimplerGUI.Menus;
 using SimplerGUI.Submods.SimpleMessages;
+using tools.debug;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -155,14 +158,19 @@ namespace SimplerGUI.Submods.AssetModEnabler
                 File.WriteAllText(path12 + "/BonfireExport/buildings/" + assetID + ".json", dataToSave);
 
             }
+            if(GUILayout.Button("Load debug map"))
+            {
+                DebugMap.makeDebugMap();
+            }
             if (GUILayout.Button("Export ALL buildings"))
             {
+                string assetID = "";
+
+                //setup folders
+                string path12 = Application.streamingAssetsPath + "/mods";
                 foreach (BuildingAsset ba in AssetManager.buildings.list)
                 {
-                    string assetID = ba.id;
-
-                    //setup folders
-                    string path12 = Application.streamingAssetsPath + "/mods";
+                    assetID = ba.id;
                     if (Directory.Exists(path12 + "/Export") == false)
                     {
                         Directory.CreateDirectory(path12 + "/Export");
@@ -175,6 +183,7 @@ namespace SimplerGUI.Submods.AssetModEnabler
                     {
                         Directory.CreateDirectory(path12 + "/Export/building_sprites");
                     }
+                    /*
                     Sprite[] spriteList2 = SpriteTextureLoader.getSpriteList("buildings/" + assetID);
                     if (spriteList2 != null && spriteList2.Length > 0)
                     {
@@ -188,8 +197,10 @@ namespace SimplerGUI.Submods.AssetModEnabler
 
                     string dataToSave = JsonUtility.ToJson(ba, true);
                     File.WriteAllText(path12 + "/Export/buildings/" + assetID + ".json", dataToSave);
+                    */
 
                 }
+                StartCoroutine(ExtractSprites());
             }
             //export traits for reuse
             if (GUILayout.Button("Export ALL traits"))
@@ -479,6 +490,88 @@ namespace SimplerGUI.Submods.AssetModEnabler
             GUI.DragWindow();
         }
 
+
+        IEnumerator ExtractSprites()
+        {
+
+            string assetID = "";
+
+            //setup folders
+            string path12 = Application.streamingAssetsPath + "/mods";
+            yield return new WaitForEndOfFrame(); // Wait for end of frame to ensure all rendering is done
+
+            foreach (Building building in MapBox.instance.buildings)
+            {
+                SpriteRenderer renderer = building.GetComponent<SpriteRenderer>();
+                if (renderer != null)
+                {
+                    Sprite sprite = renderer.sprite;
+                    if (sprite != null)
+                    {
+                        Texture2D itemBGTex = sprite.texture;
+                        if (itemBGTex != null)
+                        {
+                            byte[] itemBGBytes = itemBGTex.EncodeToPNG();
+                            try
+                            {
+                                string filePath = System.IO.Path.Combine(path12, "Export", "building_sprites", $"{building.name + "_" + assetID}_{sprite.name}.png");
+                                File.WriteAllBytes(filePath, itemBGBytes);
+                                Debug.Log($"Sprite exported successfully: {filePath}");
+                            }
+                            catch (Exception e)
+                            {
+                                Debug.LogError($"Error exporting sprite: {e.Message}");
+                            }
+                        }
+                        else
+                        {
+                            Debug.Log("Texture is null for sprite: " + sprite.name);
+                        }
+                    }
+                    else
+                    {
+                        Debug.Log("Sprite is null for building: " + building.name);
+                    }
+                }
+                else
+                {
+                    Debug.Log("SpriteRenderer is missing for building: " + building.name);
+                }
+
+                // Saving JSON data here as before
+                string dataToSave = JsonUtility.ToJson(assetID, true);
+                File.WriteAllText(path12 + "/Export/buildings/" + building.name + "_" + assetID + ".json", dataToSave);
+            }
+            /*
+            Debug.Log("Amount of buildings on map: " + MapBox.instance.buildings.Count);
+            foreach (Building building in MapBox.instance.buildings)
+            {
+                SpriteRenderer renderer = building.GetComponent<SpriteRenderer>();
+                if (renderer != null)
+                {
+                    Sprite sprite = renderer.sprite;
+                    if (sprite != null)
+                    {
+                        Texture2D itemBGTex = sprite.texture;
+                        byte[] itemBGBytes = itemBGTex.EncodeToPNG();
+                        File.WriteAllBytes(path12 + "/Export/building_sprites/" + assetID + "_" + sprite.name + ".png", itemBGBytes);
+                    }
+                    else
+                    {
+                        Debug.Log("Sprite is null for building: " + building.name);
+                    }
+                }
+                else
+                {
+                    Debug.Log("SpriteRenderer is missing for building: " + building.name);
+                }
+
+                string dataToSave = JsonUtility.ToJson(assetID, true);
+                File.WriteAllText(path12 + "/Export/buildings/" + assetID + ".json", dataToSave);
+            }
+            */
+        }
+
         public TileTypeMap selectedTileTypeMap;
 
         public class TileTypeMap
@@ -500,7 +593,7 @@ namespace SimplerGUI.Submods.AssetModEnabler
         {
             AssetModLoader.log("CMF pType: " + pType);
             List<string> files = AssetModLoader.getFiles(pPath);
-            string[] array = pPath.Split(new char[] { Path.DirectorySeparatorChar });
+            string[] array = pPath.Split(new char[] { System.IO.Path.DirectorySeparatorChar });
             AssetModLoader.log("");
             AssetModLoader.log("# CHECKING PATH... " + array[array.Length - 1]);
             AssetModLoader.log("FILES: " + files.Count.ToString());
@@ -518,7 +611,7 @@ namespace SimplerGUI.Submods.AssetModEnabler
                 {
                     if(assetName == null)
                     {
-                        string[] array2 = pPath.Split(new char[] { Path.DirectorySeparatorChar });
+                        string[] array2 = pPath.Split(new char[] { System.IO.Path.DirectorySeparatorChar });
                         string text2 = array[array.Length - 1];
                         AssetModLoader.log("# FOUND NAME: " + text2);
                         assetName = text2.Replace(".json", "");
@@ -589,7 +682,7 @@ namespace SimplerGUI.Submods.AssetModEnabler
 
         private static void loadTextureTiles(string pPath, List<Sprite> multiSpritesForAsset)
         {
-            string[] array = pPath.Split(new char[] { Path.DirectorySeparatorChar });
+            string[] array = pPath.Split(new char[] { System.IO.Path.DirectorySeparatorChar });
             string text = array[array.Length - 1];
             AssetModLoader.log("# LOAD TEXTURE TILE: " + text);
             byte[] array2 = File.ReadAllBytes(pPath);
@@ -615,7 +708,7 @@ namespace SimplerGUI.Submods.AssetModEnabler
         //copy paste with smol edit. lil ugly, just like you
         private static void loadTextureBuilding(string pPath, List<Sprite> listToAddTo)
         {
-            string[] array = pPath.Split(new char[] { Path.DirectorySeparatorChar });
+            string[] array = pPath.Split(new char[] { System.IO.Path.DirectorySeparatorChar });
             string text = array[array.Length - 1];
             AssetModLoader.log("# LOAD TEXTURE BUILDING: " + text);
             byte[] array2 = File.ReadAllBytes(pPath);
@@ -671,7 +764,7 @@ namespace SimplerGUI.Submods.AssetModEnabler
         //replace @ in filename with /, allows nested path identical to what game might expect ex: civ/icons/minimap_boat_small
         public static bool loadTexture_prefix(string pPath)
         {
-            string[] array = pPath.Split(new char[] { Path.DirectorySeparatorChar });
+            string[] array = pPath.Split(new char[] { System.IO.Path.DirectorySeparatorChar });
             string text = array[array.Length - 1];
             AssetModLoader.log("# LOAD TEXTURE: " + text);
             byte[] array2 = File.ReadAllBytes(pPath);
@@ -701,7 +794,7 @@ namespace SimplerGUI.Submods.AssetModEnabler
         //prefix to just go ahead and replace with a clean switch statement
         public static void loadFileJson_Prefix(string pPath, string pType)
         {
-            string[] array = pPath.Split(new char[] { Path.DirectorySeparatorChar });
+            string[] array = pPath.Split(new char[] { System.IO.Path.DirectorySeparatorChar });
             string text = array[array.Length - 1];
             AssetModLoader.log("# LOAD ASSET: " + text);
             string fileText = File.ReadAllText(pPath);
