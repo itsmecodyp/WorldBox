@@ -423,7 +423,7 @@ namespace SimplerGUI {
 
             original = AccessTools.Method(typeof(Harmony), "PatchAll");
             patch = AccessTools.Method(typeof(GUIConstruction), "addBuilding_Prefix");
-            harmony.Patch(original, null, new HarmonyMethod(patch));
+            //harmony.Patch(original, null, new HarmonyMethod(patch));
             Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
 
             original = AccessTools.Method(typeof(Building), "startRemove");
@@ -589,9 +589,8 @@ namespace SimplerGUI {
             patch = AccessTools.Method(typeof(ActorControlMain), "checkEmptyClick_Prefix");
             harmony.Patch(original, new HarmonyMethod(patch));
             Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
-            
-
-            /* tired of messing with this
+           
+			/* tired of messing with this
             harmony = new Harmony(pluginName);
             original = AccessTools.Method(typeof(Kingdom), "createColors");
             patch = AccessTools.Method(typeof(GuiOther), "createColors_Postfix");
@@ -599,9 +598,9 @@ namespace SimplerGUI {
             UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
             */
 
-        }
+		}
 
-        public static bool getItem_Prefix(string pID)
+		public static bool getItem_Prefix(string pID)
         {
             ActorAnimationLoader.dictItems.TryGetValue(pID, out Sprite sprite);
             if(sprite == null) {
