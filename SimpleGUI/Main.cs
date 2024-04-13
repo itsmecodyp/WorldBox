@@ -22,7 +22,8 @@ using UnityEngine.Networking;
 using UnityEngine.UI;
 
 namespace SimplerGUI {
-    [BepInPlugin(pluginGuid, pluginName, pluginVersion)]
+
+    [BepInPlugin(GuiMain.pluginGuid, GuiMain.pluginName, GuiMain.pluginVersion)]
     class GuiMain : BaseUnityPlugin {
         public const string pluginGuid = "cody.worldbox.simple.gui";
         public const string pluginName = "SimplerGUI";
@@ -30,47 +31,11 @@ namespace SimplerGUI {
 
         //wtf is this??
         public static int timesLocalizedRan = 0;
-        public static void loadLocalizedText_Postfix(string pLocaleID)
-        {
-            timesLocalizedRan++;
-            Debug.Log("localizedText postfix ran " + timesLocalizedRan.ToString() + " times");
-            string language = LocalizedTextManager.instance.language;
-            Dictionary<string, string> localizedText = LocalizedTextManager.instance.localizedText;
-            if (language == "en")
-            {
-                // text tips
-                if (localizedText != null)
-                {
-                    localizedText.Add("Styderr makes awesome maps, check them out!", "Styderr makes awesome maps, check them out!");
-                    localizedText.Add("Nothing to see here guys - KJYhere", "Nothing to see here guys - KJYhere");
-                    localizedText.Add("Call up Rajit at 1(800)-911-SCAM   - Ramlord", "Call up Rajit at 1(800)-911-SCAM   - Ramlord");
-                    localizedText.Add("10/10 would recommend - boopahead08", "10/10 would recommend - boopahead08");
-                    localizedText.Add("Kosovo je srbija!", "Kosovo je srbija!");
-                    localizedText.Add("This mod is sponsored by Raid: Shadow Legends - Slime", "This mod is sponsored by Raid: Shadow Legends - Slime");
-                    localizedText.Add("The four nations lived in harmony, until the orc nation attacked", "The four nations lived in harmony, until the orc nation attacked");
-                    localizedText.Add("Now with raytracing!", "Now with raytracing!");
-                    localizedText.Add("Modificating and customizating the game...", "Modificating and customizating the game...");
-                    localizedText.Add("Tiempo con Juan Diego makes amazing worldbox videos! - Juanchiz", "Tiempo con Juan Diego makes amazing worldbox videos! - Juanchiz");
-                    localizedText.Add("null", "null");
-                }
-            }
-            else if (language == "es") // Just an example
-            {
-                Debug.Log("Using language: Spanish");
-            }
-            else
-            {
-                Debug.Log("English/Spanish not in use");
-            }
-            //localizedText.Add("en", "Lays Eggs");
-        }
 
         public void Awake()
         {
-            SettingSetup();
-            HarmonyPatchSetup();
-            InvokeRepeating("SaveMenuPositions", 10, 3);
-            InvokeRepeating("ConstantWarCheck", 10, 10);
+            SetUpSettings();
+            Patches.ApplyHarmonyPatches();
         }
 
         //why havent i done this sooner?
@@ -225,424 +190,6 @@ namespace SimplerGUI {
             var rect = new Rect(x, y, width, height);
 
             GUI.Label(rect, GUI.tooltip);
-        }
-
-        public void ConstantWarCheck()
-        {
-            // probably unnecessary with new ages in 0.15+
-            if(Diplomacy.EnableConstantWar) {
-                if(MapBox.instance.kingdoms.list_civs.Count >= 2) {
-                    bool isThereWar = false;
-                    foreach(Kingdom kingdom in MapBox.instance.kingdoms.list_civs) {
-                        foreach(Kingdom otherKingdom in MapBox.instance.kingdoms.list_civs) {
-                            if(otherKingdom != kingdom) {
-                                bool isEnemy2 = kingdom.getEnemiesKingdoms().Contains(otherKingdom);
-                                if(isEnemy2) {
-                                    isThereWar = true;
-                                    break;
-                                }
-                            }
-                        }
-                        if(isThereWar == true) {
-                            break;
-                        }
-                    }
-                    if(isThereWar == false) {
-                        Kingdom kingdom1 = MapBox.instance.kingdoms.list_civs.GetRandom();
-                        Kingdom kingdom2 = null;
-                        while(kingdom2 == null || kingdom2 == kingdom1) {
-                            kingdom2 = MapBox.instance.kingdoms.list_civs.GetRandom();
-                        }
-                        //0.14 version
-                        //MapBox.instance.kingdoms.diplomacyManager.startWar(kingdom1, kingdom2, true);
-
-                        MapBox.instance.diplomacy.startWar(kingdom1, kingdom2, WarTypeLibrary.normal, false);
-                        // why not just log using startwar??
-                        WorldLog.logNewWar(kingdom1, kingdom2);
-                        //UnityEngine.Debug.Log("Constant war: war not found, starting one between: " + kingdom1.name + " and " + kingdom2.name);
-                    }
-                }
-            }
-        }
-
-
-        public void HarmonyPatchSetup()
-        {
-            Harmony harmony = new Harmony(pluginName);
-            MethodInfo original;
-            MethodInfo patch;
-
-            harmony.PatchAll();
-
-            original = AccessTools.Method(typeof(CityPlaceFinder), "check");
-            patch = AccessTools.Method(typeof(GuiOther), "check_Prefix");
-            harmony.Patch(original, new HarmonyMethod(patch));
-            Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
-
-            original = AccessTools.Method(typeof(CityZoneGrowth), "checkGrowBorder");
-            patch = AccessTools.Method(typeof(GuiOther), "checkGrowBorder_Prefix");
-            harmony.Patch(original, new HarmonyMethod(patch));
-            Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
-
-
-            original = AccessTools.Method(typeof(TooltipLibrary), "showActor");
-            patch = AccessTools.Method(typeof(ActorInteraction), "showActor_Postfix");
-            harmony.Patch(original, null, new HarmonyMethod(patch));
-            Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
-
-            harmony = new Harmony(pluginName);
-            original = AccessTools.Method(typeof(CrabArm), "damageWorld");
-            patch = AccessTools.Method(typeof(ActorControlMain), "damageWorld_Prefix");
-            harmony.Patch(original, new HarmonyMethod(patch));
-            UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
-
-
-            harmony = new Harmony(pluginName);
-            original = AccessTools.Method(typeof(Giantzilla), "followCamera");
-            patch = AccessTools.Method(typeof(ActorControlMain), "followCamera_Prefix");
-            harmony.Patch(original, new HarmonyMethod(patch));
-            UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
-
-
-            original = AccessTools.Method(typeof(Actor), "checkEnemyTargets");
-            patch = AccessTools.Method(typeof(ActorControlMain), "checkEnemyTargets_Prefix");
-            harmony.Patch(original, new HarmonyMethod(patch));
-            Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
-
-
-            original = AccessTools.Method(typeof(ActorBase), "checkAnimationContainer");
-            patch = AccessTools.Method(typeof(ActorInteraction), "checkAnimationContainer_Prefix");
-            harmony.Patch(original, new HarmonyMethod(patch));
-            Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
-
-            original = AccessTools.Method(typeof(InitLibraries), "initLibs");
-            patch = AccessTools.Method(typeof(GuiMain), "postAssetInitStuff");
-            harmony.Patch(original, null, new HarmonyMethod(patch));
-            Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
-
-            original = AccessTools.Method(typeof(ActorBase), "checkSpriteHead");
-            patch = AccessTools.Method(typeof(ActorInteraction), "checkSpriteHead_Prefix");
-            harmony.Patch(original, new HarmonyMethod(patch));
-            Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
-
-            /*
-            original = AccessTools.Method(typeof(ActorBase), "nextJobActor");
-            patch = AccessTools.Method(typeof(SimpleCultists), "nextJobActor_postfix");
-            harmony.Patch(original, null, new HarmonyMethod(patch));
-            Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
-            */
-
-            original = AccessTools.Method(typeof(PowerLibrary), "drawDivineLight");
-            patch = AccessTools.Method(typeof(GuiTraits), "drawDivineLight_Postfix");
-            harmony.Patch(original, null, new HarmonyMethod(patch));
-            Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
-
-            original = AccessTools.Method(typeof(MapBox), "checkEmptyClick");
-            patch = AccessTools.Method(typeof(GuiMain), "checkEmptyClick_Prefix");
-            harmony.Patch(original, new HarmonyMethod(patch));
-            Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
-
-            original = AccessTools.Method(typeof(ActorBase), "generatePersonality");
-            patch = AccessTools.Method(typeof(GuiPatreon), "generatePersonality_Postfix");
-            harmony.Patch(original, null, new HarmonyMethod(patch));
-            Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
-
-            original = AccessTools.Method(typeof(LoadingScreen), "OnEnable");
-            patch = AccessTools.Method(typeof(GuiPatreon), "OnEnable_Postfix");
-            harmony.Patch(original, null, new HarmonyMethod(patch));
-            Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
-
-            original = AccessTools.Method(typeof(LocalizedTextManager), "loadLocalizedText");
-            patch = AccessTools.Method(typeof(GuiMain), "loadLocalizedText_Postfix");
-            harmony.Patch(original, null, new HarmonyMethod(patch));
-            Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
-
-            /* disable cloud patch? broken in 0.15+
-            harmony = new Harmony(pluginName);
-            original = AccessTools.Method(typeof(CloudController), "spawn");
-            patch = AccessTools.Method(typeof(GUIWorld), "spawn_Prefix");
-            harmony.Patch(original, new HarmonyMethod(patch));
-            UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
-            */
-
-            original = AccessTools.Method(typeof(QualityChanger), "update");
-            patch = AccessTools.Method(typeof(GuiOther), "update_Prefix");
-            harmony.Patch(original, new HarmonyMethod(patch));
-            Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
-
-            original = AccessTools.Method(typeof(TraitButton), "load");
-            patch = AccessTools.Method(typeof(GuiTraits), "load_Prefix");
-            harmony.Patch(original, new HarmonyMethod(patch));
-			Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
-
-
-            //example patch extending actorsay functionality
-            original = AccessTools.Method(typeof(Submods.SimpleMessages.Messages), "ActorSay");
-            patch = AccessTools.Method(typeof(Submods.SimpleCultists), "ActorSay_postfix");
-            harmony.Patch(original, null, new HarmonyMethod(patch));
-            Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
-
-
-            original = AccessTools.Method(typeof(BuildingActions), "spawnResource");
-            patch = AccessTools.Method(typeof(GUIWorld), "spawnResource_Prefix");
-            harmony.Patch(original, new HarmonyMethod(patch));
-            Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
-
-            original = AccessTools.Method(typeof(MapBox), "updateControls");
-            patch = AccessTools.Method(typeof(GuiMain), "updateControls_Prefix");
-            harmony.Patch(original, new HarmonyMethod(patch));
-            Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
-
-            original = AccessTools.Method(typeof(MapBox), "isActionHappening");
-            patch = AccessTools.Method(typeof(GuiMain), "isActionHappening_Postfix");
-            harmony.Patch(original, null, new HarmonyMethod(patch));
-            Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
-
-            original = AccessTools.Method(typeof(Building), "startDestroyBuilding");
-            patch = AccessTools.Method(typeof(GUIConstruction), "startDestroyBuilding_Prefix");
-            harmony.Patch(original, new HarmonyMethod(patch));
-            Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
-
-            original = AccessTools.Method(typeof(MoveCamera), "updateMouseCameraDrag");
-            patch = AccessTools.Method(typeof(GuiOther), "updateMouseCameraDrag_Prefix");
-            harmony.Patch(original, new HarmonyMethod(patch));
-            Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
-
-            /*
-            harmony = new Harmony(pluginName);
-            original = AccessTools.Method(typeof(MapBox), "spawnAndLoadUnit");
-            patch = AccessTools.Method(typeof(GuiMain), "spawnAndLoadUnit_Prefix");
-            harmony.Patch(original, new HarmonyMethod(patch));
-            UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
-            */
-
-            original = AccessTools.Method(typeof(SaveWorldButton), "saveWorld");
-            patch = AccessTools.Method(typeof(GuiMain), "saveWorld_Postfix");
-            harmony.Patch(original, null, new HarmonyMethod(patch));
-            Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
-
-            original = AccessTools.Method(typeof(Harmony), "PatchAll");
-            patch = AccessTools.Method(typeof(GUIConstruction), "addBuilding_Prefix");
-            //harmony.Patch(original, null, new HarmonyMethod(patch));
-            Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
-
-            original = AccessTools.Method(typeof(Building), "startRemove");
-            patch = AccessTools.Method(typeof(GuiOther), "startRemove_Prefix");
-            harmony.Patch(original, new HarmonyMethod(patch));
-            Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
-
-            //original = AccessTools.Method(typeof(ActorEquipmentSlot), "setItem");
-            //patch = AccessTools.Method(typeof(GuiItemGeneration), "setItem_Prefix");
-            //harmony.Patch(original, new HarmonyMethod(patch));
-            Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
-
-            original = AccessTools.Method(typeof(Actor), "addExperience");
-            patch = AccessTools.Method(typeof(GuiMain), "addExperience_Prefix");
-            harmony.Patch(original, new HarmonyMethod(patch));
-            Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
-
-            original = AccessTools.Method(typeof(ActorBase), "addTrait");
-            patch = AccessTools.Method(typeof(GuiMain), "addTrait_Prefix");
-            harmony.Patch(original, new HarmonyMethod(patch));
-            Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
-
-            original = AccessTools.Method(typeof(ActorAnimationLoader), "getItem");
-            patch = AccessTools.Method(typeof(GuiMain), "getItem_Prefix");
-            harmony.Patch(original, new HarmonyMethod(patch));
-            Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
-
-            original = AccessTools.Method(typeof(LocalizedTextManager), "getText");
-            patch = AccessTools.Method(typeof(GuiMain), "getText_Prefix");
-            harmony.Patch(original, new HarmonyMethod(patch));
-            Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
-
-            original = AccessTools.Method(typeof(ActorManager), "createNewUnit");
-            patch = AccessTools.Method(typeof(GUIWorld), "createNewUnit_Prefix");
-            harmony.Patch(original, new HarmonyMethod(patch));
-            Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
-
-            original = AccessTools.Method(typeof(ActorManager), "spawnNewUnit");
-            patch = AccessTools.Method(typeof(GUIWorld), "spawnNewUnit_Prefix");
-            harmony.Patch(original, new HarmonyMethod(patch));
-            Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
-
-            original = AccessTools.Method(typeof(ActorManager), "destroyObject");
-            patch = AccessTools.Method(typeof(GUIWorld), "destroyObject_Prefix");
-            harmony.Patch(original, new HarmonyMethod(patch));
-            Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
-
-            original = AccessTools.Method(typeof(MapAction), "terraformTile");
-            patch = AccessTools.Method(typeof(GuiOther), "terraformTile_Prefix");
-            harmony.Patch(original, new HarmonyMethod(patch));
-            Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
-
-            original = AccessTools.Method(typeof(MapAction), "applyTileDamage");
-            patch = AccessTools.Method(typeof(GuiOther), "applyTileDamage_Prefix");
-            harmony.Patch(original, new HarmonyMethod(patch));
-            Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
-
-            original = AccessTools.Method(typeof(WorldTile), "setBurned");
-            patch = AccessTools.Method(typeof(GuiOther), "setBurned_Prefix");
-            harmony.Patch(original, new HarmonyMethod(patch));
-            Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
-
-
-            original = AccessTools.Method(typeof(Heat), "addTile");
-            patch = AccessTools.Method(typeof(GuiOther), "addTile_Prefix");
-            harmony.Patch(original, new HarmonyMethod(patch));
-            Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
-
-            original = AccessTools.Method(typeof(WorldTile), "setFireData");
-            patch = AccessTools.Method(typeof(GuiOther), "setFireData_Prefix");
-            harmony.Patch(original, new HarmonyMethod(patch));
-            Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
-
-            /*
-            harmony = new Harmony(pluginName);
-            original = AccessTools.Method(typeof(Building), "setSpriteRuin");
-            patch = AccessTools.Method(typeof(GuiOther), "setSpriteRuin_Prefix");
-            harmony.Patch(original, new HarmonyMethod(patch));
-            UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
-            */
-
-            original = AccessTools.Method(typeof(ActorBase), "updateDeadBlackAnimation");
-            patch = AccessTools.Method(typeof(GuiOther), "updateDeadBlackAnimation_Prefix");
-            harmony.Patch(original, new HarmonyMethod(patch));
-            Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
-
-            original = AccessTools.Method(typeof(City), "addZone");
-            patch = AccessTools.Method(typeof(GuiOther), "addZone_Prefix");
-            harmony.Patch(original, new HarmonyMethod(patch));
-            Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
-
-            original = AccessTools.Method(typeof(City), "removeZone");
-            patch = AccessTools.Method(typeof(GuiOther), "removeZone_Prefix");
-            harmony.Patch(original, new HarmonyMethod(patch));
-            Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
-
-            original = AccessTools.Method(typeof(CityBehCheckFarms), "checkZone");
-            patch = AccessTools.Method(typeof(GuiOther), "checkZone_Prefix");
-            harmony.Patch(original, new HarmonyMethod(patch));
-            Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
-
-            original = AccessTools.Method(typeof(City), "getLimitOfBuildingsType");
-            patch = AccessTools.Method(typeof(GuiOther), "getLimitOfBuildingsType_Postfix");
-            harmony.Patch(original, null, new HarmonyMethod(patch));
-            Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
-
-            original = AccessTools.Method(typeof(BaseSimObject), "updateStats");
-            patch = AccessTools.Method(typeof(GuiStatSetting), "updateStats_Postfix");
-            harmony.Patch(original, null, new HarmonyMethod(patch));
-            Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
-
-            original = AccessTools.Method(typeof(Docks), "docksAtBoatLimit");
-            patch = AccessTools.Method(typeof(GuiOther), "docksAtBoatLimit_Postfix");
-            harmony.Patch(original, null, new HarmonyMethod(patch));
-            Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
-
-            original = AccessTools.Method(typeof(PowerButtonSelector), "isBottomBarShowing");
-            patch = AccessTools.Method(typeof(GuiOther), "isBottomBarShowing_Postfix");
-            harmony.Patch(original, null, new HarmonyMethod(patch));
-            Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
-
-            original = AccessTools.Method(typeof(ActorManager), "finalizeActor");
-            patch = AccessTools.Method(typeof(GUIWorld), "finalizeActor_Postfix");
-            harmony.Patch(original, null, new HarmonyMethod(patch));
-            Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
-
-            original = AccessTools.Method(typeof(Actor), "killHimself");
-            patch = AccessTools.Method(typeof(GUIWorld), "killHimself_Prefix");
-            harmony.Patch(original, new HarmonyMethod(patch));
-            Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
-
-            original = AccessTools.Method(typeof(Actor), "killHimself");
-            patch = AccessTools.Method(typeof(ActorControlMain), "killHimself_Prefix");
-            harmony.Patch(original, new HarmonyMethod(patch));
-            Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
-
-            original = AccessTools.Method(typeof(Actor), "newKillAction");
-            patch = AccessTools.Method(typeof(ActorControlMain), "newKillActionPostfix");
-            harmony.Patch(original, null, new HarmonyMethod(patch));
-            Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
-
-            original = AccessTools.Method(typeof(BattleKeeperManager), "unitKilled");
-            patch = AccessTools.Method(typeof(ActorControlMain), "unitKilled_Prefix");
-            harmony.Patch(original, new HarmonyMethod(patch));
-            Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
-
-            original = AccessTools.Method(typeof(ActorManager), "createNewUnit");
-            patch = AccessTools.Method(typeof(GUIWorld), "createNewUnit_Prefix");
-            harmony.Patch(original, new HarmonyMethod(patch));
-            Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
-
-            original = AccessTools.Method(typeof(PowerLibrary), "spawnUnit");
-            patch = AccessTools.Method(typeof(GUIWorld), "spawnUnit_Prefix");
-            harmony.Patch(original, new HarmonyMethod(patch));
-            Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
-
-            original = AccessTools.Method(typeof(MapBox), "checkClickTouchInspect");
-            patch = AccessTools.Method(typeof(ActorControlMain), "checkClickTouchInspect_Prefix");
-            harmony.Patch(original, new HarmonyMethod(patch));
-            Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
-
-            original = AccessTools.Method(typeof(MapBox), "checkEmptyClick");
-            patch = AccessTools.Method(typeof(ActorControlMain), "checkEmptyClick_Prefix");
-            harmony.Patch(original, new HarmonyMethod(patch));
-            Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
-           
-			/* tired of messing with this
-            harmony = new Harmony(pluginName);
-            original = AccessTools.Method(typeof(Kingdom), "createColors");
-            patch = AccessTools.Method(typeof(GuiOther), "createColors_Postfix");
-            harmony.Patch(original, new HarmonyMethod(patch));
-            UnityEngine.Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
-            */
-
-		}
-
-		public static bool getItem_Prefix(string pID)
-        {
-            ActorAnimationLoader.dictItems.TryGetValue(pID, out Sprite sprite);
-            if(sprite == null) {
-                return false; // prevent error from item gen with null textures
-            }
-
-            return true;
-        }
-
-
-        public static bool getText_Prefix(string pKey, Text text, ref string __result)
-        {
-            if (pKey == null)
-            {
-                __result = "_placeholder?";
-                return false; // prevent error from random localized texts
-            }
-            else
-            {
-                return true;
-            }
-        }
-
-        public static bool addTrait_Prefix(string pTrait, bool pRemoveOpposites, ActorBase __instance)
-        {
-            ActorData data = __instance.data; //Reflection.GetField(__instance.GetType(), __instance, "data") as ActorStatus;
-            if(__instance.hasTrait(pTrait) && Other.allowMultipleSameTrait == false) {
-                return false;
-            }
-
-            if(AssetManager.traits.get(pTrait) == null) {
-                return false;
-            }
-            if(pRemoveOpposites) {
-                __instance.removeOppositeTraits(pTrait);
-            }
-            if(__instance.hasOppositeTrait(pTrait)) {
-                return false;
-            }
-            __instance.data.traits.Add(pTrait);
-            __instance.setStatsDirty();
-            return false;
         }
 
         // quick fix for string replacing
@@ -870,7 +417,7 @@ namespace SimplerGUI {
             return new Rect(x, y, width, height);
         }
 
-        public void SettingSetup()
+        public void SetUpSettings()
         {
 #pragma warning disable CS0618 // Type or member is obsolete
 
@@ -922,16 +469,6 @@ namespace SimplerGUI {
             return bytes.Groups[1].Value;
         }
 
-        public static void saveWorld_Postfix()
-        {
-            foreach(Actor actor in MapBox.instance.units) {
-                ActorData data = actor.data; //Reflection.GetField(actor.GetType(), actor, "data") as ActorStatus;
-                if(data.traits.Contains("stats" + data.name)) {
-                    actor.removeTrait("stats" + data.name);
-                }
-            }
-        }
-
         /*old patch to remove custom traits that have been forgotten at this point
         public static bool spawnAndLoadUnit_Prefix(string pStatsID, ActorData pSaveData, WorldTile pTile)
         {
@@ -952,55 +489,14 @@ namespace SimplerGUI {
         */
 
         // click-through fix
-        public static void isActionHappening_Postfix(ref bool __result)
-        {
-            if(windowInUse != -1) {
-                __result = true; // "menu in use" is the action happening
-            }
-        }
-
-        public static bool updateControls_Prefix()
-        {
-            if(windowInUse != -1) {
-                return false; // cancel all control input if a window is in use
-            }
-            return true;
-        }
-
-        public static bool checkEmptyClick_Prefix()
-        {
-            if(windowInUse != -1) {
-                return false; // cancel empty click usage when windows in use
-            }
-            return true;
-        }
-
-        public static bool addExperience_Prefix(int pValue, Actor __instance)
-        {
-            if(Other.disableLevelCap) {
-                //ActorStats stats = __instance.stats; //Reflection.GetField(__instance.GetType(), __instance, "stats") as ActorStats;
-                ActorData data = __instance.data; //Reflection.GetField(actor.GetType(), actor, "data") as ActorStatus;
-                if(__instance.asset.canLevelUp) {
-					if(__instance.data.alive) {
-                        int expToLevelup = __instance.getExpToLevelup();
-                        data.experience += pValue;
-                        bool readyToLevelUp = data.experience >= expToLevelup;
-                        if(readyToLevelUp) {
-                            data.experience = 0;
-                            data.level++;
-                            __instance.setStatsDirty();
-                            __instance.event_full_heal = true;
-                        }
-                    }
-                }
-                return false;
-            }
-
-            return true;
-        }
 
         //misc
         public Camera mainCamera => Camera.main;
+
+        public Patches Patches {
+            get { return _patches; }
+        }
+
         public float rotationRate = 2f;
         public List<LineRenderer> buildingLings = new List<LineRenderer>();
         // vars
@@ -1025,6 +521,7 @@ namespace SimplerGUI {
         string response = "";
         //public float lastMapTime;
         public bool sentOneTimeStats;
+        private readonly Patches _patches = new Patches();
 
     }
 }

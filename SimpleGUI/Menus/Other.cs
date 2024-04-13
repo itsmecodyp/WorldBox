@@ -463,7 +463,7 @@ namespace SimplerGUI.Menus {
 
       
 
-        private static bool checkZone_Prefix(TileZone pZone, Building pBuilding, City pCity)
+        internal static bool checkZone_Prefix(TileZone pZone, Building pBuilding, City pCity)
         {
             if(!pZone.isSameCityHere(pCity)) {
                 return false;

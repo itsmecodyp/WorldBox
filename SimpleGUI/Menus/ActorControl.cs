@@ -16,10 +16,6 @@ using System.Reflection.Emit;
 using SimpleJSON;
 using SimplerGUI.Submods.UnitClipboard;
 using SimplerGUI.Submods.MapSizes;
-using GoogleMobileAds.Api;
-using System.Collections;
-
-
 
 #pragma warning disable CS0649
 
@@ -293,12 +289,12 @@ namespace SimplerGUI.Menus
                 GUI.backgroundColor = Color.red;
                 if (startingTarget) { GUI.backgroundColor = Color.yellow; }
                 if (squadSc.targetedActor != null && squadSc.targetedActor.isAlive()) { GUI.backgroundColor = Color.green; }
-                if (GUILayout.Button("Aggression target (actor)"))
+                if(GUILayout.Button("Aggression target (actor)"))
                 {
                     startingTarget = true;
                 }
                 GUI.backgroundColor = originalColor;
-                if (GUILayout.Button("Reset target"))
+                if(GUILayout.Button("Reset target"))
                 {
                     squadSc.targetedActor = null;
                     startingTarget = false;
@@ -376,7 +372,7 @@ namespace SimplerGUI.Menus
             GUILayout.EndHorizontal();
             if (isOverridingSpawnCount) GUI.backgroundColor = Color.green;
             else GUI.backgroundColor = Color.red;
-            if (GUILayout.Button("Override wave spawn")) { isOverridingSpawnCount = !isOverridingSpawnCount; }
+            if(GUILayout.Button("Override wave spawn")) { isOverridingSpawnCount = !isOverridingSpawnCount; }
             creaturesToSpawnOverride = (int)GUILayout.HorizontalSlider(creaturesToSpawnOverride, 0f, 500f);
             if (survivorActive) GUI.backgroundColor = Color.green;
             else GUI.backgroundColor = Color.red;
@@ -384,14 +380,14 @@ namespace SimplerGUI.Menus
             {
                 if (controlledActorSc != null)
                 {
-                    if (firstSurvivorRun)
+                    if(firstSurvivorRun)
                     {
                         AddSurvivorTraits();
                         firstSurvivorRun = false;
                     }
                     wasLevelCapDisabled = GuiMain.Other.disableLevelCap;
                     float camZoom = MoveCamera.instance.targetZoom;
-                    UnitClipboard_Main.CopySquad(squadSc);// currently squad will aggro themselves after spawning...
+                    UnitClipboard_Main.CopySquad(squadSc);
                     MapBox.instance.generateNewMap(false);
                     SmoothLoader.add(delegate
                     {
@@ -407,7 +403,7 @@ namespace SimplerGUI.Menus
                         {
                             Debug.Log("World might be all liquid, cannot start survivor mode");
                         }
-                        UnitClipboard_Main.PasteSquad(validTile);// friendly fire will not be tolerated
+                        UnitClipboard_Main.PasteSquad(validTile);
                         MoveCamera.instance.targetZoom = camZoom;
                         survivorActive = true;
                         timeSurviveStarted = Time.realtimeSinceStartup;
@@ -415,16 +411,8 @@ namespace SimplerGUI.Menus
                 }
             }
             GUI.backgroundColor = ori;
+          
 
-            if (survivorActive)
-            {
-				if (showSurvivorUpgrades) GUI.backgroundColor = Color.green;
-				else GUI.backgroundColor = Color.red;
-				if (GUILayout.Button("Upgrades"))
-                {
-                    showSurvivorUpgrades = !showSurvivorUpgrades;
-                }
-            }
             GUI.DragWindow();
         }
         public static Vector2 scrollPosition;
@@ -438,7 +426,7 @@ namespace SimplerGUI.Menus
          scrollPosition, GUILayout.Height(survivorWindowRect.height - 31.5f), GUILayout.Width(200f));
             foreach (string actorType in GuiMain.listOfActorAssetIDs)
             {
-                if (monstersToSpawn.Contains(actorType)) {
+                if (monstersToSpawn.Contains(actorType)){
                     GUI.backgroundColor = Color.green;
                 }
                 else
@@ -446,7 +434,7 @@ namespace SimplerGUI.Menus
                     GUI.backgroundColor = Color.red;
                 }
                 if (GUILayout.Button(actorType)) {
-                    if (monstersToSpawn.Contains(actorType)) {
+                    if (monstersToSpawn.Contains(actorType)){
                         monstersToSpawn.Remove(actorType);
                     }
                     else
@@ -461,368 +449,31 @@ namespace SimplerGUI.Menus
         public bool showSpawnSelectWindow;
 
 
-        public int currentUpgradeLevel => enemyKills / 5;
-        public int spentUpgrades = 0;
-
-        //enum so we dont spam string comparisons
-		public enum UpgradeType
-		{
-			DeathArrow,
-			DeathBomb,
-			FreezeStrike,
-			BurnStrike,
-			WeakenStrike,
-            MultiStrike,
-            TestNeedsName
-        }
-
-		public static Dictionary<UpgradeType, int> upgrades = new Dictionary<UpgradeType, int>() {
-	        { UpgradeType.DeathArrow, 0 },
-	        { UpgradeType.DeathBomb, 0 },
-	        { UpgradeType.FreezeStrike, 0 }, //capped at 10, 10% chance each
-	        { UpgradeType.BurnStrike, 0 }, //capped at 10
-	        { UpgradeType.WeakenStrike, 0 },
-			{ UpgradeType.MultiStrike, 0 },
-			{ UpgradeType.TestNeedsName, 0 }
-		};
-
-		public void doShortcut()
-		{
-            if (Input.GetKeyDown(KeyCode.LeftArrow))
-            {
-                foreach(Tentacle tent in activeTentacles)
-                {
-                    tent.curveIntensity--;
-				}
-            }
-			if (Input.GetKeyDown(KeyCode.RightArrow))
-			{
-				foreach (Tentacle tent in activeTentacles)
-				{
-					tent.curveIntensity++;
-				}
-			}
-            if (Input.GetKeyDown(KeyCode.UpArrow))
-            {
-				foreach (Tentacle tent in activeTentacles)
-				{
-					tent.spacing += 0.2f;
-				}
-			}
-			if (Input.GetKeyDown(KeyCode.DownArrow))
-			{
-				foreach (Tentacle tent in activeTentacles)
-				{
-					tent.spacing -= 0.2f;
-				}
-			}
-			if (Input.GetKeyDown(KeyCode.RightControl))
-			{
-				createTentaTest(controlledActorSc.transform.position);
-				//SpawnDrop(validEnemyTargets.GetRandom());
-			}
-		}
-
-		// Update sprite movement for drops
-		void UpdateSpriteMovement(SpriteMovement spriteMovement)
-		{
-			spriteMovement.elapsedTime += Time.deltaTime * spriteMovement.speed;
-
-			// Calculate vertical movement using sine function
-			float yOffset = Mathf.Sin(spriteMovement.elapsedTime * Mathf.PI) * spriteMovement.maxHeight * -1;
-
-			// Update sprite position
-			spriteMovement.transform.position = spriteMovement.initialPosition + new Vector3(Mathf.Cos(spriteMovement.randomAngle) * yOffset, Mathf.Sin(spriteMovement.randomAngle) * yOffset, 0f);
-		}
-
-		public static void SpawnDrop(Actor targetActor)
-        {
-            if(spritePrefab == null)
-            {
-				spritePrefab = new GameObject("t");
-				//spritePrefab.transform.parent = controlledActorSc.transform;
-
-				spritePrefab.AddComponent<SpriteRenderer>();
-				Sprite happySprite = (Sprite)Resources.Load("ui/Icons/iconMoodHappy", typeof(Sprite));
-				spritePrefab.GetComponent<SpriteRenderer>().sprite = happySprite;
-				spritePrefab.GetComponent<SpriteRenderer>().sortingLayerID = controlledActorSc.spriteRenderer.sortingLayerID;
-				spritePrefab.transform.localScale = new Vector3(0.06f, 0.06f, 0.06f);
-			}
-            GameObject spriteObject = null;
-
-			// Instantiate a new sprite if recycler is empty
-			if (recycler.Count == 0)
-            {
-				// Activate the sprite prefab in case it was used and deactivated already
-				spritePrefab.gameObject.SetActive(true);
-				spriteObject = Instantiate(spritePrefab, targetActor.transform.position, Quaternion.identity);
-
-				SpriteRenderer spriteRenderer = spriteObject.GetComponent<SpriteRenderer>();
-				//change sprite here?
-				spriteObject.transform.localScale = new Vector3(0.04f, 0.04f, 0.04f);
-				spriteRenderer.color = Color.green;
-				// add drop to list to check for collision
-				spritePrefab.gameObject.SetActive(false);
-			}
-			else // use object from recycler in same way fresh one is used
-            {
-                spriteObject = recycler.First();
-                spriteObject.gameObject.SetActive(true);
-                spriteObject.transform.position = targetActor.transform.position;
-
-				SpriteRenderer spriteRenderer = spriteObject.GetComponent<SpriteRenderer>();
-                //change sprite here?
-
-                // add drop to list to check for collision
-                recycler.Remove(spriteObject);
-			}
-			// Store the initial position
-			Vector3 initialPosition = spriteObject.transform.position;
-
-			// Set a random angle of movement for this sprite within the upper 180 degrees (π to 2π)
-			float randomAngle = UnityEngine.Random.Range(Mathf.PI, Mathf.PI * 2); // Random angle in radians
-
-			// Add the sprite movement to the list
-			activeSpriteMovements.Add(new SpriteMovement(spriteObject.transform, initialPosition, randomAngle, 2f, 3f));
-			drops.Add(spriteObject);
-		}
-
-		public static List<GameObject> drops = new List<GameObject>();
-		public static List<GameObject> recycler = new List<GameObject>();
-		public static List<SpriteMovement> activeSpriteMovements = new List<SpriteMovement>();
-
-		// Define a class to hold sprite movement information
-		public class SpriteMovement
-		{
-			public Transform transform;
-			public Vector3 initialPosition;
-			public float randomAngle;
-			public float elapsedTime;
-			public float speed;
-			public float maxHeight;
-
-			public SpriteMovement(Transform _transform, Vector3 _initialPosition, float _randomAngle, float _speed, float _maxHeight)
-			{
-				transform = _transform;
-				initialPosition = _initialPosition;
-				randomAngle = _randomAngle;
-				elapsedTime = 0f;
-				speed = _speed;
-				maxHeight = _maxHeight;
-			}
-		}
-
-        public static List<Tentacle> activeTentacles = new List<Tentacle>();
-
-		public class Tentacle
-		{
-            public GameObject parentObject; // for using in update later
-			public int numberOfSprites = 15;
-			public float spacing = 1.0f; // Spacing between sprites
-			public float curveIntensity = 15; // Intensity of the curve
-            public List<GameObject> objectList = new List<GameObject>(); // for storing the instantiated pieces
-            public GameObject lastObject;
-            public Actor focusActor; // what actor to look at
-            public float angleOffset;
-			public Tentacle(Vector3 pos)
-            {
-                //make sure prefab exists
-				if (spritePrefab == null)
-				{
-					spritePrefab = new GameObject("t");
-					//spritePrefab.transform.parent = controlledActorSc.transform;
-
-					spritePrefab.AddComponent<SpriteRenderer>();
-					Sprite happySprite = (Sprite)Resources.Load("ui/Icons/iconMoodHappy", typeof(Sprite));
-					spritePrefab.GetComponent<SpriteRenderer>().sprite = happySprite;
-					spritePrefab.GetComponent<SpriteRenderer>().sortingLayerID = controlledActorSc.spriteRenderer.sortingLayerID;
-					spritePrefab.transform.localScale = new Vector3(0.06f, 0.06f, 0.06f);
-				}
-
-				//create first object to parent the rest to
-				parentObject = Instantiate(spritePrefab, pos, Quaternion.identity);
-
-				List<GameObject> lineSprites = new List<GameObject>();
-				int third = numberOfSprites / 4;//fourth whatever 
-				for (int i = 1; i < numberOfSprites; i++)
-				{
-					GameObject sprite = Instantiate(spritePrefab, Vector3.zero, Quaternion.identity);
-					sprite.transform.parent = parentObject.transform;
-					sprite.GetComponent<SpriteRenderer>().color = Color.black;
-
-					if (i < 3) //if (i < numberOfSprites - 3) // all but last 3
-					{
-						sprite.GetComponent<SpriteRenderer>().enabled = false;
-					}
-					lineSprites.Add(sprite);
-					lastObject = sprite;
-				}
-                objectList = lineSprites;
-			}
-		}
-
-		public static GameObject spritePrefab; // The prefab of the sprite object
-
-        public void TentacleUpdate()
-        {
-            for (int i = 0; i < activeTentacles.Count; i++)
-            {
-                Tentacle tentacool = activeTentacles[i];
-
-                //update tracked enemy
-                Vector3 pos = tentacool.parentObject.transform.position;
-				WorldTile tentaclesTile = MapBox.instance.GetTile((int)pos.x, (int)pos.y);
-				if ((tentacool.focusActor == null || tentacool.focusActor.isAlive() == false) && tentaclesTile != null && validEnemyTargets.Count > 0)
-                {
-                    Actor closest = Toolbox.getClosestActor(validEnemyTargets, tentaclesTile);
-                    tentacool.focusActor = closest;
-				}
-
-				List<GameObject> lineSprites = tentacool.objectList;
-
-				Vector3 lineStartPosition = tentacool.parentObject.transform.position; // Constant start position
-
-				for (int n = 0; n < lineSprites.Count; n++)
-				{
-					float t = (float)n / (lineSprites.Count - 1);
-					Vector3 lastPos = tentacool.lastObject.transform.position;
-					WorldTile ti = MapBox.instance.GetTile((int)lastPos.x, (int)lastPos.y);
-
-					if (ti != null)
-					{
-						PixelFlashEffects flashEffects = MapBox.instance.flashEffects;
-						flashEffects.flashPixel(ti);
-					}
-
-					//target position for the tentacle focus
-					Vector3 targetPosition = new Vector3();
-					if (tentacool.focusActor != null)
-                    {
-						targetPosition = Vector3.Lerp(lineStartPosition, tentacool.focusActor.transform.position, t);
-					}
-                    else
-                    {
-						targetPosition = Vector3.Lerp(lineStartPosition, controlledActorSc.transform.position, t);
-                    }
-
-					// Apply curve to y position
-					targetPosition.y += Mathf.Sin(t * Mathf.PI) * tentacool.curveIntensity;
-
-					// Adjust positions to maintain spacing
-					if (n > 0)
-					{
-						Vector3 previousPosition = lineSprites[n - 1].transform.position;
-						float distance = Vector3.Distance(targetPosition, previousPosition);
-						if (distance > tentacool.spacing)
-						{
-							Vector3 direction = (previousPosition - targetPosition).normalized;
-							targetPosition = previousPosition - direction * tentacool.spacing;
-						}
-					}
-
-					// Set position and rotation
-					lineSprites[n].transform.position = targetPosition;
-				}
-
-				if (Input.GetMouseButton(0))
-				{
-					Vector3 finalObjectPos = tentacool.lastObject.transform.position;
-					Actor closest = tentacool.focusActor;
-                    if(closest != null)
-                    {
-						Projectile arrow = EffectsLibrary.spawnProjectile("arrow", finalObjectPos, closest.currentTile.posV3, closest.getZ());
-						arrow.byWho = controlledActorSc;
-					}
-				}
-			}
-		}
-
-		//menu for selecting and managing upgrades/skills as player levels up
-		public void upgradeWindow(int windowID)
-		{
-			GuiMain.SetWindowInUse(windowID);
-			GUILayout.Button("Available points: " + (currentUpgradeLevel - spentUpgrades).ToString());
-
-			// Create a copy of the keys
-			List<UpgradeType> keys = new List<UpgradeType>(upgrades.Keys);
-
-			// Iterate over the copied keys
-			foreach (UpgradeType key in keys)
-			{
-				GUILayout.BeginHorizontal();
-				GUILayout.Button(upgrades[key].ToString());
-
-				if (GUILayout.Button(key.ToString()))
-				{
-					if (spentUpgrades < currentUpgradeLevel)
-					{
-						if (key == UpgradeType.FreezeStrike && upgrades[key] >= 10)
-						{
-							//ability capped out, return
-							return;
-						}
-						if (key == UpgradeType.BurnStrike && upgrades[key] >= 10)
-						{
-							//ability capped out, return
-							return;
-						}
-						spentUpgrades++;
-						upgrades[key]++;
-					}
-				}
-				GUILayout.EndHorizontal();
-			}
-			GUI.DragWindow();
-		}
-
-        public static List<Actor> sortedDistanceList;
-
-		public static void newKillActionPostfix(Actor pDeadUnit, Kingdom pPrevKingdom, Actor __instance)
+        public static void newKillAction_Postfix(Actor pDeadUnit, Kingdom pPrevKingdom, Actor __instance)
         {
             if (__instance == controlledActorSc && validEnemyTargets.Contains(pDeadUnit))
             {
                 enemyKills++;
-				SpawnDrop(pDeadUnit);
-				//recalculate sorted
-				//distance list.. every kill? surely this can be done in a better place, or timing?
-				sortedDistanceList = validEnemyTargets.OrderBy(target => Toolbox.DistTile(controlledActorSc.currentTile, target.currentTile)).ToList();
-				if (upgrades[UpgradeType.DeathArrow] > 0 && Toolbox.randomChance(0.1f))
+                if (controlledActorSc.hasTrait("death_arrow") && Toolbox.randomChance(0.1f))
                 {
-					//1 sec = 1, 60 sec = 3, 180sec = 7 : (int)timeSurvivedSoFar / 30), swapped for upgrade
-					for (int i = 0; i < (upgrades[UpgradeType.DeathArrow]); i++)
+                    //1 sec = 1, 60 sec = 3, 180sec = 7
+                    for (int i = 0; i < (1 + ((int)timeSurvivedSoFar / 30)); i++)
                     {
-                        Actor validTarget = sortedDistanceList[i];
-                        float distanceBetweenActors = Toolbox.DistTile(controlledActorSc.currentTile, validTarget.currentTile);
+                        Actor validTarget = validEnemyTargets.GetRandom();
                         shootAtTile(controlledActorSc, validTarget.currentTile, "arrow");
                     }
                 }
-                if (upgrades[UpgradeType.DeathBomb] > 0 && Toolbox.randomChance(0.1f))
+                if (controlledActorSc.hasTrait("death_bomb") && Toolbox.randomChance(0.1f))
                 {
-					//1 sec = 1, 60 sec = 2?, 180sec = 3 : (int)timeSurvivedSoFar / 90)
-					for (int i = 0; i < (upgrades[UpgradeType.DeathBomb]); i++)
+                    //1 sec = 1, 60 sec = 2?, 180sec = 3
+                    for (int i = 0; i < (1 + ((int)timeSurvivedSoFar / 90)); i++)
                     {
-                        Actor validTarget = sortedDistanceList[i];
+                        Actor validTarget = validEnemyTargets.GetRandom();
                         shootAtTile(controlledActorSc, validTarget.currentTile, "firebomb");
                     }
                 }
-
-                //DeathArrow is the same but with a cooler animation, why do we keep this
-				if (upgrades.TryGetValue(UpgradeType.MultiStrike, out int potentialMultistirkeLevel))
-				{
-					if (potentialMultistirkeLevel > 0 && Toolbox.randomChance(0.1f))
-					{
-						Debug.Log("multistrike hit");
-                        float damage = controlledActorSc.stats[S.damage];
-						for (int i = 0; i < potentialMultistirkeLevel; i++)
-						{
-							Actor validTarget = sortedDistanceList[i];
-                            validTarget.getHit(damage, true, AttackType.Other, controlledActorSc, false, false);
-						}
-					}
-				}
-
-				//spawn unit x amount of times, increasing scale
-				if (pDeadUnit.hasTrait("death_undying"))
+                //spawn unit x amount of times, increasing scale
+                if (pDeadUnit.hasTrait("death_undying"))
                 {
                     int deathsSoFar = 1;
                     if(pDeadUnit.data.custom_data_int != null && pDeadUnit.data.custom_data_int.TryGetValue("deaths", out int deathCount) == true)
@@ -869,34 +520,6 @@ namespace SimplerGUI.Menus
             }
         }
 
-        public void createTentaTest(Vector3 positionToAnchor)
-        {
-            Tentacle newTent = new Tentacle(positionToAnchor);
-            activeTentacles.Add(newTent);
-            /*
-			for (int lineIndex = 0; lineIndex < numberOfLines; lineIndex++)
-			{
-				List<GameObject> lineSprites = new List<GameObject>();
-				int third = numberOfSprites / 4;//fourth whatever 
-				for (int i = 1; i < numberOfSprites; i++)
-				{
-					GameObject sprite = Instantiate(spritePrefab, Vector3.zero, Quaternion.identity);
-					sprite.transform.parent = controlledActorSc.transform;
-					sprite.GetComponent<SpriteRenderer>().color = Color.black;
-
-					if (i < 3) //if (i < numberOfSprites - 3) // all but last 3
-					{
-						sprite.GetComponent<SpriteRenderer>().enabled = false;
-					}
-					lineSprites.Add(sprite);
-					lastObject = sprite;
-				}
-				spriteLines.Add(lineSprites);
-			}
-            */
-			//spritePrefab.gameObject.SetActive(false);
-		}
-
 
         public static bool killHimself_Prefix(bool pDestroy, AttackType pType, bool pCountDeath, bool pLaunchCallbacks, bool pLogFavorite, Actor __instance)
         {
@@ -917,35 +540,6 @@ namespace SimplerGUI.Menus
         public float lastSpawnUpdate = 0f;
         public static bool preventClicksOpeningWindows = true;
 
-        public List<Vector3> focusPoints = new List<Vector3>() { new Vector3(), new Vector3(), new Vector3() };
-
-        public void DropsUpdate()
-        {
-			// Update each sprite movement
-			for (int i = 0; i < activeSpriteMovements.Count; i++)
-			{
-				UpdateSpriteMovement(activeSpriteMovements[i]);
-			}
-
-			// Remove completed sprite movements
-			activeSpriteMovements.RemoveAll(spriteMovement => spriteMovement.elapsedTime >= 1f);
-
-			Vector3 player = controlledActorSc.transform.position;
-			for (int i = 0; i < drops.Count; i++)
-			{
-				if (Toolbox.DistVec3(player, drops[i].transform.position) < 2f)
-				{
-					drops[i].gameObject.SetActive(false);
-					//do drop logic like add xp, change inventory
-					Debug.Log("drop was picked up");
-
-					//move object to pool for reuse later
-					recycler.Add(drops[i]);
-					drops.Remove(drops[i]);
-					//Debug.Log("counts: r:" + recycler.Count + "; d:" + drops.Count);
-				}
-			}
-		}
 
         public void SurvivorUpdate()
         {
@@ -953,24 +547,18 @@ namespace SimplerGUI.Menus
             {
                 if(global::Config.paused == false)
                 {
-                    doShortcut();
                     timeSurvivedSoFar += Time.deltaTime;
-				}
-                TentacleUpdate();
-                DropsUpdate();
-
-				if (controlledActorSc == null || controlledActorSc.data.alive == false)
+                }
+                if(controlledActorSc == null || controlledActorSc.data.alive == false)
                 {
                     //controlled actor has died, mode should finish
                     float lastTime = timeSurvivedSoFar;
                     WorldTip.showNow("You died. Kills: " + enemyKills.ToString(), false, "center", 10f);
                     //maybe save highest stats for record
                     survivorActive = false;
+                    timeSurvivedSoFar = 0f;
                     timeSurviveStarted = 0f;
-					spentUpgrades = 0;
-					enemyKills = 0;
-					timeSurvivedSoFar = 0f;
-					GuiMain.Other.disableLevelCap = wasLevelCapDisabled;
+                    GuiMain.Other.disableLevelCap = wasLevelCapDisabled;
                     wasLevelCapDisabled = false;
 
                     for (int x = 0; x < AssetManager.traits.list.Count; x++)
@@ -999,6 +587,18 @@ namespace SimplerGUI.Menus
             survivorEnemy.action_special_effect = new WorldAction(SurvivorAction);
             AssetManager.traits.add(survivorEnemy);
 
+            ActorTrait death_arrow = new ActorTrait();
+            death_arrow.id = "death_arrow";
+            death_arrow.path_icon = "ui/Icons/iconGreedy";
+            //survivorEnemy.action_special_effect = new WorldAction(SurvivorAction);
+            AssetManager.traits.add(death_arrow);
+
+            ActorTrait death_bomb = new ActorTrait();
+            death_bomb.id = "death_bomb";
+            death_bomb.path_icon = "ui/Icons/iconGreedy";
+            //survivorEnemy.action_special_effect = new WorldAction(SurvivorAction);
+            AssetManager.traits.add(death_bomb);
+
             ActorTrait death_undying = new ActorTrait();
             death_undying.id = "death_undying";
             death_undying.path_icon = "ui/Icons/iconGreedy";
@@ -1010,14 +610,6 @@ namespace SimplerGUI.Menus
             death_multiply.path_icon = "ui/Icons/iconGreedy";
             //survivorEnemy.action_special_effect = new WorldAction(SurvivorAction);
             AssetManager.traits.add(death_multiply);
-
-            AddSurvivorProjectiles();
-		}
-
-        public void AddSurvivorProjectiles()
-        {
-            ProjectileAsset newArrow = AssetManager.projectiles.clone("survivor_arrow_test", "arrow");
-            newArrow.look_at_target = true;
         }
 
 
@@ -1107,6 +699,14 @@ namespace SimplerGUI.Menus
                             if (Toolbox.randomChance(0.05f))
                             {
                                 newMonster.addTrait("death_undying");
+                            }
+                            if (Toolbox.randomChance(0.01f) && controlledActorSc.hasTrait("death_bomb") == false)
+                            {
+                                controlledActorSc.addTrait("death_bomb");
+                            }
+                            if (Toolbox.randomChance(0.01f) && controlledActorSc.hasTrait("death_arrow") == false)
+                            {
+                                controlledActorSc.addTrait("death_arrow");
                             }
                             newMonster.updateStats();
                         }
@@ -1299,7 +899,7 @@ namespace SimplerGUI.Menus
         public bool showSquadActionWindow;
         public bool showSquadControlWindow;
         public bool showSurvivorWindow;
-        public bool showSurvivorUpgrades;
+
 
         public Rect controlWindowRect = new Rect(126f, 1f, 1f, 1f);
         //subwindows for dividing categories
@@ -1307,7 +907,6 @@ namespace SimplerGUI.Menus
         public Rect squadActionWindowRect;
         public Rect squadControlsWindow;
         public Rect survivorWindowRect;
-        public Rect survivorUpgradesWindowRect;
         public static Rect spawnSelectWindowRect;
 
 
@@ -1341,15 +940,9 @@ namespace SimplerGUI.Menus
                         spawnSelectWindowRect.position = new Vector2(survivorWindowRect.x + survivorWindowRect.width, (survivorWindowRect.y));
                     }
                 }
-				if (showSurvivorUpgrades)
-				{
-					survivorUpgradesWindowRect = GUILayout.Window(17070, survivorUpgradesWindowRect, upgradeWindow, "Upgrades");
-					survivorUpgradesWindowRect.position = new Vector2(survivorWindowRect.x, (survivorWindowRect.y + survivorWindowRect.height));
-				}
-			}
+
+            }
         }
-
-
 
         public void actorControlUpdate()
         {
@@ -1504,9 +1097,9 @@ namespace SimplerGUI.Menus
             }
             return true;
         }
-       
 
-		class SingleActorActions
+
+        class SingleActorActions
         {
             public void StartSingleEscort(Actor toFollow, Actor target = null)
             {
