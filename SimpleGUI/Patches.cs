@@ -79,7 +79,7 @@ namespace SimplerGUI {
             Debug.Log(GuiMain.pluginName + ": Harmony patch finished: " + patch.Name);
 
             original = AccessTools.Method(typeof(MapBox), nameof(MapBox.checkEmptyClick));
-            patch = AccessTools.Method(typeof(GuiMain), nameof(SimplerGUI.Patches.checkEmptyClick_Prefix));
+            patch = AccessTools.Method(typeof(Patches), nameof(SimplerGUI.Patches.checkEmptyClick_Prefix));
             harmony.Patch(original, new HarmonyMethod(patch));
             Debug.Log(GuiMain.pluginName + ": Harmony patch finished: " + patch.Name);
 
@@ -94,7 +94,7 @@ namespace SimplerGUI {
             Debug.Log(GuiMain.pluginName + ": Harmony patch finished: " + patch.Name);
 
             original = AccessTools.Method(typeof(LocalizedTextManager), nameof(LocalizedTextManager.loadLocalizedText));
-            patch = AccessTools.Method(typeof(GuiMain), nameof(SimplerGUI.Patches.loadLocalizedText_Postfix));
+            patch = AccessTools.Method(typeof(Patches), nameof(SimplerGUI.Patches.loadLocalizedText_Postfix));
             harmony.Patch(original, null, new HarmonyMethod(patch));
             Debug.Log(GuiMain.pluginName + ": Harmony patch finished: " + patch.Name);
 
@@ -130,12 +130,12 @@ namespace SimplerGUI {
             Debug.Log(GuiMain.pluginName + ": Harmony patch finished: " + patch.Name);
 
             original = AccessTools.Method(typeof(MapBox), nameof(MapBox.updateControls));
-            patch = AccessTools.Method(typeof(GuiMain), nameof(SimplerGUI.Patches.updateControls_Prefix));
+            patch = AccessTools.Method(typeof(Patches), nameof(SimplerGUI.Patches.updateControls_Prefix));
             harmony.Patch(original, new HarmonyMethod(patch));
             Debug.Log(GuiMain.pluginName + ": Harmony patch finished: " + patch.Name);
 
             original = AccessTools.Method(typeof(MapBox), nameof(MapBox.isActionHappening));
-            patch = AccessTools.Method(typeof(GuiMain), nameof(SimplerGUI.Patches.isActionHappening_Postfix));
+            patch = AccessTools.Method(typeof(Patches), nameof(SimplerGUI.Patches.isActionHappening_Postfix));
             harmony.Patch(original, null, new HarmonyMethod(patch));
             Debug.Log(GuiMain.pluginName + ": Harmony patch finished: " + patch.Name);
 
@@ -158,7 +158,7 @@ namespace SimplerGUI {
             */
 
             original = AccessTools.Method(typeof(SaveWorldButton), nameof(SaveWorldButton.saveWorld));
-            patch = AccessTools.Method(typeof(GuiMain), nameof(SimplerGUI.Patches.saveWorld_Postfix));
+            patch = AccessTools.Method(typeof(Patches), nameof(SimplerGUI.Patches.saveWorld_Postfix));
             harmony.Patch(original, null, new HarmonyMethod(patch));
             Debug.Log(GuiMain.pluginName + ": Harmony patch finished: " + patch.Name);
 
@@ -178,22 +178,22 @@ namespace SimplerGUI {
             //Debug.Log(pluginName + ": Harmony patch finished: " + patch.Name);
 
             original = AccessTools.Method(typeof(Actor), nameof(Actor.addExperience));
-            patch = AccessTools.Method(typeof(GuiMain), nameof(SimplerGUI.Patches.addExperience_Prefix));
+            patch = AccessTools.Method(typeof(Patches), nameof(SimplerGUI.Patches.addExperience_Prefix));
             harmony.Patch(original, new HarmonyMethod(patch));
             Debug.Log(GuiMain.pluginName + ": Harmony patch finished: " + patch.Name);
 
             original = AccessTools.Method(typeof(ActorBase), nameof(ActorBase.addTrait));
-            patch = AccessTools.Method(typeof(GuiMain), nameof(SimplerGUI.Patches.addTrait_Prefix));
+            patch = AccessTools.Method(typeof(Patches), nameof(SimplerGUI.Patches.addTrait_Prefix));
             harmony.Patch(original, new HarmonyMethod(patch));
             Debug.Log(GuiMain.pluginName + ": Harmony patch finished: " + patch.Name);
 
             original = AccessTools.Method(typeof(ActorAnimationLoader), nameof(ActorAnimationLoader.getItem));
-            patch = AccessTools.Method(typeof(GuiMain), nameof(SimplerGUI.Patches.getItem_Prefix));
+            patch = AccessTools.Method(typeof(Patches), nameof(SimplerGUI.Patches.getItem_Prefix));
             harmony.Patch(original, new HarmonyMethod(patch));
             Debug.Log(GuiMain.pluginName + ": Harmony patch finished: " + patch.Name);
 
             original = AccessTools.Method(typeof(LocalizedTextManager), nameof(LocalizedTextManager.getText));
-            patch = AccessTools.Method(typeof(GuiMain), nameof(SimplerGUI.Patches.getText_Prefix));
+            patch = AccessTools.Method(typeof(Patches), nameof(SimplerGUI.Patches.getText_Prefix));
             harmony.Patch(original, new HarmonyMethod(patch));
             Debug.Log(GuiMain.pluginName + ": Harmony patch finished: " + patch.Name);
 
