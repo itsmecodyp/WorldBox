@@ -11,6 +11,9 @@ using UnityEngine.Tilemaps;
 using Random = UnityEngine.Random;
 using System.Threading.Tasks;
 using System.IO;
+using SimplerGUI.Menus;
+using BodySnatchers;
+using System.ComponentModel;
 
 namespace SimplerGUI.Submods.WorldBox3D {
     [BepInPlugin(pluginGuid, pluginName, pluginVersion)]
@@ -377,10 +380,11 @@ namespace SimplerGUI.Submods.WorldBox3D {
 
         public static bool tile3Denabled;
         public static List<Cloud> hurricaneList = new List<Cloud>();
+
         public static void update_CloudPostfix(float pElapsed, Cloud __instance)
-        {
-            if(_3dEnabled) {
-                __instance.transform.position = new Vector3(__instance.transform.position.x, __instance.transform.position.y, -30f);
+		{
+            if(_3dEnabled && (cloudList.Contains(__instance) == false)) {
+                __instance.transform.position = new Vector3(__instance.transform.position.x, __instance.transform.position.y, -7f);
             }
             if(hurricaneList.Contains(__instance)) {
                 __instance.transform.RotateAround(__instance.tile.posV3, Vector3.forward, 20 * Time.deltaTime * Toolbox.randomFloat(0f, 5f));
@@ -396,7 +400,9 @@ namespace SimplerGUI.Submods.WorldBox3D {
             window3DRect.height = 0f;
             if(autoPlacement)
             ObjectPositioning();
-        }
+            updaterPos += Time.deltaTime;
+
+		}
         public void Awake()
         {
             Harmony harmony = new Harmony(pluginGuid);
@@ -470,16 +476,86 @@ namespace SimplerGUI.Submods.WorldBox3D {
 
             harmony = new Harmony(pluginGuid);
             original = AccessTools.Method(typeof(GroupSpriteObject), "setRotation");
-            //patch = AccessTools.Method(typeof(_3D_Main), "setRotation_Postfix");
-            //harmony.Patch(original, new HarmonyMethod(patch));
-            //Debug.Log("setTileDirty_Prefix");
+			//patch = AccessTools.Method(typeof(_3D_Main), "setRotation_Postfix");
+			//harmony.Patch(original, new HarmonyMethod(patch));
+			//Debug.Log("setTileDirty_Prefix");
+
+			harmony = new Harmony(pluginGuid);
+			original = AccessTools.Method(typeof(Tornado), "prepare");
+			patch = AccessTools.Method(typeof(_3D_Main), "prepare_Postfix");
+			harmony.Patch(original, new HarmonyMethod(patch));
 
 
-            harmony.PatchAll();
+			harmony = new Harmony(pluginGuid);
+			original = AccessTools.Method(typeof(Tornado), "update");
+			patch = AccessTools.Method(typeof(_3D_Main), "tornadoUpdate_Postfix");
+			harmony.Patch(original, new HarmonyMethod(patch));
+
+			harmony.PatchAll();
             SettingSetup();
         }
-        
-        public static bool smokeUpdate_Prefix(float pElapsed, BuildingSmokeEffect __instance)
+
+		public static Dictionary<Tornado, List<BaseEffect>> tornadoVisualizers = new Dictionary<Tornado, List<BaseEffect>>();
+        public static List<Cloud> cloudList = new List<Cloud>();
+		public static void prepare_Postfix(Tornado __instance)
+		{
+            List<BaseEffect> clouds = new List<BaseEffect>();
+			for (int i = 0; i < 640; i++)
+			{
+				//BaseEffect newCloudEffect = EffectsLibrary.spawn("fx_cloud");
+				BaseEffect newCloud = EffectsLibrary.spawn("fx_cloud", __instance.actor.currentTile, "cloud_rain", null, 0f, -1f, -1f);
+
+				Cloud component = newCloud.GetComponent<Cloud>();
+				component.sprRenderer.color = Color.black;
+
+				//newCloudEffect.transform.localPosition = new Vector3((float)x, (float)y, (float)z);
+				newCloud.transform.localScale = new Vector3(0.02f, 0.02f, 0.02f);
+                cloudList.Add(component);
+				clouds.Add(newCloud);
+			}
+			tornadoVisualizers.Add(__instance, clouds);
+		}
+
+        public static float updaterPos;
+        public static void tornadoUpdate_Postfix(float pElapsed, Tornado __instance)
+        {
+            if (__instance.actor.isAlive())
+            {
+                if (tornadoVisualizers.ContainsKey(__instance))
+                {
+                    List<BaseEffect> clouds = tornadoVisualizers[__instance];
+
+					double section = 2 * Math.PI / clouds.Count;
+					double heightSpeed = -0.1; // Speed of upward movement
+
+					for (int i = 0; i < clouds.Count; i++)
+					{
+						double radian = section * (i + updaterPos) * 50;
+						double radius = i * 0.04; // Adjust scaling factor as needed, ??? minimum for bottom point to look right
+						double x = radius * Math.Cos(radian) + __instance.actor.currentPosition.x;
+						double y = radius * Math.Sin(radian) + __instance.actor.currentPosition.y;
+                        double z = (i * heightSpeed); // Increase height continuously;
+
+						BaseEffect cloud = clouds[i];
+						Cloud component = clouds[i].GetComponent<Cloud>();
+						component.effect_texture_width = component.sprRenderer.sprite.textureRect.width * 0.005f;
+						component.effect_texture_height = component.sprRenderer.sprite.textureRect.height * 0.0025f;
+						component._timer_action_1 = 99999f; //disable drops from cloud
+						component._timer_action_2 = 99999f;
+						if (tile3Denabled)
+						{
+							z = (-__instance.actor.currentTile.Height / dividerAmount) + (i * heightSpeed); // Increase height continuously
+                            component.spriteShadow.enabled = false;
+						}
+						cloud.transform.localPosition = new Vector3((float)x, (float)y, (float)z);
+					}
+				}
+			}
+        }
+
+
+
+		public static bool smokeUpdate_Prefix(float pElapsed, BuildingSmokeEffect __instance)
         {
             if(_3dEnabled)
             {
@@ -560,7 +636,7 @@ namespace SimplerGUI.Submods.WorldBox3D {
 
         public static void setAlpha_Postfix(float pVal, BaseEffect __instance) // applies to clouds, explosions, fireworks
         {
-            if(_3dEnabled) {
+            if(_3dEnabled && ActorControlMain.survivorActive == false) {
                 float height = 0f;
                 WorldTile tile = tileFromVector(__instance.transform.localPosition);
                 
@@ -568,8 +644,12 @@ namespace SimplerGUI.Submods.WorldBox3D {
                     height = (-tile.Height) / dividerAmount;
                 }
 
-                __instance.transform.localPosition = new Vector3(__instance.transform.localPosition.x, __instance.transform.localPosition.y, height);
-                if (__instance.controller != null && __instance.controller.asset.id == "fx_cloud")
+                if (__instance.controller.asset.id != "fx_cloud")
+                {
+					__instance.transform.localPosition = new Vector3(__instance.transform.localPosition.x, __instance.transform.localPosition.y, height);
+				}
+
+				if (__instance.controller != null && __instance.controller.asset.id == "fx_cloud")
                 {
                     //clouds need specific rotation
                     __instance.transform.rotation = Quaternion.Euler(-90, 0, 0);
