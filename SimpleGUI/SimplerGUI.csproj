@@ -61,7 +61,6 @@
     <Compile Include="Menus\Traits.cs" />
     <Compile Include="Menus\World.cs" />
     <Compile Include="ModSettingsMenu.cs" />
-    <Compile Include="Patches.cs" />
     <Compile Include="Patreon_Eggs.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Submods\AssetModEnabler\AssetModEnabler.cs" />
