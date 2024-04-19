@@ -146,7 +146,7 @@ namespace SimplerGUI.Submods {
 
 		//response patch for cultists
 		//happens instantly, need a way to delay it
-		public static void ActorSay_Postfix(Actor targetActor, string messageText, float duration)
+		public static void ActorSay_postfix(Actor targetActor, string messageText, float duration)
 		{
 			//check if actor speaking is cult leader, could use some other check
 			if(cultsDict.ContainsKey(targetActor)) {
