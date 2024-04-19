@@ -60,8 +60,16 @@ namespace SimplerGUI.Submods.AssetModEnabler
         {
             if (Input.GetKey(KeyCode.LeftControl))
             {
+				if (Input.GetMouseButtonDown(0))
+				{
+					var asset = AssetManager.actor_library.get(selectedActorAsset.id);
 
-            }
+					if (asset != null && MapBox.instance.getMouseTilePos() != null)
+					{
+						World.world.units.createNewUnit(asset.id, MapBox.instance.getMouseTilePos(), 0f);
+					}
+				}
+			}
             if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.R))
             {
                 showSubMod = true;
@@ -75,7 +83,24 @@ namespace SimplerGUI.Submods.AssetModEnabler
         public static bool showHideMainWindow;
         public static Rect mainWindowRect = new Rect(0f, 1f, 1f, 1f);
 
-        public bool showSubMod = true;
+		public static bool showHideActorWindow;
+		public static Rect actorWindowRect = new Rect(0f, 1f, 1f, 1f);
+		public static bool showHideAssetEditWindow;
+		public static Rect assetEditWindowRect = new Rect(0f, 1f, 1f, 1f);
+
+		public static bool showHideRaceWindow;
+		public static Rect raceWindowRect = new Rect(0f, 1f, 1f, 1f);
+		public static bool showHideRaceEditWindow;
+		public static Rect raceEditWindowRect = new Rect(0f, 1f, 1f, 1f);
+
+		public Vector2 scrollPositionActorAssetEdit;
+		public Vector2 scrollPositionActorAssetSelect;
+
+		public Vector2 scrollPositionRaceAssetEdit;
+		public Vector2 scrollPositionRaceAssetSelect;
+
+
+		public bool showSubMod = false;
 
         public void OnGUI()
         {
@@ -100,10 +125,376 @@ namespace SimplerGUI.Submods.AssetModEnabler
                 {
                     tileTypeWindowRect = GUILayout.Window(410402, tileTypeWindowRect, TileTypeSetWindow, "TileType Stuff", GUILayout.MaxWidth(300f), GUILayout.MinWidth(200f));
                 }
-            }
+
+                //dreaded actor assets
+				if (showHideActorWindow)
+				{
+					actorWindowRect = GUILayout.Window(410403, actorWindowRect, ActorWindow, "Actor Stuff", GUILayout.MaxWidth(300f), GUILayout.MinWidth(200f));
+                    assetEditWindowRect = GUILayout.Window(410404, assetEditWindowRect, ActorAssetEditWindow, "Asset Stuff", GUILayout.MinWidth(200f));
+					assetEditWindowRect.position = new Vector2(actorWindowRect.x + actorWindowRect.width, actorWindowRect.y);
+				}
+
+				if (showHideRaceWindow)
+				{
+					raceWindowRect = GUILayout.Window(410405, raceWindowRect, RaceWindow, "Race Stuff", GUILayout.MaxWidth(300f), GUILayout.MinWidth(200f));
+					raceEditWindowRect = GUILayout.Window(410406, raceEditWindowRect, RaceAssetEditWindow, "Asset Stuff", GUILayout.MinWidth(200f));
+					raceEditWindowRect.position = new Vector2(raceWindowRect.x + raceWindowRect.width, raceWindowRect.y);
+				}
+
+			}
         }
-     
-        public void AssetModEnablerWindow(int windowID)
+
+        public void ActorWindow(int windowID)
+        {
+			GuiMain.SetWindowInUse(windowID);
+
+			if (GUILayout.Button("Clone"))
+            {
+                if(selectedActorAsset != null)
+                {
+					AssetManager.actor_library.clone(selectedActorAsset.id + "_cloned", selectedActorAsset.id);
+                }
+            }
+			scrollPositionActorAssetSelect = GUILayout.BeginScrollView(scrollPositionActorAssetSelect, GUILayout.MaxWidth(300f), GUILayout.Height(500f));
+			foreach (ActorAsset actorAss in AssetManager.actor_library.list)
+            {
+                if (GUILayout.Button(actorAss.id))
+                {
+					selectedActorAsset = actorAss;
+				}
+            }
+            GUILayout.EndScrollView();
+			GUI.DragWindow();
+		}
+
+		public void RaceWindow(int windowID)
+		{
+			GuiMain.SetWindowInUse(windowID);
+
+			if (GUILayout.Button("Clone"))
+			{
+				if (selectedRaceAsset != null)
+				{
+					AssetManager.raceLibrary.clone(selectedRaceAsset.id + "_cloned", selectedRaceAsset.id);
+				}
+			}
+			if (GUILayout.Button("Apply edits"))
+			{
+				if (selectedRaceAsset != null)
+				{
+					AssetManager.raceLibrary.add(selectedRaceAsset);
+				}
+			}
+			scrollPositionRaceAssetSelect = GUILayout.BeginScrollView(scrollPositionRaceAssetSelect, GUILayout.MaxWidth(300f), GUILayout.Height(500f));
+			foreach (Race raceAss in AssetManager.raceLibrary.list)
+			{
+				if (GUILayout.Button(raceAss.id))
+				{
+					selectedRaceAsset = raceAss;
+				}
+			}
+			GUILayout.EndScrollView();
+			GUI.DragWindow();
+		}
+
+
+		ActorAsset selectedActorAsset;
+		Race selectedRaceAsset;
+
+
+		public void ActorAssetEditWindow(int windowID)
+		{
+            GuiMain.SetWindowInUse(windowID);
+			if (selectedActorAsset != null)
+			{
+				scrollPositionActorAssetEdit = GUILayout.BeginScrollView(scrollPositionActorAssetEdit, GUILayout.Width(500f), GUILayout.Height(300f));
+				FieldInfo[] fields = typeof(ActorAsset).GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+				for (int i = 0; i < fields.Length; i++)
+				{
+					object fieldValueObject = fields[i].GetValue(selectedActorAsset);
+					if (fieldValueObject != null)
+					{
+						if (fields[i].FieldType == typeof(int))
+						{
+							int fieldValue = (int)fieldValueObject;
+
+							GUILayout.BeginHorizontal();
+							GUILayout.Button(fields[i].Name);
+							GUILayout.Button(fieldValueObject.ToString());
+							fieldValue = (int)GUILayout.HorizontalSlider(fieldValue, 0, 1000);
+							GUILayout.EndHorizontal();
+
+							fields[i].SetValue(selectedActorAsset, fieldValue); // Update the field value
+						}
+						else if (fields[i].FieldType == typeof(float))
+						{
+							float fieldValue = (float)fieldValueObject;
+
+							GUILayout.BeginHorizontal();
+							GUILayout.Button(fields[i].Name);
+							GUILayout.Button(fieldValueObject.ToString());
+							fieldValue = GUILayout.HorizontalSlider(fieldValue, 0, 1000);
+							GUILayout.EndHorizontal();
+
+							fields[i].SetValue(selectedActorAsset, fieldValue); // Update the field value
+						}
+						else if (fields[i].FieldType == typeof(string))
+						{
+							string fieldValue = (string)fieldValueObject;
+
+							GUILayout.BeginHorizontal();
+                            string id = fields[i].Name;
+							GUILayout.Button(id);
+							fieldValue = GUILayout.TextField(fieldValue);
+							GUILayout.EndHorizontal();
+                            if(id != "id")
+                            {
+								fields[i].SetValue(selectedActorAsset, fieldValue); // Update the field value
+							}
+						}
+						else if (fields[i].FieldType == typeof(bool))
+						{
+							bool fieldValue = (bool)fieldValueObject;
+
+							GUILayout.BeginHorizontal();
+							GUILayout.Button(fields[i].Name);
+							if (GUILayout.Button(fieldValue.ToString()))
+							{
+								fieldValue = !fieldValue;
+							}
+							GUILayout.EndHorizontal();
+							fields[i].SetValue(selectedActorAsset, fieldValue); // Update the field value
+						}
+						else if (fields[i].FieldType.IsGenericType && fields[i].FieldType.GetGenericTypeDefinition() == typeof(List<>))
+						{
+							Type typeOfList = fieldValueObject.GetType().GetGenericArguments()[0];
+							IList fieldValue = (IList)fieldValueObject;
+
+							GUILayout.BeginHorizontal();
+							GUILayout.Button(fields[i].Name);
+							//add new empty element
+							if (GUILayout.Button("+"))
+							{
+                                //in ActorAsset, string lists are the only type that exist, for now
+								if (typeOfList == typeof(string))
+								{
+									fieldValue.Add("");
+								}
+							}
+							int c = 0;
+							List<object> elementsToRemove = new List<object>();
+							// iterate through each element of the list
+							for (int j = 0; j < fieldValue.Count; j++)
+							{
+								object element = fieldValue[j];
+
+								if (element != null && element.GetType() == typeOfList)
+								{
+									if (typeOfList == typeof(string))
+									{
+										string elementValue = (string)element;
+										elementValue = GUILayout.TextField(elementValue);
+										fieldValue[j] = elementValue;
+										if (GUILayout.Button("-", GUILayout.Width(20)))
+										{
+											elementsToRemove.Add(element);
+										}
+										if (c != 1 && c % 3 == 0) // split buttons into vertical rows of 3
+										{
+											GUILayout.EndHorizontal();
+											GUILayout.BeginHorizontal();
+										}
+										c++;
+									}
+									// Add other type checks as needed
+								}
+							}
+
+							// Remove marked elements
+							foreach (var elementToRemove in elementsToRemove)
+							{
+								fieldValue.Remove(elementToRemove);
+							}
+
+							GUILayout.EndHorizontal();
+
+							fields[i].SetValue(selectedActorAsset, fieldValue);
+							// Update the field value
+						}
+						else
+						{
+							GUILayout.BeginHorizontal();
+							GUILayout.Button(fields[i].Name);
+							GUILayout.Button(fieldValueObject.ToString());
+							GUILayout.EndHorizontal();
+						}
+					}
+					else
+					{
+						//Debug.LogWarning("Field " + fields[i].Name + " in selectedActorAsset is null.");
+					}
+				}
+                GUILayout.EndScrollView();
+			}
+
+			GUI.DragWindow();
+		}
+
+		public void RaceAssetEditWindow(int windowID)
+		{
+			GuiMain.SetWindowInUse(windowID);
+			if (selectedRaceAsset != null)
+			{
+				scrollPositionRaceAssetEdit = GUILayout.BeginScrollView(scrollPositionRaceAssetEdit, GUILayout.Width(500f), GUILayout.Height(300f));
+				FieldInfo[] fields = typeof(Race).GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+				for (int i = 0; i < fields.Length; i++)
+				{
+					object fieldValueObject = fields[i].GetValue(selectedRaceAsset);
+					if (fieldValueObject != null)
+					{
+						if (fields[i].FieldType == typeof(int))
+						{
+							int fieldValue = (int)fieldValueObject;
+
+							GUILayout.BeginHorizontal();
+							GUILayout.Button(fields[i].Name);
+							GUILayout.Button(fieldValueObject.ToString());
+							fieldValue = (int)GUILayout.HorizontalSlider(fieldValue, 0, 1000);
+							GUILayout.EndHorizontal();
+
+							fields[i].SetValue(selectedRaceAsset, fieldValue); // Update the field value
+						}
+						else if (fields[i].FieldType == typeof(float))
+						{
+							float fieldValue = (float)fieldValueObject;
+
+							GUILayout.BeginHorizontal();
+							GUILayout.Button(fields[i].Name);
+							GUILayout.Button(fieldValueObject.ToString());
+							fieldValue = GUILayout.HorizontalSlider(fieldValue, 0, 1000);
+							GUILayout.EndHorizontal();
+
+							fields[i].SetValue(selectedRaceAsset, fieldValue); // Update the field value
+						}
+						else if (fields[i].FieldType == typeof(string))
+						{
+							string fieldValue = (string)fieldValueObject;
+
+							GUILayout.BeginHorizontal();
+							string id = fields[i].Name;
+							GUILayout.Button(id);
+							fieldValue = GUILayout.TextField(fieldValue);
+							GUILayout.EndHorizontal();
+							if (id != "id")
+							{
+								fields[i].SetValue(selectedRaceAsset, fieldValue); // Update the field value
+							}
+						}
+						else if (fields[i].FieldType == typeof(bool))
+						{
+							bool fieldValue = (bool)fieldValueObject;
+
+							GUILayout.BeginHorizontal();
+							GUILayout.Button(fields[i].Name);
+							if (GUILayout.Button(fieldValue.ToString()))
+							{
+								fieldValue = !fieldValue;
+							}
+							GUILayout.EndHorizontal();
+							fields[i].SetValue(selectedRaceAsset, fieldValue); // Update the field value
+						}
+						else if (fields[i].FieldType.IsGenericType && fields[i].FieldType.GetGenericTypeDefinition() == typeof(List<>))
+						{
+							Type typeOfList = fieldValueObject.GetType().GetGenericArguments()[0];
+							IList fieldValue = (IList)fieldValueObject;
+
+							GUILayout.BeginHorizontal();
+							GUILayout.Button(fields[i].Name);
+							//add new empty element
+							if (GUILayout.Button("+"))
+							{
+								//in ActorAsset, string lists are the only type that exist, for now
+								if (typeOfList == typeof(string))
+								{
+									fieldValue.Add("");
+								}
+							}
+							int c = 0;
+							List<object> elementsToRemove = new List<object>();
+							// iterate through each element of the list
+							for (int j = 0; j < fieldValue.Count; j++)
+							{
+								object element = fieldValue[j];
+
+								if (element != null && element.GetType() == typeOfList)
+								{
+									if (typeOfList == typeof(string))
+									{
+										string elementValue = (string)element;
+										elementValue = GUILayout.TextField(elementValue);
+										fieldValue[j] = elementValue;
+										if (GUILayout.Button("-", GUILayout.Width(20)))
+										{
+											elementsToRemove.Add(element);
+										}
+										if (c != 1 && c % 3 == 0) // split buttons into vertical rows of 3
+										{
+											GUILayout.EndHorizontal();
+											GUILayout.BeginHorizontal();
+										}
+										c++;
+									}
+									// Add other type checks as needed
+								}
+							}
+
+							// Remove marked elements
+							foreach (var elementToRemove in elementsToRemove)
+							{
+								fieldValue.Remove(elementToRemove);
+							}
+
+							GUILayout.EndHorizontal();
+
+							fields[i].SetValue(selectedRaceAsset, fieldValue);
+							// Update the field value
+						}
+						else
+						{
+							GUILayout.BeginHorizontal();
+							GUILayout.Button(fields[i].Name);
+							GUILayout.Button(fieldValueObject.ToString());
+							GUILayout.EndHorizontal();
+						}
+					}
+					else
+					{
+						//Debug.LogWarning("Field " + fields[i].Name + " in selectedActorAsset is null.");
+					}
+				}
+				GUILayout.EndScrollView();
+			}
+			GUI.DragWindow();
+		}
+
+
+		Texture2D TextureReadable(Texture2D texture)
+		{
+			// Create a new texture with the same properties to apply changes
+			Texture2D readableTexture = new Texture2D(texture.width, texture.height, texture.format, texture.mipmapCount > 1);
+
+			// Copy the pixels from the original texture to the new one
+			Graphics.CopyTexture(texture, readableTexture);
+
+			// Set the readable flag
+			readableTexture.Apply(true);
+
+			// Assign the new readable texture back to the original texture
+			Graphics.CopyTexture(readableTexture, texture);
+            return readableTexture;
+		}
+
+		public void AssetModEnablerWindow(int windowID)
         {
             if (GUILayout.Button("Load assets"))
             {
@@ -126,7 +517,51 @@ namespace SimplerGUI.Submods.AssetModEnabler
                     AssetManager.buildings.loadSprites(b2);
                 }
             }
-            if (GUILayout.Button("Export bonfire"))
+			if (GUILayout.Button("Export ActorAnimations"))
+			{
+				foreach (ActorAsset aa in AssetManager.actor_library.list)
+				{
+					string assetID = aa.id;
+
+					//setup folders
+					string path12 = Application.streamingAssetsPath + "/mods";
+					if (Directory.Exists(path12 + "/Export") == false)
+					{
+						Directory.CreateDirectory(path12 + "/Export");
+					}
+					if (Directory.Exists(path12 + "/Export/actors") == false)
+					{
+						Directory.CreateDirectory(path12 + "/Export/actors");
+					}
+					if (Directory.Exists(path12 + "/Export/actor_sprites") == false)
+					{
+						Directory.CreateDirectory(path12 + "/Export/actor_sprites");
+					}
+
+					string str = "";
+					if (aa.unit)
+					{
+                        //wtf why is this like a puzzle being put together
+						//str = getUnitTexturePath();
+					}
+					else
+					{
+						str = aa.texture_path;
+						AnimationContainerUnit animationContainerUnit = ActorAnimationLoader.loadAnimationUnit("actors/" + str, aa);
+
+                        foreach(KeyValuePair<string, Sprite> spritePair in animationContainerUnit.sprites)
+                        {
+							Texture2D itemBGTex = TextureReadable(spritePair.Value.texture);
+							byte[] itemBGBytes = itemBGTex.EncodeToPNG();
+							File.WriteAllBytes(path12 + "/Export/actor_sprites/" + spritePair.Key + ".png", itemBGBytes);
+						}
+					}
+
+					string dataToSave = JsonUtility.ToJson(aa, true);
+					File.WriteAllText(path12 + "/Export/actors/" + assetID + ".json", dataToSave);
+				}
+			}
+			if (GUILayout.Button("Export bonfire"))
             {
                 string assetID = "bonfire";
                 //setup folders
@@ -460,8 +895,15 @@ namespace SimplerGUI.Submods.AssetModEnabler
                     File.WriteAllText(path12 + "/Export/biomes/" + assetID + ".json", dataToSave);
                 }
             }
-
-            GUI.DragWindow();
+            if(GUILayout.Button("actor window"))
+            {
+                showHideActorWindow = !showHideActorWindow;
+            }
+			if (GUILayout.Button("race window"))
+			{
+				showHideRaceWindow = !showHideRaceWindow;
+			}
+			GUI.DragWindow();
         }
         public void TileTypeSetWindow(int windowID)
         {
