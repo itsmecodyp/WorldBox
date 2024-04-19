@@ -102,9 +102,6 @@
     <Reference Include="AppStoreSettings">
       <HintPath>C:\Program Files (x86)\Steam\steamapps\common\worldbox\worldbox_Data\Managed\AppStoreSettings.dll</HintPath>
     </Reference>
-    <Reference Include="Assembly-CSharp">
-      <HintPath>..\..\Modding\KeyMods\Libraries\Assembly-CSharp.dll</HintPath>
-    </Reference>
     <Reference Include="Assembly-CSharp-firstpass">
       <HintPath>C:\Program Files (x86)\Steam\steamapps\common\worldbox\worldbox_Data\Managed\Assembly-CSharp-firstpass.dll</HintPath>
     </Reference>
@@ -183,7 +180,7 @@
       <HintPath>C:\Program Files (x86)\Steam\steamapps\common\worldbox\worldbox_Data\Managed\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="OpenAI_API">
-      <HintPath>..\..\..\Downloads\OpenAI_API.dll</HintPath>
+      <HintPath>C:\Program Files (x86)\Steam\steamapps\common\worldbox\BepInEx\plugins\OpenAI_API.dll</HintPath>
     </Reference>
     <Reference Include="Purchasing.Common">
       <HintPath>C:\Program Files (x86)\Steam\steamapps\common\worldbox\worldbox_Data\Managed\Purchasing.Common.dll</HintPath>
