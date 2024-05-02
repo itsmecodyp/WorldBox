@@ -879,13 +879,14 @@ namespace SimplerGUI {
             SimpleSettings.timerBetweenFill = Config.AddSetting("Fill", "Fill tool timer", 0.1f, "Time between possible spreads");
             SimpleSettings.maxTimeToWait = Config.AddSetting("Fill", "Max time to wait", 1f, "If a spread tick takes longer than this filling will stop");
             SimpleSettings.fillByLines = Config.AddSetting("Fill", "Fill by mode", "random", "Which fill mode is used. Valid inputs: first, last, random");
-
+            /*
             // detect bloated steam_api file, impossible to have on legit copy
             var fileInfo2 = new FileInfo(Application.dataPath + "/Plugins/x86_64/steam_api64.dll");
             if(fileInfo2.Length > 265000) {
                 // removed for now
                 //GuiPatreon.birthdays.Add("Adin", new DateTime(1, 9, 11));
             }
+            */
             SimpleSettings.zoneAlpha = Config.AddSetting("Other", "Zone Alpha", 0.3f, "Transparency of kingdom zones, for easier visibility");
             SimpleSettings.farmsNewRange = Config.AddSetting("Other", "Windmill farms range", 27f, "Distance from windmills farms can be created");
 

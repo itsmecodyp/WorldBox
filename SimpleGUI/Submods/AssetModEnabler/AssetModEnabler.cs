@@ -207,7 +207,7 @@ namespace SimplerGUI.Submods.AssetModEnabler
             GuiMain.SetWindowInUse(windowID);
 			if (selectedActorAsset != null)
 			{
-				scrollPositionActorAssetEdit = GUILayout.BeginScrollView(scrollPositionActorAssetEdit, GUILayout.Width(500f), GUILayout.Height(300f));
+				scrollPositionActorAssetEdit = GUILayout.BeginScrollView(scrollPositionActorAssetEdit, GUILayout.Width(650f), GUILayout.Height(300f));
 				FieldInfo[] fields = typeof(ActorAsset).GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
 				for (int i = 0; i < fields.Length; i++)
 				{
@@ -321,6 +321,209 @@ namespace SimplerGUI.Submods.AssetModEnabler
 							fields[i].SetValue(selectedActorAsset, fieldValue);
 							// Update the field value
 						}
+						else if (fields[i].FieldType.IsArray)
+						{
+							Type elementType = fields[i].FieldType.GetElementType();
+							Array fieldValue = (Array)fieldValueObject;
+
+							GUILayout.BeginHorizontal();
+							GUILayout.Button(fields[i].Name);
+							// Add new empty element
+							if (GUILayout.Button("+"))
+							{
+								// Check if the element type is string
+								if (elementType == typeof(string))
+								{
+									// Create a new array with one additional element
+									Array newArray = Array.CreateInstance(elementType, fieldValue.Length + 1);
+									// Copy existing elements to the new array
+									Array.Copy(fieldValue, newArray, fieldValue.Length);
+									// Set the last element to an empty string
+									newArray.SetValue("", fieldValue.Length);
+									// Update fieldValue with the new array
+									fieldValue = newArray;
+								}
+							}
+							GUILayout.EndHorizontal();
+
+							int c = 0;
+							List<object> elementsToRemove = new List<object>();
+							// Iterate through each element of the array
+							for (int j = 0; j < fieldValue.Length; j++)
+							{
+								object element = fieldValue.GetValue(j);
+
+								if (element != null && element.GetType() == elementType)
+								{
+									if (elementType == typeof(string))
+									{
+										string elementValue = (string)element;
+										elementValue = GUILayout.TextField(elementValue);
+										fieldValue.SetValue(elementValue, j);
+										if (GUILayout.Button("-", GUILayout.Width(20)))
+										{
+											elementsToRemove.Add(element);
+										}
+										if (c != 1 && c % 3 == 0) // Split buttons into vertical rows of 3
+										{
+											GUILayout.EndHorizontal();
+											GUILayout.BeginHorizontal();
+										}
+										c++;
+									}
+									// Add other type checks as needed
+								}
+							}
+
+							// Remove marked elements
+							foreach (var elementToRemove in elementsToRemove)
+							{
+								// Find the index of the element to remove
+								int index = Array.IndexOf(fieldValue, elementToRemove);
+								// Create a new array with one less element
+								Array newArray = Array.CreateInstance(elementType, fieldValue.Length - 1);
+								// Copy elements before the removed element
+								Array.Copy(fieldValue, 0, newArray, 0, index);
+								// Copy elements after the removed element
+								Array.Copy(fieldValue, index + 1, newArray, index, fieldValue.Length - index - 1);
+								// Update fieldValue with the new array
+								fieldValue = newArray;
+							}
+
+							GUILayout.EndHorizontal();
+
+							fields[i].SetValue(selectedActorAsset, fieldValue);
+							// Update the field value
+						}
+						else if (fields[i].FieldType == typeof(Dictionary<,>))
+						{
+							Type[] dictionaryTypes = fields[i].FieldType.GetGenericArguments();
+							Type keyType = dictionaryTypes[0];
+							Type valueType = dictionaryTypes[1];
+
+							// Assuming keys are always strings
+							if (keyType == typeof(string))
+							{
+                                if (valueType == typeof(float))
+                                {
+									IDictionary fieldValue = (IDictionary)fieldValueObject;
+
+									GUILayout.BeginHorizontal();
+									GUILayout.Button(fields[i].Name);
+									GUILayout.EndHorizontal();
+
+									foreach (var key in fieldValue.Keys)
+									{
+										GUILayout.BeginHorizontal();
+										GUILayout.Button(key.ToString());
+										float value = (float)fieldValue[key];
+										value = GUILayout.HorizontalSlider(value, 0, 1000);
+										fieldValue[key] = value;
+
+										GUILayout.EndHorizontal();
+									}
+
+									// Add new key-value pair
+									GUILayout.BeginHorizontal();
+                                    /*
+									if (GUILayout.Button("Add"))
+									{
+										if (!fieldValue.Contains("NewKey"))
+										{
+											if (valueType == typeof(int))
+											{
+												fieldValue.Add("NewKey", 0);
+											}
+											else if (valueType == typeof(float))
+											{
+												fieldValue.Add("NewKey", 0.0f);
+											}
+										}
+									}
+                                    */
+									GUILayout.EndHorizontal();
+
+									fields[i].SetValue(selectedActorAsset, fieldValue);
+								}
+								if (valueType == typeof(string))
+								{
+									IDictionary fieldValue = (IDictionary)fieldValueObject;
+
+									GUILayout.BeginHorizontal();
+									GUILayout.Button(fields[i].Name);
+									GUILayout.EndHorizontal();
+
+									foreach (var key in fieldValue.Keys)
+									{
+										GUILayout.BeginHorizontal();
+										GUILayout.Button(key.ToString());
+
+										string value = (string)fieldValue[key];
+										value = GUILayout.TextField(value);
+										fieldValue[key] = value;
+
+										GUILayout.EndHorizontal();
+									}
+
+									// Add new key-value pair
+									GUILayout.BeginHorizontal();
+									/*
+									if (GUILayout.Button("Add"))
+									{
+										if (!fieldValue.Contains("NewKey"))
+										{
+											if (valueType == typeof(int))
+											{
+												fieldValue.Add("NewKey", 0);
+											}
+											else if (valueType == typeof(float))
+											{
+												fieldValue.Add("NewKey", 0.0f);
+											}
+										}
+									}
+                                    */
+									GUILayout.EndHorizontal();
+
+									fields[i].SetValue(selectedActorAsset, fieldValue);
+								}
+							}
+                            else
+                            {
+                                Debug.Log("Dict in assets has type " + keyType.ToString());
+                            }
+						}
+						else if (fields[i].FieldType == typeof(BaseStats))
+						{
+							BaseStats baseStats = (BaseStats)fieldValueObject;
+
+							GUILayout.BeginHorizontal();
+							GUILayout.Button(fields[i].Name);
+							GUILayout.EndHorizontal();
+							foreach (string key in baseStats.stats_dict.Keys)
+							{
+								GUILayout.BeginHorizontal();
+								GUILayout.Button(key);
+								float value = (float)baseStats[key];
+								GUILayout.Button(value.ToString());
+								value = GUILayout.HorizontalSlider(value, 0, 1000);
+								baseStats[key] = value;
+
+								GUILayout.EndHorizontal();
+							}
+
+							// Add new key-value pair
+							GUILayout.BeginHorizontal();
+							if (GUILayout.Button("Add"))
+							{
+								// You need to implement a method to add new key-value pairs to BaseStats
+								// For example:
+								// baseStats.Add("NewKey", 0);
+							}
+							GUILayout.EndHorizontal();
+
+							fields[i].SetValue(selectedActorAsset, baseStats);
+						}
 						else
 						{
 							GUILayout.BeginHorizontal();
@@ -345,13 +548,13 @@ namespace SimplerGUI.Submods.AssetModEnabler
 			GuiMain.SetWindowInUse(windowID);
 			if (selectedRaceAsset != null)
 			{
-				scrollPositionRaceAssetEdit = GUILayout.BeginScrollView(scrollPositionRaceAssetEdit, GUILayout.Width(500f), GUILayout.Height(300f));
+				scrollPositionRaceAssetEdit = GUILayout.BeginScrollView(scrollPositionRaceAssetEdit, GUILayout.Width(650f), GUILayout.Height(300f));
 				FieldInfo[] fields = typeof(Race).GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
 				for (int i = 0; i < fields.Length; i++)
 				{
 					object fieldValueObject = fields[i].GetValue(selectedRaceAsset);
-					if (fieldValueObject != null)
-					{
+                    if (fieldValueObject != null)
+                    {
 						if (fields[i].FieldType == typeof(int))
 						{
 							int fieldValue = (int)fieldValueObject;
@@ -459,6 +662,259 @@ namespace SimplerGUI.Submods.AssetModEnabler
 							fields[i].SetValue(selectedRaceAsset, fieldValue);
 							// Update the field value
 						}
+						else if (fields[i].FieldType.IsArray)
+						{
+							Type elementType = fields[i].FieldType.GetElementType();
+							Array fieldValue = (Array)fieldValueObject;
+
+							GUILayout.BeginHorizontal();
+							GUILayout.Button(fields[i].Name);
+							// Add new empty element
+							if (GUILayout.Button("+"))
+							{
+								// Check if the element type is string
+								if (elementType == typeof(string))
+								{
+									// Create a new array with one additional element
+									Array newArray = Array.CreateInstance(elementType, fieldValue.Length + 1);
+									// Copy existing elements to the new array
+									Array.Copy(fieldValue, newArray, fieldValue.Length);
+									// Set the last element to an empty string
+									newArray.SetValue("", fieldValue.Length);
+									// Update fieldValue with the new array
+									fieldValue = newArray;
+								}
+							}
+							GUILayout.EndHorizontal();
+							GUILayout.BeginHorizontal();
+							int c = 0;
+							List<object> elementsToRemove = new List<object>();
+							// Iterate through each element of the array
+							for (int j = 0; j < fieldValue.Length; j++)
+							{
+								object element = fieldValue.GetValue(j);
+
+								if (element != null && element.GetType() == elementType)
+								{
+									if (elementType == typeof(string))
+									{
+										string elementValue = (string)element;
+										elementValue = GUILayout.TextField(elementValue);
+										fieldValue.SetValue(elementValue, j);
+										if (GUILayout.Button("-", GUILayout.Width(20)))
+										{
+											elementsToRemove.Add(element);
+										}
+										if (c != 1 && c % 3 == 0) // Split buttons into vertical rows of 3
+										{
+											GUILayout.EndHorizontal();
+											GUILayout.BeginHorizontal();
+										}
+										c++;
+									}
+									// Add other type checks as needed
+								}
+							}
+
+							// Remove marked elements
+							foreach (var elementToRemove in elementsToRemove)
+							{
+								// Find the index of the element to remove
+								int index = Array.IndexOf(fieldValue, elementToRemove);
+								// Create a new array with one less element
+								Array newArray = Array.CreateInstance(elementType, fieldValue.Length - 1);
+								// Copy elements before the removed element
+								Array.Copy(fieldValue, 0, newArray, 0, index);
+								// Copy elements after the removed element
+								Array.Copy(fieldValue, index + 1, newArray, index, fieldValue.Length - index - 1);
+								// Update fieldValue with the new array
+								fieldValue = newArray;
+							}
+
+							GUILayout.EndHorizontal();
+
+							fields[i].SetValue(selectedRaceAsset, fieldValue);
+							// Update the field value
+						}
+						else if (fields[i].FieldType == typeof(Dictionary<,>))
+						{
+							Type[] dictionaryTypes = fields[i].FieldType.GetGenericArguments();
+							Type keyType = dictionaryTypes[0];
+							Type valueType = dictionaryTypes[1];
+
+							// Assuming keys are always strings
+							if (keyType == typeof(string))
+							{
+								if (valueType == typeof(float))
+								{
+									IDictionary fieldValue = (IDictionary)fieldValueObject;
+
+									GUILayout.BeginHorizontal(); // Start of outer horizontal group
+									GUILayout.Button(fields[i].Name);
+									GUILayout.EndHorizontal(); // End of outer horizontal group
+
+									foreach (var key in fieldValue.Keys)
+									{
+										GUILayout.BeginHorizontal(); // Start of inner horizontal group
+										GUILayout.Button(key.ToString());
+
+										float value = (float)fieldValue[key];
+										value = GUILayout.HorizontalSlider(value, 0, 1000);
+										fieldValue[key] = value;
+
+										GUILayout.EndHorizontal(); // End of inner horizontal group
+									}
+
+									// Add new key-value pair
+									GUILayout.BeginHorizontal(); // Start of outer horizontal group
+									/*
+									if (GUILayout.Button("Add"))
+									{
+										if (!fieldValue.Contains("NewKey"))
+										{
+											if (valueType == typeof(int))
+											{
+												fieldValue.Add("NewKey", 0);
+											}
+											else if (valueType == typeof(float))
+											{
+												fieldValue.Add("NewKey", 0.0f);
+											}
+										}
+									}
+									*/
+									GUILayout.EndHorizontal(); // End of outer horizontal group
+
+									fields[i].SetValue(selectedRaceAsset, fieldValue);
+								}
+								if (valueType == typeof(string))
+								{
+									IDictionary fieldValue = (IDictionary)fieldValueObject;
+
+									GUILayout.BeginHorizontal(); // Start of outer horizontal group
+									GUILayout.Button(fields[i].Name);
+									GUILayout.EndHorizontal(); // End of outer horizontal group
+
+									foreach (var key in fieldValue.Keys)
+									{
+										GUILayout.BeginHorizontal(); // Start of inner horizontal group
+										GUILayout.Button(key.ToString());
+
+										string value = (string)fieldValue[key];
+										value = GUILayout.TextField(value);
+										fieldValue[key] = value;
+
+										GUILayout.EndHorizontal(); // End of inner horizontal group
+									}
+
+									// Add new key-value pair
+									GUILayout.BeginHorizontal(); // Start of outer horizontal group
+									/*
+									if (GUILayout.Button("Add"))
+									{
+										if (!fieldValue.Contains("NewKey"))
+										{
+											if (valueType == typeof(int))
+											{
+												fieldValue.Add("NewKey", 0);
+											}
+											else if (valueType == typeof(float))
+											{
+												fieldValue.Add("NewKey", 0.0f);
+											}
+										}
+									}
+									*/
+									GUILayout.EndHorizontal(); // End of outer horizontal group
+
+									fields[i].SetValue(selectedRaceAsset, fieldValue);
+								}
+							}
+						}
+						else if (fields[i].FieldType == typeof(BaseStats))
+						{
+							BaseStats baseStats = (BaseStats)fieldValueObject;
+
+							GUILayout.BeginHorizontal();
+							GUILayout.Button(fields[i].Name);
+							GUILayout.EndHorizontal();
+							foreach (string key in baseStats.stats_dict.Keys)
+							{
+								GUILayout.BeginHorizontal();
+								GUILayout.Button(key);
+								float value = (float)baseStats[key];
+								GUILayout.Button(value.ToString());
+								value = GUILayout.HorizontalSlider(value, 0, 1000);
+								baseStats[key] = value;
+
+								GUILayout.EndHorizontal();
+							}
+
+							// Add new key-value pair
+							GUILayout.BeginHorizontal();
+							if (GUILayout.Button("Add"))
+							{
+								// You need to implement a method to add new key-value pairs to BaseStats
+								// For example:
+								// baseStats.Add("NewKey", 0);
+							}
+							GUILayout.EndHorizontal();
+
+							fields[i].SetValue(selectedRaceAsset, baseStats);
+						}
+						else if (fields[i].FieldType == typeof(KingdomStats))
+						{
+							KingdomStats kingdomStats = (KingdomStats)fieldValueObject;
+
+							GUILayout.BeginHorizontal();
+							GUILayout.Button(fields[i].Name);
+							GUILayout.EndHorizontal();
+							foreach (string key in kingdomStats.dict.Keys)
+							{
+								GUILayout.BeginHorizontal();
+								GUILayout.Button(key);
+								//GUILayout.Label(key);
+
+								float value = kingdomStats.dict[key].value;
+                                GUILayout.Button(value.ToString());
+								value = GUILayout.HorizontalSlider(value, 0, 1000);
+								kingdomStats.dict[key].value = value;
+								GUILayout.EndHorizontal();
+							}
+
+							// Add new key-value pair
+							GUILayout.BeginHorizontal();
+							if (GUILayout.Button("Add"))
+							{
+								// You need to implement a method to add new key-value pairs to BaseStats
+								// For example:
+								// baseStats.Add("NewKey", 0);
+							}
+							GUILayout.EndHorizontal();
+
+							fields[i].SetValue(selectedRaceAsset, kingdomStats);
+						}
+						else if (fields[i].FieldType == typeof(BuildingPlacements))
+						{
+							BuildingPlacements fieldValue = (BuildingPlacements)fieldValueObject;
+
+							GUILayout.BeginHorizontal();
+							GUILayout.Button(fields[i].Name);
+							if (GUILayout.Button(fieldValue.ToString()))
+							{
+								if (fieldValue == BuildingPlacements.Center)
+								{
+									fieldValue = BuildingPlacements.Random;
+								}
+								else
+								{
+									fieldValue = BuildingPlacements.Center;
+								}
+							}
+							GUILayout.EndHorizontal();
+							fields[i].SetValue(selectedRaceAsset, fieldValue); // Update the field value
+						}
+
 						else
 						{
 							GUILayout.BeginHorizontal();
@@ -468,9 +924,9 @@ namespace SimplerGUI.Submods.AssetModEnabler
 						}
 					}
 					else
-					{
-						//Debug.LogWarning("Field " + fields[i].Name + " in selectedActorAsset is null.");
-					}
+                    {
+                        //Debug.LogWarning("Field " + fields[i].Name + " in selectedActorAsset is null.");
+                    }
 				}
 				GUILayout.EndScrollView();
 			}
