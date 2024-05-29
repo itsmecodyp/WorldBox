@@ -1,14 +1,26 @@
 {
   "Version": 1,
-  "WorkspaceRootPath": "C:\\stuff\\WorldBox\\SimpleGUI\\",
+  "WorkspaceRootPath": "C:\\WorldBox\\SimpleGUI\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{C0D3A912-6D2A-4415-8206-42A71454A567}|SimplerGUI.csproj|c:\\stuff\\worldbox\\simplegui\\submods\\assetmodenabler\\assetmodenabler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{C0D3A912-6D2A-4415-8206-42A71454A567}|SimplerGUI.csproj|solutionrelative:submods\\assetmodenabler\\assetmodenabler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:1:0:{C0D3A912-6D2A-4415-8206-42A71454A567}|SimplerGUI.csproj|c:\\worldbox\\simplegui\\submods\\assetmodenabler\\assetmodenabler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:1:0:{C0D3A912-6D2A-4415-8206-42A71454A567}|SimplerGUI.csproj|solutionrelative:submods\\assetmodenabler\\assetmodenabler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{C0D3A912-6D2A-4415-8206-42A71454A567}|SimplerGUI.csproj|c:\\stuff\\worldbox\\simplegui\\menus\\actorcontrol.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{C0D3A912-6D2A-4415-8206-42A71454A567}|SimplerGUI.csproj|c:\\worldbox\\simplegui\\menus\\actorcontrol.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{C0D3A912-6D2A-4415-8206-42A71454A567}|SimplerGUI.csproj|solutionrelative:menus\\actorcontrol.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:2:0:{C0D3A912-6D2A-4415-8206-42A71454A567}|SimplerGUI.csproj|C:\\WorldBox\\SimpleGUI\\submods\\assetmodenabler\\assetmodenabler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:2:0:{C0D3A912-6D2A-4415-8206-42A71454A567}|SimplerGUI.csproj|solutionrelative:submods\\assetmodenabler\\assetmodenabler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{C0D3A912-6D2A-4415-8206-42A71454A567}|SimplerGUI.csproj|C:\\WorldBox\\SimpleGUI\\main.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{C0D3A912-6D2A-4415-8206-42A71454A567}|SimplerGUI.csproj|solutionrelative:main.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{C0D3A912-6D2A-4415-8206-42A71454A567}|SimplerGUI.csproj|C:\\WorldBox\\SimpleGUI\\submods\\simplemessages\\simplecultists.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{C0D3A912-6D2A-4415-8206-42A71454A567}|SimplerGUI.csproj|solutionrelative:submods\\simplemessages\\simplecultists.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -17,37 +29,73 @@
       "VerticalTabListWidth": 256,
       "DocumentGroups": [
         {
-          "DockedWidth": 281,
-          "SelectedChildIndex": 0,
+          "DockedWidth": 146,
+          "SelectedChildIndex": 1,
           "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "Main.cs",
+              "DocumentMoniker": "C:\\WorldBox\\SimpleGUI\\Main.cs",
+              "RelativeDocumentMoniker": "Main.cs",
+              "ToolTip": "C:\\WorldBox\\SimpleGUI\\Main.cs",
+              "RelativeToolTip": "Main.cs",
+              "ViewState": "AQIAAHYDAAAAAAAAAAAvwIYDAAAbAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-05-23T19:07:07.258Z"
+            },
             {
               "$type": "Document",
               "DocumentIndex": 0,
               "Title": "AssetModEnabler.cs",
-              "DocumentMoniker": "C:\\stuff\\WorldBox\\SimpleGUI\\Submods\\AssetModEnabler\\AssetModEnabler.cs",
+              "DocumentMoniker": "C:\\WorldBox\\SimpleGUI\\Submods\\AssetModEnabler\\AssetModEnabler.cs",
               "RelativeDocumentMoniker": "Submods\\AssetModEnabler\\AssetModEnabler.cs",
-              "ToolTip": "C:\\stuff\\WorldBox\\SimpleGUI\\Submods\\AssetModEnabler\\AssetModEnabler.cs",
+              "ToolTip": "C:\\WorldBox\\SimpleGUI\\Submods\\AssetModEnabler\\AssetModEnabler.cs",
               "RelativeToolTip": "Submods\\AssetModEnabler\\AssetModEnabler.cs",
-              "ViewState": "AQIAAMgAAAAAAAAAAAAswJcCAAAHAAAA",
+              "ViewState": "AQIAAMMAAAAAAAAAAAAAAMsAAAAiAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-04-22T00:06:53.32Z",
               "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "SimpleCultists.cs",
+              "DocumentMoniker": "C:\\WorldBox\\SimpleGUI\\Submods\\SimpleMessages\\SimpleCultists.cs",
+              "RelativeDocumentMoniker": "Submods\\SimpleMessages\\SimpleCultists.cs",
+              "ToolTip": "C:\\WorldBox\\SimpleGUI\\Submods\\SimpleMessages\\SimpleCultists.cs",
+              "RelativeToolTip": "Submods\\SimpleMessages\\SimpleCultists.cs",
+              "ViewState": "AQIAAEkAAAAAAAAAAAAwwFEAAAAfAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-05-20T18:47:10.116Z"
             }
           ]
         },
         {
-          "DockedWidth": 119,
-          "SelectedChildIndex": 0,
+          "DockedWidth": 254,
+          "SelectedChildIndex": 1,
           "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "AssetModEnabler.cs",
+              "DocumentMoniker": "C:\\WorldBox\\SimpleGUI\\Submods\\AssetModEnabler\\AssetModEnabler.cs",
+              "RelativeDocumentMoniker": "Submods\\AssetModEnabler\\AssetModEnabler.cs",
+              "ToolTip": "C:\\WorldBox\\SimpleGUI\\Submods\\AssetModEnabler\\AssetModEnabler.cs",
+              "RelativeToolTip": "Submods\\AssetModEnabler\\AssetModEnabler.cs",
+              "ViewState": "AQIAAMICAAAAAAAAAAAAAN8CAAAGAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-05-22T02:19:04.814Z"
+            },
             {
               "$type": "Document",
               "DocumentIndex": 1,
               "Title": "ActorControl.cs",
-              "DocumentMoniker": "C:\\stuff\\WorldBox\\SimpleGUI\\Menus\\ActorControl.cs",
+              "DocumentMoniker": "C:\\WorldBox\\SimpleGUI\\Menus\\ActorControl.cs",
               "RelativeDocumentMoniker": "Menus\\ActorControl.cs",
-              "ToolTip": "C:\\stuff\\WorldBox\\SimpleGUI\\Menus\\ActorControl.cs",
+              "ToolTip": "C:\\WorldBox\\SimpleGUI\\Menus\\ActorControl.cs",
               "RelativeToolTip": "Menus\\ActorControl.cs",
-              "ViewState": "AQIAABMAAAAAAAAAAAAAwDAAAAAJAAAA",
+              "ViewState": "AQIAABAGAAAAAAAAAAAAAJgGAAAMAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-04-19T09:46:45.046Z",
               "EditorCaption": ""
