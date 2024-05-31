@@ -623,6 +623,10 @@ namespace SimplerGUI.Submods.MapSizes {
                     intentionallyChangingMapSize = false;
                 }
             }
+            if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.R))
+            {
+                showSubMod = true;
+            }
         }
 
         public static bool intentionallyChangingMapSize = false;

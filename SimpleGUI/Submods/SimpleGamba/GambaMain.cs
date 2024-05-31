@@ -254,7 +254,11 @@ namespace SimplerGUI.Submods.SimpleGamba
         //resize windows constantly, 1 frame update
         public void Update()
 		{
-            foreach(BlackjackPlayer player in blackjackManager.currentPlayers) {
+            if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.R))
+            {
+                showSubMod = true;
+            }
+            foreach (BlackjackPlayer player in blackjackManager.currentPlayers) {
                 if (player.man == null && blackjackManager != null)
                 {
                     player.man = blackjackManager;

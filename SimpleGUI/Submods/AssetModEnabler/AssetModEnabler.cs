@@ -9,11 +9,14 @@ using BepInEx;
 using DG.Tweening.Plugins.Core.PathCore;
 using HarmonyLib;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Serialization;
 using SimplerGUI.Menus;
 using SimplerGUI.Submods.SimpleMessages;
 using TMPro;
 using tools.debug;
 using UnityEngine;
+using UnityEngine.Rendering.PostProcessing;
 using UnityEngine.UIElements;
 
 namespace SimplerGUI.Submods.AssetModEnabler
@@ -113,7 +116,36 @@ namespace SimplerGUI.Submods.AssetModEnabler
 		ActorAsset selectedActorAsset;
 		Race selectedRaceAsset;
 
-		public bool showSubMod = false;
+        EraAsset selectedEraAsset;
+        public Vector2 scrollPositionEraSelect;
+        public Vector2 scrollPositionEraEdit;
+        public static bool showHideEraWindow;
+        public static Rect eraWindowRect = new Rect(0f, 1f, 1f, 1f);
+        public static Rect eraEditWindowRect = new Rect(0f, 1f, 1f, 1f);
+
+        NameGeneratorAsset selectedNameGeneratorAsset;
+        public Vector2 scrollPositionNameGeneratorSelect;
+        public Vector2 scrollPositionNameGeneratorEdit;
+        public static bool showHideNameGeneratorWindow;
+        public static Rect NameGeneratorWindowRect = new Rect(0f, 1f, 1f, 1f);
+        public static Rect NameGeneratorEditWindowRect = new Rect(0f, 1f, 1f, 1f);
+
+        ResourceAsset selectedResourceAsset;
+        public Vector2 scrollPositionResourceAssetSelect;
+        public Vector2 scrollPositionResourceAssetEdit;
+        public static bool showHideResourceAssetWindow;
+        public static Rect ResourceAssetWindowRect = new Rect(0f, 1f, 1f, 1f);
+        public static Rect ResourceAssetEditWindowRect = new Rect(0f, 1f, 1f, 1f);
+
+        ActorTrait selectedActorTraitAsset;
+        public Vector2 scrollPositionActorTraitAssetSelect;
+        public Vector2 scrollPositionActorTraitAssetEdit;
+        public static bool showHideActorTraitAssetWindow;
+        public static Rect ActorTraitAssetWindowRect = new Rect(0f, 1f, 1f, 1f);
+        public static Rect ActorTraitAssetEditWindowRect = new Rect(0f, 1f, 1f, 1f);
+
+
+        public bool showSubMod = true;
 
         public void OnGUI()
         {
@@ -146,6 +178,7 @@ namespace SimplerGUI.Submods.AssetModEnabler
 					ref scrollPositionActorSelect,
 					ref selectedActorAsset,
 					AssetManager.actor_library.list,
+                    AssetManager.actor_library.dict,
 					(selected) => AssetManager.actor_library.add(selected)),
 					"Actor Selection",
 					GUILayout.MaxWidth(300f), GUILayout.MinWidth(200f));
@@ -160,7 +193,8 @@ namespace SimplerGUI.Submods.AssetModEnabler
 						ref scrollPositionRaceAssetSelect,
 						ref selectedRaceAsset,
 						AssetManager.raceLibrary.list,
-						(selected) => AssetManager.raceLibrary.add(selected)),
+                        AssetManager.raceLibrary.dict,
+                        (selected) => AssetManager.raceLibrary.add(selected)),
 						"Race Selection",
 						GUILayout.MaxWidth(300f), GUILayout.MinWidth(200f));
 					raceEditWindowRect = GUILayout.Window(410406, raceEditWindowRect, (id) => AssetEditWindow(410406, ref scrollPositionRaceAssetEdit, ref selectedRaceAsset), "Race Edit", GUILayout.MinWidth(200f));
@@ -173,7 +207,8 @@ namespace SimplerGUI.Submods.AssetModEnabler
 						ref scrollPositionBiomeAssetSelect, // scroll position for selection window
 						ref selectedBiomeAsset, // selection reference, for assigning to
 						AssetManager.biome_library.list, // list used in the action for displaying all assets
-						(BiomeAsset selected) => AssetManager.biome_library.add(selected)), //action to add asset to library, refreshing
+                        AssetManager.biome_library.dict,
+                        (BiomeAsset selected) => AssetManager.biome_library.add(selected)), //action to add asset to library, refreshing
 						"Biome Selection", // title of window
 						GUILayout.MaxWidth(300f), GUILayout.MinWidth(200f)); //guilayout options
 
@@ -181,12 +216,72 @@ namespace SimplerGUI.Submods.AssetModEnabler
 					biomeEditWindowRect.position = new Vector2(biomeWindowRect.x + biomeWindowRect.width, biomeWindowRect.y);
 				}
 
-			}
-		}
+                if (showHideEraWindow)
+                {
+                    eraWindowRect = GUILayout.Window(410409, eraWindowRect, (id) => AssetSelectionWindow(410409,
+                        ref scrollPositionEraSelect, // scroll position for selection window
+                        ref selectedEraAsset, // selection reference, for assigning to
+                        AssetManager.era_library.list, // list used in the action for displaying all assets
+                        AssetManager.era_library.dict,
+                        (EraAsset selected) => AssetManager.era_library.add(selected)), //action to add asset to library, refreshing
+                        "Era Selection", // title of window
+                        GUILayout.MaxWidth(300f), GUILayout.MinWidth(200f)); //guilayout options
+
+                    eraEditWindowRect = GUILayout.Window(410410, eraEditWindowRect, (id) => AssetEditWindow(410410, ref scrollPositionEraEdit, ref selectedEraAsset), "Era Edit", GUILayout.MinWidth(200f));
+                    eraEditWindowRect.position = new Vector2(eraWindowRect.x + eraWindowRect.width, eraWindowRect.y);
+                }
+
+                if (showHideNameGeneratorWindow)
+                {
+                    NameGeneratorWindowRect = GUILayout.Window(410411, NameGeneratorWindowRect, (id) => AssetSelectionWindow(410411,
+                        ref scrollPositionNameGeneratorSelect, // scroll position for selection window
+                        ref selectedNameGeneratorAsset, // selection reference, for assigning to
+                        AssetManager.nameGenerator.list, // list used in the action for displaying all assets
+                        AssetManager.nameGenerator.dict,
+                        (NameGeneratorAsset selected) => AssetManager.nameGenerator.add(selected)), //action to add asset to library, refreshing
+                        "NameGenerator Selection", // title of window
+                        GUILayout.MaxWidth(300f), GUILayout.MinWidth(200f)); //guilayout options
+
+                    NameGeneratorEditWindowRect = GUILayout.Window(410412, NameGeneratorEditWindowRect, (id) => AssetEditWindow(410412, ref scrollPositionNameGeneratorEdit, ref selectedNameGeneratorAsset), "NameGenerator Edit", GUILayout.MinWidth(200f));
+                    NameGeneratorEditWindowRect.position = new Vector2(NameGeneratorWindowRect.x + NameGeneratorWindowRect.width, NameGeneratorWindowRect.y);
+                }
+
+                if (showHideResourceAssetWindow)
+                {
+                    ResourceAssetWindowRect = GUILayout.Window(410423, ResourceAssetWindowRect, (id) => AssetSelectionWindow(410423,
+                        ref scrollPositionResourceAssetSelect, // scroll position for selection window
+                        ref selectedResourceAsset, // selection reference, for assigning to
+                        AssetManager.resources.list, // list used in the action for displaying all assets
+                        AssetManager.resources.dict,
+                        (ResourceAsset selected) => AssetManager.resources.add(selected)), //action to add asset to library, refreshing
+                        "ResourceAsset Selection", // title of window
+                        GUILayout.MaxWidth(300f), GUILayout.MinWidth(200f)); //guilayout options
+
+                    ResourceAssetEditWindowRect = GUILayout.Window(410424, ResourceAssetEditWindowRect, (id) => AssetEditWindow(410424, ref scrollPositionResourceAssetEdit, ref selectedResourceAsset), "ResourceAsset Edit", GUILayout.MinWidth(200f));
+                    ResourceAssetEditWindowRect.position = new Vector2(ResourceAssetWindowRect.x + ResourceAssetWindowRect.width, ResourceAssetWindowRect.y);
+                }
+
+                if (showHideActorTraitAssetWindow)
+                {
+                    ActorTraitAssetWindowRect = GUILayout.Window(410425, ActorTraitAssetWindowRect, (id) => AssetSelectionWindow(410425,
+                        ref scrollPositionActorTraitAssetSelect, // scroll position for selection window
+                        ref selectedActorTraitAsset, // selection reference, for assigning to
+                        AssetManager.traits.list, // list used in the action for displaying all assets
+                        AssetManager.traits.dict,
+                        (ActorTrait selected) => AssetManager.traits.add(selected)), //action to add asset to library, refreshing
+                        "ActorTrait Selection", // title of window
+                        GUILayout.MaxWidth(300f), GUILayout.MinWidth(200f)); //guilayout options
+
+                    ActorTraitAssetEditWindowRect = GUILayout.Window(410426, ActorTraitAssetEditWindowRect, (id) => AssetEditWindow(410426, ref scrollPositionActorTraitAssetEdit, ref selectedActorTraitAsset), "ActorTrait Edit", GUILayout.MinWidth(200f));
+                    ActorTraitAssetEditWindowRect.position = new Vector2(ActorTraitAssetWindowRect.x + ActorTraitAssetWindowRect.width, ActorTraitAssetWindowRect.y);
+                }
+
+            }
+        }
 
 		public string filePathToImport;
 
-		public void AssetSelectionWindow<T>(int windowID, ref Vector2 scrollPosition, ref T selectedAsset, List<T> assetList, Action<T> actionOnAsset)
+		public void AssetSelectionWindow<T>(int windowID, ref Vector2 scrollPosition, ref T selectedAsset, List<T> assetList, Dictionary<string, T> assetDict, Action<T> actionOnAsset)
 		{
 			GuiMain.SetWindowInUse(windowID);
 			if (GUILayout.Button("Clone") && selectedAsset != null)
@@ -201,44 +296,11 @@ namespace SimplerGUI.Submods.AssetModEnabler
 				}
 			}
 			GUILayout.BeginHorizontal();
-			if (GUILayout.Button("Import"))
-			{
-                string typeToCheck = selectedAsset.GetType().ToString();
-				string pathToCheck = Application.streamingAssetsPath + "/mods/Import";
-				if (Directory.Exists(pathToCheck) == false)
-				{
-					Directory.CreateDirectory(pathToCheck);
-                    Debug.Log("Created import folder");
-                    return;
-				}
-				if (Directory.Exists(pathToCheck + "/" + typeToCheck) == false)
-				{
-                    Debug.Log("No assets of type " + typeToCheck + " to load!");
-                    return;
-				}
-				string filePath = pathToCheck + "/" + typeToCheck + "/" + filePathToImport + ".json";
-				if (File.Exists(filePath))
-                {
-					string readData = File.ReadAllText(filePath);
-					// Get the type of the selectedAsset
-					Type type = selectedAsset.GetType();
-					// Deserialize the JSON data into the dynamically determined type
-					var deserializedData = JsonConvert.DeserializeObject(readData, type);
-					// Cast the deserialized object back to the type of selectedAsset
-					object newAsset = Convert.ChangeType(deserializedData, type);
-					// Use the deserialized data (now stored in selectedAsset)
-					if (newAsset.GetType() == selectedAsset.GetType())
-					{
-						selectedAsset = (T)newAsset;
-						assetList.Add(selectedAsset);
-					}
-				}
-                else
-                {
-                    Debug.Log("File did not exist: " + filePath);
-                }
-			}
-			filePathToImport = GUILayout.TextField(filePathToImport);
+            if (GUILayout.Button("Import"))
+            {
+                ImportIndividualAsset(ref selectedAsset, assetList, assetDict, selectedAsset.GetType().ToString(), filePathToImport);
+            }
+            filePathToImport = GUILayout.TextField(filePathToImport);
 			GUILayout.EndHorizontal();
 			scrollPosition = GUILayout.BeginScrollView(scrollPosition, GUILayout.MaxWidth(300f), GUILayout.Height(500f));
 			foreach (T asset in assetList)
@@ -630,56 +692,411 @@ namespace SimplerGUI.Submods.AssetModEnabler
 			}
 		}
 
-		public void ExportIndividualAsset<T>(T assetToExport)
-		{
-			var tempAsset = assetToExport;
-			string typeOf = tempAsset.GetType().ToString();
-			if (tempAsset != null)
-			{
-				string path12 = Application.streamingAssetsPath + "/mods";
-				if (Directory.Exists(path12 + "/Export") == false)
-				{
-					Directory.CreateDirectory(path12 + "/Export");
-				}
-				if (Directory.Exists(path12 + "/Export/" + typeOf) == false)
-				{
-					Directory.CreateDirectory(path12 + "/Export/" + typeOf);
-				}
-				var idField = tempAsset.GetType().GetField("id", BindingFlags.Public | BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy);
-				if (idField != null)
-				{
-					object idValue = idField.GetValue(tempAsset);
-					// Ensure idValue is not null before using it
-					if (idValue != null)
-					{
-						string dataToSave = JsonUtility.ToJson(tempAsset, true);
-						File.WriteAllText(path12 + "/Export/" + typeOf + "/" + idValue.ToString() + ".json", dataToSave);
-					}
-					else
-					{
-						Debug.LogError("ID value is null.");
-					}
-				}
-				else
-				{
-					Debug.LogError("The 'id' property was not found.");
-				}
-			}
-			else
-			{
-				Debug.Log("tempAsset was null");
-			}
-		}
+        public void ExportIndividualAsset<T>(T assetToExport)
+        {
+            var tempAsset = assetToExport;
+            if (tempAsset != null)
+            {
+                string path = Application.streamingAssetsPath + "/mods/Export";
+                if (!Directory.Exists(path))
+                {
+                    Directory.CreateDirectory(path);
+                }
 
-		/*
-		WorldTile randomTile = MapBox.instance.tilesList.GetRandom();
-		if(randomTile.Type.biome_id == "biome_grass")
-		{
-			MapBox.instance.units.createNewUnit("dragon", randomTile, 0);
-		}
-		*///blahblah dragon
+                var idField = tempAsset.GetType().GetField("id", BindingFlags.Public | BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy);
+                if (idField != null)
+                {
+                    object idValue = idField.GetValue(tempAsset);
+                    if (idValue != null)
+                    {
+                        string typeOf = tempAsset.GetType().Name; // Get type name
+                        string dataToSave = JsonConvert.SerializeObject(tempAsset, Formatting.Indented, new JsonSerializerSettings
+                        {
+                            ContractResolver = new IncludeNonSerializedContractResolver(),
+                            ReferenceLoopHandling = ReferenceLoopHandling.Ignore // Add this line
+                        });
 
-		Texture2D TextureReadable(Texture2D texture)
+                        File.WriteAllText(System.IO.Path.Combine(path, idValue.ToString() + "." + typeOf + ".json"), dataToSave);
+                    }
+                    else
+                    {
+                        Debug.LogError("ID value is null.");
+                    }
+                }
+                else
+                {
+                    Debug.LogError("The 'id' property was not found.");
+                }
+            }
+            else
+            {
+                Debug.Log("tempAsset was null");
+            }
+        }
+        public void ImportIndividualAsset<T>(ref T selectedAsset, List<T> assetList, Dictionary<string, T> assetDict, string folderName, string fileName, bool isForFolderImport = false)
+        {
+            string typeToCheck = selectedAsset.GetType().ToString();
+            string pathToCheck = System.IO.Path.Combine(Application.streamingAssetsPath, "mods", "Import");
+
+            if (!Directory.Exists(pathToCheck))
+            {
+                Directory.CreateDirectory(pathToCheck);
+                Debug.Log("Created import folder");
+                return;
+            }
+
+            string filePath;
+            if (isForFolderImport)
+            {
+                filePath = System.IO.Path.Combine(pathToCheck, folderName, fileName + ".json");
+            }
+            else
+            {
+                filePath = System.IO.Path.Combine(pathToCheck, typeToCheck, System.IO.Path.GetFileNameWithoutExtension(fileName) + ".json");
+            }
+
+            if (File.Exists(filePath))
+            {
+                string readData = File.ReadAllText(filePath);
+                // Get the type of the selectedAsset
+                Type type = selectedAsset.GetType();
+                // Deserialize the JSON data into the dynamically determined type
+                var deserializedData = JsonConvert.DeserializeObject<JObject>(readData);
+                // Exclude color properties from the deserialized JSON object
+                ExcludeColorProperties(deserializedData);
+                // Convert the modified JSON object back to the original asset type
+                selectedAsset = deserializedData.ToObject<T>();
+                // Use the deserialized data (now stored in selectedAsset)
+                if (selectedAsset.GetType() == type)
+                {
+                    var idField1 = selectedAsset.GetType().GetField("id", BindingFlags.Public | BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy);
+                    object idValue1 = idField1.GetValue(selectedAsset);
+                    for (int i = 0; i < assetList.Count; i++)
+                    {
+                        T asset = assetList[i];
+                        var idField2 = asset.GetType().GetField("id", BindingFlags.Public | BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy);
+                        object idValue2 = idField2.GetValue(asset);
+
+                        if ((string)idValue1 == (string)idValue2)
+                        {
+                            assetList.Remove(asset);
+                            assetDict[(string)idValue1] = selectedAsset;
+                            Debug.Log("attempted to remove/overwrite existing asset with same id: " + (string)idValue1);
+                        }
+                    }
+                    assetList.Add(selectedAsset);
+                }
+            }
+            else
+            {
+                Debug.Log("File did not exist: " + filePath);
+            }
+        }
+
+        // Method to exclude color properties from a JObject
+        private void ExcludeColorProperties(JObject jsonObject)
+        {
+            var colorProperties = jsonObject.DescendantsAndSelf()
+                .OfType<JProperty>()
+                .Where(p => p.Value.Type == JTokenType.Object && p.Value["linear"] != null);
+
+            foreach (var colorProperty in colorProperties.ToList())
+            {
+                colorProperty.Value["linear"].Parent.Remove();
+            }
+        }
+        public void ImportAssetsFromFolder(string folderName)
+        {
+            string importFolderPath = System.IO.Path.Combine(Application.streamingAssetsPath, "mods", "Import", folderName);
+            if (Directory.Exists(importFolderPath))
+            {
+                string[] files = Directory.GetFiles(importFolderPath, "*.json");
+                Debug.Log("Loading mod folder: " + folderName + ", fileCount: " + files.Length.ToString());
+
+                foreach (string file in files)
+                {
+                    string fileName = System.IO.Path.GetFileNameWithoutExtension(file);
+                    string[] parts = fileName.Split('.');
+                    string typeName = parts[1]; // Assuming type name is the second part
+
+                    Type type = FindType(typeName);
+                    if (type != null)
+                    {
+                        Debug.Log("Type found: " + typeName);
+
+                        // Create a default instance of the type
+                        var instance = Activator.CreateInstance(type);
+                        // Call ImportIndividualAsset with the reference to the default instance
+                        Debug.Log("Loading asset of type: " + type.ToString());
+                        switch (typeName)
+                        {
+                            case "ResourceAsset":
+                                ResourceAsset instanceAsResource = (ResourceAsset)instance;
+                                ImportIndividualAsset<ResourceAsset>(ref instanceAsResource, AssetManager.resources.list, AssetManager.resources.dict, folderName, fileName, true);
+                                break;
+                            case "ActorTrait":
+                                ActorTrait instanceAsTrait = (ActorTrait)instance;
+                                ImportIndividualAsset<ActorTrait>(ref instanceAsTrait, AssetManager.traits.list, AssetManager.traits.dict, folderName, fileName, true);
+                                break;
+                            case "BiomeAsset":
+                                BiomeAsset instanceAsBiome = (BiomeAsset)instance;
+                                ImportIndividualAsset<BiomeAsset>(ref instanceAsBiome, AssetManager.biome_library.list, AssetManager.biome_library.dict, folderName, fileName, true);
+                                break;
+                            case "ActorAsset":
+                                ActorAsset instanceAsActor = (ActorAsset)instance;
+                                ImportIndividualAsset<ActorAsset>(ref instanceAsActor, AssetManager.actor_library.list, AssetManager.actor_library.dict, folderName, fileName, true);
+                                break;
+                            case "Race":
+                                Race instanceAsRace = (Race)instance;
+                                ImportIndividualAsset<Race>(ref instanceAsRace, AssetManager.raceLibrary.list, AssetManager.raceLibrary.dict, folderName, fileName, true);
+                                break;
+                            case "EraAsset":
+                                EraAsset instanceAsEra = (EraAsset)instance;
+                                ImportIndividualAsset<EraAsset>(ref instanceAsEra, AssetManager.era_library.list, AssetManager.era_library.dict, folderName, fileName, true);
+                                break;
+                            case "NameGeneratorAsset":
+                                NameGeneratorAsset instanceAsNameGen = (NameGeneratorAsset)instance;
+                                ImportIndividualAsset<NameGeneratorAsset>(ref instanceAsNameGen, AssetManager.nameGenerator.list, AssetManager.nameGenerator.dict, folderName, fileName, true);
+                                break;
+                            default:
+                                Debug.LogWarning("Type not handled: " + typeName);
+                                break;
+                        }
+                        Debug.Log("Imported asset from mod folder");
+                    }
+                    else
+                    {
+                        Debug.LogWarning("Type not found: " + typeName);
+                    }
+                }
+            }
+            else
+            {
+                Debug.Log("Folder does not exist: " + importFolderPath);
+            }
+        }
+        public class IncludeNonSerializedContractResolver : DefaultContractResolver
+        {
+            protected override IList<JsonProperty> CreateProperties(Type type, MemberSerialization memberSerialization)
+            {
+                var properties = base.CreateProperties(type, memberSerialization);
+
+                foreach (var property in properties)
+                {
+                    var field = type.GetField(property.UnderlyingName, BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+                    if (field != null)
+                    {
+                        if (Attribute.IsDefined(field, typeof(NonSerializedAttribute)))
+                        {
+                            Debug.Log($"Processing field: {field.Name} marked with NonSerialized attribute");
+                            property.Ignored = false; // DONT Ignore fields marked with NonSerialized attribute
+                        }
+                        if (field.FieldType == typeof(Color) || field.FieldType == typeof(Color32))
+                        {
+                            Debug.Log($"Processing field: {field.Name} of type Color or Color32");
+                            property.Ignored = true; // Ignore fields of type Color or Color32
+                        }
+                        if (IsDelegateType(field.FieldType))
+                        {
+                            Debug.Log($"Processing field: {field.Name} of custom delegate type");
+                            property.Ignored = true; // Ignore fields of custom delegate type
+                        }
+                    }
+                }
+
+                return properties;
+            }
+        }
+
+        public static bool IsDelegateType(Type fieldType)
+        {
+            return fieldType.IsSubclassOf(typeof(Delegate)) || fieldType == typeof(Delegate);
+        }
+
+
+        private Type FindType(string typeName)
+        {
+            // Get all loaded assemblies
+            var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+
+            // Iterate through each assembly to find the type
+            foreach (var assembly in assemblies)
+            {
+                // Check if the type exists in the assembly
+                var type = assembly.GetTypes().FirstOrDefault(t => t.Name == typeName);
+                if (type != null)
+                    return type;
+            }
+
+            // Type not found in any assembly
+            return null;
+        }
+
+        public class ColorConverter : JsonConverter
+        {
+            public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+            {
+                Color color = (Color)value;
+                writer.WriteStartObject();
+                writer.WritePropertyName("r");
+                writer.WriteValue(color.r);
+                writer.WritePropertyName("g");
+                writer.WriteValue(color.g);
+                writer.WritePropertyName("b");
+                writer.WriteValue(color.b);
+                writer.WritePropertyName("a");
+                writer.WriteValue(color.a);
+                writer.WriteEndObject();
+            }
+
+            public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+            {
+                JObject obj = JObject.Load(reader);
+                float r = obj["r"].Value<float>();
+                float g = obj["g"].Value<float>();
+                float b = obj["b"].Value<float>();
+                float a = obj["a"].Value<float>();
+                return new Color(r, g, b, a);
+            }
+
+            public override bool CanConvert(Type objectType)
+            {
+                return objectType == typeof(Color);
+            }
+        }
+
+        public class Color32Converter : JsonConverter
+        {
+            public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+            {
+                Color32 color = (Color32)value;
+                writer.WriteStartObject();
+                writer.WritePropertyName("r");
+                writer.WriteValue(color.r);
+                writer.WritePropertyName("g");
+                writer.WriteValue(color.g);
+                writer.WritePropertyName("b");
+                writer.WriteValue(color.b);
+                writer.WritePropertyName("a");
+                writer.WriteValue(color.a);
+                writer.WriteEndObject();
+            }
+
+            public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+            {
+                JObject obj = JObject.Load(reader);
+                byte r = obj["r"].Value<byte>();
+                byte g = obj["g"].Value<byte>();
+                byte b = obj["b"].Value<byte>();
+                byte a = obj["a"].Value<byte>();
+                return new Color32(r, g, b, a);
+            }
+
+            public override bool CanConvert(Type objectType)
+            {
+                return objectType == typeof(Color32);
+            }
+        }
+
+        public class SpriteConverter : JsonConverter
+        {
+            public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+            {
+                Sprite sprite = (Sprite)value;
+                writer.WriteStartObject();
+                writer.WritePropertyName("name");
+                writer.WriteValue(sprite?.name); // Write sprite name or null if sprite is null
+                writer.WriteEndObject();
+            }
+
+            public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+            {
+                if (reader.TokenType == JsonToken.Null)
+                {
+                    return null; // Return null if the JSON value is null
+                }
+
+                JObject obj = JObject.Load(reader);
+                string name = obj["name"]?.Value<string>(); // Get the name or null if it doesn't exist
+                if (string.IsNullOrEmpty(name))
+                {
+                    return null; // Return null if the name is null or empty
+                }
+
+                // Recreate the sprite from the name or other relevant data
+                return Resources.Load<Sprite>(name);
+            }
+
+            public override bool CanConvert(Type objectType)
+            {
+                return objectType == typeof(Sprite);
+            }
+        }
+
+        public class ExcludeColorConverter : JsonConverter
+        {
+            public override bool CanConvert(Type objectType)
+            {
+                if(objectType == typeof(UnityEngine.Color) || objectType == typeof(UnityEngine.Color32))
+                {
+                    return false;
+                }
+                return true;
+            }
+
+            public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+            {
+                // Load JObject from the reader
+                JObject jsonObject = JObject.Load(reader);
+
+                // Remove color properties from the JObject
+                RemoveColorProperties(jsonObject);
+
+                // Deserialize the JObject to the target objectType
+                return jsonObject.ToObject(objectType);
+            }
+
+            private void RemoveColorProperties(JObject jsonObject)
+            {
+                foreach (JProperty property in jsonObject.Properties().ToList())
+                {
+                    JToken token = property.Value;
+
+                    if (token != null)
+                    {
+                        if (token.Type == JTokenType.Object)
+                        {
+                            RemoveColorProperties((JObject)token); // Recursively remove color properties
+                        }
+                        else if (token.Type == JTokenType.Array)
+                        {
+                            foreach (JToken item in token)
+                            {
+                                if (item.Type == JTokenType.Object)
+                                {
+                                    RemoveColorProperties((JObject)item); // Recursively remove color properties
+                                }
+                            }
+                        }
+                        else if (token.Type == JTokenType.String || token.Type == JTokenType.Integer)
+                        {
+                            // Check if the property name contains "color" or "Color"
+                            if (property.Name.ToLower().Contains("color"))
+                            {
+                                property.Remove(); // Remove the color property
+                            }
+                        }
+                    }
+                }
+            }
+
+            public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+            {
+                // Skip writing color fields
+            }
+        }
+
+        Texture2D TextureReadable(Texture2D texture)
 		{
 			// Create a new texture with the same properties to apply changes
 			Texture2D readableTexture = new Texture2D(texture.width, texture.height, texture.format, texture.mipmapCount > 1);
@@ -1136,8 +1553,15 @@ namespace SimplerGUI.Submods.AssetModEnabler
 					File.WriteAllText(path12 + "/Export/races/" + assetID + ".json", dataToSave);
 				}
 			}
+            GUILayout.BeginHorizontal();
+            modFolderToLoad = GUILayout.TextField(modFolderToLoad);
+            if (GUILayout.Button("Load"))
+            {
+                ImportAssetsFromFolder(modFolderToLoad);
+            }
+            GUILayout.EndHorizontal();
 
-			if (GUILayout.Button("actor window"))
+            if (GUILayout.Button("actor window"))
             {
                 showHideActorWindow = !showHideActorWindow;
             }
@@ -1149,8 +1573,27 @@ namespace SimplerGUI.Submods.AssetModEnabler
 			{
 				showHideBiomeWindow = !showHideBiomeWindow;
 			}
-			GUI.DragWindow();
+            if (GUILayout.Button("era window"))
+            {
+                showHideEraWindow = !showHideEraWindow;
+            }
+            if (GUILayout.Button("namegen window"))
+            {
+                showHideNameGeneratorWindow = !showHideNameGeneratorWindow;
+            }
+            if (GUILayout.Button("resources window"))
+            {
+                showHideResourceAssetWindow = !showHideResourceAssetWindow;
+            }
+            if (GUILayout.Button("traits window"))
+            {
+                showHideActorTraitAssetWindow = !showHideActorTraitAssetWindow;
+            }
+            GUI.DragWindow();
         }
+
+        public string modFolderToLoad = "";
+
         public void TileTypeSetWindow(int windowID)
         {
             if(selectedTileTypeMap != null)

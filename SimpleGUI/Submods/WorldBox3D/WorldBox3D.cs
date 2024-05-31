@@ -401,8 +401,11 @@ namespace SimplerGUI.Submods.WorldBox3D {
             if(autoPlacement)
             ObjectPositioning();
             updaterPos += Time.deltaTime;
-
-		}
+            if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.R))
+            {
+                showSubMod = true;
+            }
+        }
         public void Awake()
         {
             Harmony harmony = new Harmony(pluginGuid);

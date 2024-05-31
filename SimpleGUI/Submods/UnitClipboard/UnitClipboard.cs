@@ -29,6 +29,10 @@ namespace SimplerGUI.Submods.UnitClipboard {
             if(Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.T)) {
                 showHideMainWindow = !showHideMainWindow;
             }
+            if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.R))
+            {
+                showSubMod = true;
+            }
             mainWindowRect.height = 0f;
         }
 
