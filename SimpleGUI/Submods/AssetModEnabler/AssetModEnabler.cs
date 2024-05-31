@@ -71,8 +71,17 @@ namespace SimplerGUI.Submods.AssetModEnabler
 
 					if (asset != null && MapBox.instance.getMouseTilePos() != null)
 					{
-						World.world.units.createNewUnit(asset.id, MapBox.instance.getMouseTilePos(), 0f);
+                        Debug.Log("Creating unit with id: " + asset.id);
+						Actor newActor = World.world.units.createNewUnit(asset.id, MapBox.instance.getMouseTilePos(), 0f);
+                        if(newActor != null && newActor.isAlive())
+                        {
+                            Debug.Log("Created actor!");
+                        }
 					}
+                    if(asset == null)
+                    {
+                        Debug.Log("cant try to create unit, asset was null! id: " + selectedActorAsset.id);
+                    }
 				}
 			}
             if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.R))
@@ -144,8 +153,15 @@ namespace SimplerGUI.Submods.AssetModEnabler
         public static Rect ActorTraitAssetWindowRect = new Rect(0f, 1f, 1f, 1f);
         public static Rect ActorTraitAssetEditWindowRect = new Rect(0f, 1f, 1f, 1f);
 
+		CloudAsset selectedCloudAsset;
+		public Vector2 scrollPositionCloudAssetSelect;
+		public Vector2 scrollPositionCloudAssetEdit;
+		public static bool showHideCloudAssetWindow;
+		public static Rect CloudAssetWindowRect = new Rect(0f, 1f, 1f, 1f);
+		public static Rect CloudAssetEditWindowRect = new Rect(0f, 1f, 1f, 1f);
 
-        public bool showSubMod = true;
+
+		public bool showSubMod = true;
 
         public void OnGUI()
         {
@@ -179,7 +195,7 @@ namespace SimplerGUI.Submods.AssetModEnabler
 					ref selectedActorAsset,
 					AssetManager.actor_library.list,
                     AssetManager.actor_library.dict,
-					(selected) => AssetManager.actor_library.add(selected)),
+					(selected) => AssetManager.actor_library.clone(selected.id + "_clone", selected.id)),
 					"Actor Selection",
 					GUILayout.MaxWidth(300f), GUILayout.MinWidth(200f));
 
@@ -223,7 +239,7 @@ namespace SimplerGUI.Submods.AssetModEnabler
                         ref selectedEraAsset, // selection reference, for assigning to
                         AssetManager.era_library.list, // list used in the action for displaying all assets
                         AssetManager.era_library.dict,
-                        (EraAsset selected) => AssetManager.era_library.add(selected)), //action to add asset to library, refreshing
+                        (EraAsset selected) => AssetManager.era_library.clone(selected.id + "_clone", selected.id)), //action to add asset to library, refreshing
                         "Era Selection", // title of window
                         GUILayout.MaxWidth(300f), GUILayout.MinWidth(200f)); //guilayout options
 
@@ -238,7 +254,7 @@ namespace SimplerGUI.Submods.AssetModEnabler
                         ref selectedNameGeneratorAsset, // selection reference, for assigning to
                         AssetManager.nameGenerator.list, // list used in the action for displaying all assets
                         AssetManager.nameGenerator.dict,
-                        (NameGeneratorAsset selected) => AssetManager.nameGenerator.add(selected)), //action to add asset to library, refreshing
+                        (NameGeneratorAsset selected) => AssetManager.nameGenerator.clone(selected.id + "_clone", selected.id)), //action to add asset to library, refreshing
                         "NameGenerator Selection", // title of window
                         GUILayout.MaxWidth(300f), GUILayout.MinWidth(200f)); //guilayout options
 
@@ -253,7 +269,7 @@ namespace SimplerGUI.Submods.AssetModEnabler
                         ref selectedResourceAsset, // selection reference, for assigning to
                         AssetManager.resources.list, // list used in the action for displaying all assets
                         AssetManager.resources.dict,
-                        (ResourceAsset selected) => AssetManager.resources.add(selected)), //action to add asset to library, refreshing
+                        (ResourceAsset selected) => AssetManager.resources.clone(selected.id + "_clone", selected.id)), //action to add asset to library, refreshing
                         "ResourceAsset Selection", // title of window
                         GUILayout.MaxWidth(300f), GUILayout.MinWidth(200f)); //guilayout options
 
@@ -268,7 +284,7 @@ namespace SimplerGUI.Submods.AssetModEnabler
                         ref selectedActorTraitAsset, // selection reference, for assigning to
                         AssetManager.traits.list, // list used in the action for displaying all assets
                         AssetManager.traits.dict,
-                        (ActorTrait selected) => AssetManager.traits.add(selected)), //action to add asset to library, refreshing
+                        (ActorTrait selected) => AssetManager.traits.clone(selected.id + "_clone", selected.id)), //action to add asset to library, refreshing
                         "ActorTrait Selection", // title of window
                         GUILayout.MaxWidth(300f), GUILayout.MinWidth(200f)); //guilayout options
 
@@ -276,7 +292,21 @@ namespace SimplerGUI.Submods.AssetModEnabler
                     ActorTraitAssetEditWindowRect.position = new Vector2(ActorTraitAssetWindowRect.x + ActorTraitAssetWindowRect.width, ActorTraitAssetWindowRect.y);
                 }
 
-            }
+				if (showHideCloudAssetWindow)
+				{
+					CloudAssetWindowRect = GUILayout.Window(410426, CloudAssetWindowRect, (id) => AssetSelectionWindow(410426,
+						ref scrollPositionCloudAssetSelect, // scroll position for selection window
+						ref selectedCloudAsset, // selection reference, for assigning to
+						AssetManager.clouds.list, // list used in the action for displaying all assets
+						AssetManager.clouds.dict,
+						(CloudAsset selected) => AssetManager.clouds.clone(selected.id + "_clone", selected.id)), //action to add asset to library, refreshing
+						"CloudAsset Selection", // title of window
+						GUILayout.MaxWidth(300f), GUILayout.MinWidth(200f)); //guilayout options
+
+					CloudAssetEditWindowRect = GUILayout.Window(410427, CloudAssetEditWindowRect, (id) => AssetEditWindow(410427, ref scrollPositionCloudAssetEdit, ref selectedCloudAsset), "CloudAsset Edit", GUILayout.MinWidth(200f));
+					CloudAssetEditWindowRect.position = new Vector2(CloudAssetWindowRect.x + CloudAssetWindowRect.width, CloudAssetWindowRect.y);
+				}
+			}
         }
 
 		public string filePathToImport;
@@ -785,6 +815,12 @@ namespace SimplerGUI.Submods.AssetModEnabler
                         }
                     }
                     assetList.Add(selectedAsset);
+                    if (assetDict.ContainsKey((string)idValue1)){
+                    }
+                    else
+                    {
+                        assetDict.Add((string)idValue1, selectedAsset);
+                    }
                 }
             }
             else
@@ -858,7 +894,11 @@ namespace SimplerGUI.Submods.AssetModEnabler
                                 NameGeneratorAsset instanceAsNameGen = (NameGeneratorAsset)instance;
                                 ImportIndividualAsset<NameGeneratorAsset>(ref instanceAsNameGen, AssetManager.nameGenerator.list, AssetManager.nameGenerator.dict, folderName, fileName, true);
                                 break;
-                            default:
+							case "CloudAsset":
+								CloudAsset instanceAsCloud = (CloudAsset)instance;
+								ImportIndividualAsset<CloudAsset>(ref instanceAsCloud, AssetManager.clouds.list, AssetManager.clouds.dict, folderName, fileName, true);
+								break;
+							default:
                                 Debug.LogWarning("Type not handled: " + typeName);
                                 break;
                         }
@@ -1114,7 +1154,9 @@ namespace SimplerGUI.Submods.AssetModEnabler
 
 		public void AssetModEnablerWindow(int windowID)
         {
-            if (GUILayout.Button("Load assets"))
+			#region OldAssetStuff
+            /*
+			if (GUILayout.Button("Load assets"))
             {
                 AssetModLoader.load();
                 AssetManager.months.post_init(); // reload months that got added
@@ -1236,21 +1278,6 @@ namespace SimplerGUI.Submods.AssetModEnabler
                     {
                         Directory.CreateDirectory(path12 + "/Export/building_sprites");
                     }
-                    /*
-                    Sprite[] spriteList2 = SpriteTextureLoader.getSpriteList("buildings/" + assetID);
-                    if (spriteList2 != null && spriteList2.Length > 0)
-                    {
-                        foreach (Sprite sprite in spriteList2)
-                        {
-                            Texture2D itemBGTex = sprite.texture;
-                            byte[] itemBGBytes = itemBGTex.EncodeToPNG();
-                            File.WriteAllBytes(path12 + "/Export/building_sprites/" + assetID + "_" + sprite.name + ".png", itemBGBytes);
-                        }
-                    }
-
-                    string dataToSave = JsonUtility.ToJson(ba, true);
-                    File.WriteAllText(path12 + "/Export/buildings/" + assetID + ".json", dataToSave);
-                    */
 
                 }
                 StartCoroutine(ExtractSprites());
@@ -1553,14 +1580,17 @@ namespace SimplerGUI.Submods.AssetModEnabler
 					File.WriteAllText(path12 + "/Export/races/" + assetID + ".json", dataToSave);
 				}
 			}
-            GUILayout.BeginHorizontal();
-            modFolderToLoad = GUILayout.TextField(modFolderToLoad);
-            if (GUILayout.Button("Load"))
-            {
-                ImportAssetsFromFolder(modFolderToLoad);
-            }
+            */
+			#endregion
+			GUILayout.BeginHorizontal();
+			if (GUILayout.Button("Load"))
+			{
+				ImportAssetsFromFolder(modFolderToLoad);
+			}
+            GUILayout.Label("Import/");
+            GUILayout.Space(-45f + (3f * modFolderToLoad.Length));
+			modFolderToLoad = GUILayout.TextField(modFolderToLoad);
             GUILayout.EndHorizontal();
-
             if (GUILayout.Button("actor window"))
             {
                 showHideActorWindow = !showHideActorWindow;
@@ -1589,7 +1619,11 @@ namespace SimplerGUI.Submods.AssetModEnabler
             {
                 showHideActorTraitAssetWindow = !showHideActorTraitAssetWindow;
             }
-            GUI.DragWindow();
+			if (GUILayout.Button("clouds window"))
+			{
+				showHideCloudAssetWindow = !showHideCloudAssetWindow;
+			}
+			GUI.DragWindow();
         }
 
         public string modFolderToLoad = "";
@@ -1603,18 +1637,7 @@ namespace SimplerGUI.Submods.AssetModEnabler
                     //?
                     GUILayout.Box(selectedTileTypeMap.mainsheetFull);
                 }
-                /*
-                for (int y = 0; y < selectedTileTypeMap.height; y++)
-                {
-                    for (int x = 0; x < selectedTileTypeMap.width; x++)
-                    {
-                        
-                        //GUI.Button(new Rect(x, y, 5, 5), x.ToString() + "," + y.ToString());
-
-                        //GUILayout.Button(x.ToString() + "," + y.ToString());
-                    }
-                }
-                */
+              
             }
             GUILayout.Button("t");
             //make background the full sheet/image
@@ -1673,34 +1696,7 @@ namespace SimplerGUI.Submods.AssetModEnabler
                 string dataToSave = JsonUtility.ToJson(assetID, true);
                 File.WriteAllText(path12 + "/Export/buildings/" + building.name + "_" + assetID + ".json", dataToSave);
             }
-            /*
-            Debug.Log("Amount of buildings on map: " + MapBox.instance.buildings.Count);
-            foreach (Building building in MapBox.instance.buildings)
-            {
-                SpriteRenderer renderer = building.GetComponent<SpriteRenderer>();
-                if (renderer != null)
-                {
-                    Sprite sprite = renderer.sprite;
-                    if (sprite != null)
-                    {
-                        Texture2D itemBGTex = sprite.texture;
-                        byte[] itemBGBytes = itemBGTex.EncodeToPNG();
-                        File.WriteAllBytes(path12 + "/Export/building_sprites/" + assetID + "_" + sprite.name + ".png", itemBGBytes);
-                    }
-                    else
-                    {
-                        Debug.Log("Sprite is null for building: " + building.name);
-                    }
-                }
-                else
-                {
-                    Debug.Log("SpriteRenderer is missing for building: " + building.name);
-                }
-
-                string dataToSave = JsonUtility.ToJson(assetID, true);
-                File.WriteAllText(path12 + "/Export/buildings/" + assetID + ".json", dataToSave);
-            }
-            */
+          
         }
 
         public TileTypeMap selectedTileTypeMap;
