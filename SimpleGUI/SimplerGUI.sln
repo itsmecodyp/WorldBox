@@ -5,6 +5,8 @@ VisualStudioVersion = 17.7.34018.315
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimplerGUI", "SimplerGUI.csproj", "{C0D3A912-6D2A-4415-8206-42A71454A567}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MapSizesStandalone", "..\MapSizesStandalone\MapSizesStandalone.csproj", "{C44AB6F9-E405-4B54-ACF5-35AD1A5E9874}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{C0D3A912-6D2A-4415-8206-42A71454A567}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C0D3A912-6D2A-4415-8206-42A71454A567}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C0D3A912-6D2A-4415-8206-42A71454A567}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C44AB6F9-E405-4B54-ACF5-35AD1A5E9874}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C44AB6F9-E405-4B54-ACF5-35AD1A5E9874}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C44AB6F9-E405-4B54-ACF5-35AD1A5E9874}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C44AB6F9-E405-4B54-ACF5-35AD1A5E9874}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

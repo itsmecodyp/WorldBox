@@ -105,6 +105,7 @@ namespace SimplerGUI.Menus
             {
                 showSurvivorWindow = !showSurvivorWindow;
             }
+            /* joystick isnt being found for some reason, it worked before...
             if (GUILayout.Button("JoyTest: " + isJoyEnabled.ToString()))
             {
                 isJoyEnabled = !isJoyEnabled;
@@ -121,6 +122,7 @@ namespace SimplerGUI.Menus
                 UltimateJoystick.EnableJoystick("JoyRight");
 
             }
+            */
             GUI.DragWindow();
         }
 
@@ -473,7 +475,7 @@ namespace SimplerGUI.Menus
 			BurnStrike,
 			WeakenStrike,
             MultiStrike,
-            TestNeedsName
+            TentacleTower
         }
 
 		public static Dictionary<UpgradeType, int> upgrades = new Dictionary<UpgradeType, int>() {
@@ -483,7 +485,7 @@ namespace SimplerGUI.Menus
 	        { UpgradeType.BurnStrike, 0 }, //capped at 10
 	        { UpgradeType.WeakenStrike, 0 },
 			{ UpgradeType.MultiStrike, 0 },
-			{ UpgradeType.TestNeedsName, 0 }
+			{ UpgradeType.TentacleTower, 0 }
 		};
 
 		public void doShortcut()
@@ -516,11 +518,13 @@ namespace SimplerGUI.Menus
 					tent.spacing -= 0.2f;
 				}
 			}
+            /*
 			if (Input.GetKeyDown(KeyCode.RightControl))
 			{
 				createTentaTest(controlledActorSc.transform.position);
 				//SpawnDrop(validEnemyTargets.GetRandom());
 			}
+			*/
 		}
 
 		// Update sprite movement for drops
@@ -624,20 +628,23 @@ namespace SimplerGUI.Menus
             public GameObject lastObject;
             public Actor focusActor; // what actor to look at
             public float angleOffset;
+            public float lastFireTime = 0f;
+            //float curveIntensity = 0.5f; // Intensity of the curve along the y-axis
+			public float curveFrequency = 5f;   // Frequency of the curve along the x-axis
+			public float rollIntensity = 5f; // Intensity of the wiggles
+			public float rollSpeed = 1f;       // Speed of the wiggles
 			public Tentacle(Vector3 pos)
             {
-                //make sure prefab exists
-				if (spritePrefab == null)
-				{
-					spritePrefab = new GameObject("t");
-					//spritePrefab.transform.parent = controlledActorSc.transform;
 
-					spritePrefab.AddComponent<SpriteRenderer>();
-					Sprite happySprite = (Sprite)Resources.Load("ui/Icons/iconMoodHappy", typeof(Sprite));
-					spritePrefab.GetComponent<SpriteRenderer>().sprite = happySprite;
-					spritePrefab.GetComponent<SpriteRenderer>().sortingLayerID = controlledActorSc.spriteRenderer.sortingLayerID;
-					spritePrefab.transform.localScale = new Vector3(0.06f, 0.06f, 0.06f);
-				}
+				spritePrefab = new GameObject("t");
+				//spritePrefab.transform.parent = controlledActorSc.transform;
+
+				spritePrefab.AddComponent<SpriteRenderer>();
+				Sprite happySprite = (Sprite)Resources.Load("ui/Icons/iconMoodHappy", typeof(Sprite));
+				spritePrefab.GetComponent<SpriteRenderer>().sprite = happySprite;
+				spritePrefab.GetComponent<SpriteRenderer>().sortingLayerID = controlledActorSc.spriteRenderer.sortingLayerID;
+				spritePrefab.transform.localScale = new Vector3(0.06f, 0.06f, 0.06f);
+
 
 				//create first object to parent the rest to
 				parentObject = Instantiate(spritePrefab, pos, Quaternion.identity);
@@ -652,7 +659,7 @@ namespace SimplerGUI.Menus
 
 					if (i < 3) //if (i < numberOfSprites - 3) // all but last 3
 					{
-						sprite.GetComponent<SpriteRenderer>().enabled = false;
+						//sprite.GetComponent<SpriteRenderer>().enabled = false;
 					}
 					lineSprites.Add(sprite);
 					lastObject = sprite;
@@ -663,19 +670,19 @@ namespace SimplerGUI.Menus
 
 		public static GameObject spritePrefab; // The prefab of the sprite object
 
-        public void TentacleUpdate()
-        {
-            for (int i = 0; i < activeTentacles.Count; i++)
-            {
-                Tentacle tentacool = activeTentacles[i];
+		public void TentacleUpdate()
+		{
+			for (int i = 0; i < activeTentacles.Count; i++)
+			{
+				Tentacle tentacool = activeTentacles[i];
 
-                //update tracked enemy
-                Vector3 pos = tentacool.parentObject.transform.position;
+				// Update tracked enemy
+				Vector3 pos = tentacool.parentObject.transform.position;
 				WorldTile tentaclesTile = MapBox.instance.GetTile((int)pos.x, (int)pos.y);
-				if ((tentacool.focusActor == null || tentacool.focusActor.isAlive() == false) && tentaclesTile != null && validEnemyTargets.Count > 0)
-                {
-                    Actor closest = Toolbox.getClosestActor(validEnemyTargets, tentaclesTile);
-                    tentacool.focusActor = closest;
+				if ((tentacool.focusActor == null || !tentacool.focusActor.isAlive()) && tentaclesTile != null && validEnemyTargets.Count > 0)
+				{
+					Actor closest = Toolbox.getClosestActor(validEnemyTargets, tentaclesTile);
+					tentacool.focusActor = closest;
 				}
 
 				List<GameObject> lineSprites = tentacool.objectList;
@@ -686,6 +693,7 @@ namespace SimplerGUI.Menus
 				{
 					float t = (float)n / (lineSprites.Count - 1);
 					Vector3 lastPos = tentacool.lastObject.transform.position;
+					// Final tile in the list, useful to track/know
 					WorldTile ti = MapBox.instance.GetTile((int)lastPos.x, (int)lastPos.y);
 
 					if (ti != null)
@@ -694,20 +702,23 @@ namespace SimplerGUI.Menus
 						flashEffects.flashPixel(ti);
 					}
 
-					//target position for the tentacle focus
+					// Target position for the tentacle focus
 					Vector3 targetPosition = new Vector3();
 					if (tentacool.focusActor != null)
-                    {
+					{
 						targetPosition = Vector3.Lerp(lineStartPosition, tentacool.focusActor.transform.position, t);
 					}
-                    else
-                    {
+					else
+					{
 						targetPosition = Vector3.Lerp(lineStartPosition, controlledActorSc.transform.position, t);
-                    }
+					}
 
 					// Apply curve to y position
 					targetPosition.y += Mathf.Sin(t * Mathf.PI) * tentacool.curveIntensity;
 
+					float rollAmount = Mathf.Cos((Time.time + n) * tentacool.rollSpeed) * tentacool.rollIntensity;
+					targetPosition.z += rollAmount;
+					
 					// Adjust positions to maintain spacing
 					if (n > 0)
 					{
@@ -724,17 +735,285 @@ namespace SimplerGUI.Menus
 					lineSprites[n].transform.position = targetPosition;
 				}
 
-				if (Input.GetMouseButton(0))
+				if (/*Input.GetMouseButton(0) && */(tentacool.lastFireTime == 0f || tentacool.lastFireTime + 2f < Time.realtimeSinceStartup))
 				{
 					Vector3 finalObjectPos = tentacool.lastObject.transform.position;
 					Actor closest = tentacool.focusActor;
-                    if(closest != null)
-                    {
+					if (closest != null)
+					{
 						Projectile arrow = EffectsLibrary.spawnProjectile("arrow", finalObjectPos, closest.currentTile.posV3, closest.getZ());
 						arrow.byWho = controlledActorSc;
+						tentacool.lastFireTime = Time.realtimeSinceStartup;
 					}
 				}
 			}
+		}
+
+		public static List<OrbGroup> activeOrbGroups = new List<OrbGroup>();
+
+		public class OrbGroup
+		{
+			public GameObject parentObject; // for using in update later
+			public int numberOfSprites = 8;
+			public List<GameObject> objectListCircle = new List<GameObject>(); // for storing the instantiated pieces
+			public List<GameObject> objectListStaff = new List<GameObject>(); // for storing the instantiated pieces
+
+			public Actor focusActor; // what actor to focus these on
+			public float rotationSpeed = 90f; // Degrees per second, adjust as needed
+            public Vector3 prevMousePosition;
+            public float dist1 = 2f;
+            public float dist2 = 1.8f;
+			public OrbGroup(Vector3 pos)
+			{
+                focusActor = controlledActorSc;
+				spritePrefab = new GameObject("t");
+				//spritePrefab.transform.parent = controlledActorSc.transform;
+
+				spritePrefab.AddComponent<SpriteRenderer>();
+				Sprite happySprite = (Sprite)Resources.Load("ui/Icons/iconMoodHappy", typeof(Sprite));
+				spritePrefab.GetComponent<SpriteRenderer>().sprite = happySprite;
+				spritePrefab.GetComponent<SpriteRenderer>().sortingLayerID = controlledActorSc.spriteRenderer.sortingLayerID;
+				spritePrefab.transform.localScale = new Vector3(0.06f, 0.06f, 0.06f);
+
+				//create first object to parent the rest to
+				parentObject = Instantiate(spritePrefab, pos, Quaternion.identity);
+
+				List<GameObject> lineSprites = new List<GameObject>();
+				//int third = numberOfSprites / 4;//fourth whatever 
+				for (int i = 1; i < numberOfSprites; i++)
+				{
+					GameObject sprite = Instantiate(spritePrefab, controlledActorSc.transform.position, Quaternion.identity);
+					sprite.transform.parent = parentObject.transform;
+					sprite.GetComponent<SpriteRenderer>().color = Color.black;
+
+					lineSprites.Add(sprite);
+				}
+				objectListCircle = lineSprites;
+
+				List<GameObject> lineSprites2 = new List<GameObject>();
+				for (int i = 1; i < numberOfSprites*3; i++)
+				{
+					GameObject sprite = Instantiate(spritePrefab, controlledActorSc.transform.position, Quaternion.identity);
+					sprite.transform.localScale = new Vector3(0.04f, 0.04f, 0.04f);
+
+					sprite.transform.parent = parentObject.transform;
+					sprite.GetComponent<SpriteRenderer>().color = Color.black;
+				
+					lineSprites2.Add(sprite);
+				}
+                objectListStaff = lineSprites2;
+                activeOrbGroups.Add(this);
+			}
+		}
+
+		public void OrbUpdate()
+		{
+			for (int i = 0; i < activeOrbGroups.Count; i++)
+			{
+				OrbGroup orbGroup = activeOrbGroups[i];
+
+				// Update tracked enemy
+				Vector3 pos = orbGroup.focusActor.transform.position;
+
+				// Define parameters for circle motion
+				float radius = orbGroup.dist1; // Adjust this value as needed
+				float angleOffset = Time.time * orbGroup.rotationSpeed; // Initial angle offset
+
+				List<GameObject> lineSprites = orbGroup.objectListCircle;
+
+				float angleIncrement = 360f / lineSprites.Count; // Angle between objects
+
+				for (int n = 0; n < lineSprites.Count; n++)
+				{
+					// Calculate angle for this object
+					float angle = angleOffset + (n * angleIncrement);
+
+					// Calculate position on circle
+					float x = pos.x + radius * Mathf.Cos(angle * Mathf.Deg2Rad);
+					float y = pos.y + radius * Mathf.Sin(angle * Mathf.Deg2Rad); // Adjusted for height
+					float z = pos.z;
+
+					// Update object position
+					lineSprites[n].transform.position = new Vector3(x, y, z);
+
+                    //forceback other units off orbs
+					Vector3 targetPosition = lineSprites[i].transform.position;
+					WorldTile targetTile = MapBox.instance.GetTile((int)targetPosition.x, (int)targetPosition.y);
+					if (targetTile != null)
+					{
+						World.world.applyForce(targetTile, 4, 0.4f, true, true, 0, null, controlledActorSc, null);
+					}
+				}
+				UpdateLineFromOrb();
+			}
+		}
+
+
+        public float timeSinceHeldRightClick;
+		public void UpdateLineFromOrb()
+		{
+			OrbGroup orbGroup = activeOrbGroups[0]; // Assuming you have only one active orb group
+
+			List<GameObject> lineSprites = orbGroup.objectListStaff;
+			if (Input.GetKeyDown(KeyCode.LeftAlt))
+			{
+				for (int i = 0; i < lineSprites.Count; i++)
+				{
+					// Apply delay to follow the path
+					Vector3 targetPosition = lineSprites[i].transform.position;
+					WorldTile targetTile = MapBox.instance.GetTile((int)targetPosition.x, (int)targetPosition.y);
+					if (targetTile != null)
+					{
+						BaseEffect lightningEffect = EffectsLibrary.spawnAtTile("fx_lightning_small", targetTile, 0.25f);
+						targetTile.startFire();
+
+					}
+				}
+			}
+			if (Input.GetMouseButton(0) && !Input.GetMouseButton(1))
+            {
+                timeSinceHeldRightClick = 0f;
+				//follow mouse cursor while click-dragged, with delay
+				// Get the current cursor position
+				Vector3 cursorPosition = GetCursorPosition();
+
+                // Define parameters
+                float followDelay = 0.125f; // Adjust as needed, the delay between each object following the path
+
+                // Store the target positions with a delay
+                for (int i = lineSprites.Count - 1; i > 0; i--)
+                {
+                    // Apply delay to follow the path
+                    Vector3 targetPosition = lineSprites[i - 1].transform.position;
+                    lineSprites[i].transform.position = Vector3.Lerp(lineSprites[i].transform.position, targetPosition, Time.deltaTime / followDelay);
+                }
+
+                // Move the first object towards the cursor position
+                lineSprites[0].transform.position = Vector3.Lerp(lineSprites[0].transform.position, cursorPosition, Time.deltaTime / followDelay);
+				if (Input.GetMouseButtonDown(1))
+				{
+					List<Actor> targetsMinusControlled = MapBox.instance.units.ToList();
+					if (targetsMinusControlled.Contains(controlledActorSc))
+					{
+						targetsMinusControlled.Remove(controlledActorSc);
+					}
+					for (int i = 0; i < lineSprites.Count; i++)
+					{
+
+						// Apply delay to follow the path
+						Vector3 targetPosition = lineSprites[i].transform.position;
+						WorldTile targetTile = MapBox.instance.GetTile((int)targetPosition.x, (int)targetPosition.y);
+
+						if (targetTile != null)
+						{
+							Actor closest = Toolbox.getClosestActor(targetsMinusControlled, targetTile);
+							if (closest != null)
+							{
+								Projectile arrow = EffectsLibrary.spawnProjectile("arrow", lineSprites[i].transform.position, closest.currentPosition, closest.getZ());
+								arrow.byWho = controlledActorSc;
+								arrow.setStats(controlledActorSc.stats);
+							}
+
+						}
+					}
+				}
+
+			} // hold left click
+			else if (Input.GetMouseButtonUp(0))
+			{
+				float distanceToActor = Vector3.Distance(GetCursorPosition(), orbGroup.focusActor.transform.position);
+				Debug.Log("Distance to Actor: " + distanceToActor);
+                orbGroup.dist2 = distanceToActor;
+			} // left click up
+			else if (Input.GetMouseButton(1)) // hold right click
+			{
+				// Group objects into a tight, straight line
+				Vector3 cursorPosition = GetCursorPosition();
+				Vector3 pos = orbGroup.focusActor.transform.position;
+				Vector3 direction = (cursorPosition - pos).normalized;
+
+				float lineLength = orbGroup.dist2; // Adjust as needed
+				float objectSpacing = 0.125f; // Adjust as needed
+
+				for (int i = 0; i < lineSprites.Count; i++)
+				{
+					// Calculate position along the line
+					Vector3 targetPosition = pos + direction * (i * objectSpacing - lineLength);
+
+					// Move the object to the calculated position
+					lineSprites[i].transform.position = Vector3.Lerp(lineSprites[i].transform.position, targetPosition, Time.deltaTime * 5.0f); // Adjust speed as needed
+				}
+                timeSinceHeldRightClick = Time.realtimeSinceStartup;
+			}
+			else
+			{
+                if(timeSinceHeldRightClick == 0f || timeSinceHeldRightClick + 5f < Time.realtimeSinceStartup)
+                {
+					// Update tracked enemy
+					Vector3 pos = orbGroup.focusActor.transform.position;
+
+					// Define parameters for circle motion
+					float radius = orbGroup.dist2; // Adjust this value as needed
+					float angleOffset = Time.time * orbGroup.rotationSpeed; // Initial angle offset
+
+					List<GameObject> lineSprites2 = orbGroup.objectListStaff;
+
+					float angleIncrement = 360f / lineSprites2.Count; // Angle between objects
+
+					for (int n = 0; n < lineSprites2.Count; n++)
+					{
+						// Calculate angle for this object
+						float angle = angleOffset + (n * angleIncrement);
+
+						// Calculate position on circle
+						float x = pos.x + radius * Mathf.Cos(angle * Mathf.Deg2Rad);
+						float y = pos.y + radius * Mathf.Sin(angle * Mathf.Deg2Rad); // Adjusted for height
+						float z = pos.z;
+
+						// Update object position
+						lineSprites2[n].transform.position = Vector3.Lerp(lineSprites2[n].transform.position, new Vector3(x, y, z), Time.deltaTime / 0.25f);
+					}
+					//UpdateLineFromOrb();
+				}
+                else{
+					for (int i = 0; i < lineSprites.Count; i++)
+                    {
+                        if(i < 3 && Toolbox.randomChance(0.25f))
+                        {
+							// Get the direction of the line
+							Vector3 lineDirection = (lineSprites[1].transform.position - lineSprites[0].transform.position).normalized;
+
+							// Choose a random distance along the line direction
+							float randomDistance = -UnityEngine.Random.Range(5f, 15f); // Adjust the range as needed
+
+							// Calculate the position at the random distance along the line direction
+							Vector3 targetPosition = lineSprites[0].transform.position + lineDirection * randomDistance;
+
+							// Find the corresponding tile
+							WorldTile targetTile = MapBox.instance.GetTile((int)targetPosition.x, (int)targetPosition.y);
+                            if(targetTile != null)
+                            {
+								Projectile arrow = EffectsLibrary.spawnProjectile("fireball", lineSprites[0].transform.position, targetPosition, 0f);
+								arrow.byWho = controlledActorSc;
+								arrow.setStats(controlledActorSc.stats);
+							}
+						}
+						GameObject obj = lineSprites[i];
+						Vector3 pos = obj.transform.position;
+						WorldTile tile = MapBox.instance.GetTile((int)pos.x, (int)pos.y);
+                        foreach(WorldTile neighb in tile.neighboursAll)
+                        {
+							PixelFlashEffects flashEffects = MapBox.instance.flashEffects;
+							flashEffects.flashPixel(neighb);
+						}
+					}
+                }
+			}
+		}
+
+		private Vector3 GetCursorPosition()
+		{
+			return MapBox.instance.getMousePos();
 		}
 
 		//menu for selecting and managing upgrades/skills as player levels up
@@ -765,6 +1044,10 @@ namespace SimplerGUI.Menus
 						{
 							//ability capped out, return
 							return;
+						}
+						if (key == UpgradeType.TentacleTower)
+                        {
+							createTentaTest(controlledActorSc.transform.position);
 						}
 						spentUpgrades++;
 						upgrades[key]++;
@@ -873,32 +1156,14 @@ namespace SimplerGUI.Menus
         {
             Tentacle newTent = new Tentacle(positionToAnchor);
             activeTentacles.Add(newTent);
-            /*
-			for (int lineIndex = 0; lineIndex < numberOfLines; lineIndex++)
-			{
-				List<GameObject> lineSprites = new List<GameObject>();
-				int third = numberOfSprites / 4;//fourth whatever 
-				for (int i = 1; i < numberOfSprites; i++)
-				{
-					GameObject sprite = Instantiate(spritePrefab, Vector3.zero, Quaternion.identity);
-					sprite.transform.parent = controlledActorSc.transform;
-					sprite.GetComponent<SpriteRenderer>().color = Color.black;
-
-					if (i < 3) //if (i < numberOfSprites - 3) // all but last 3
-					{
-						sprite.GetComponent<SpriteRenderer>().enabled = false;
-					}
-					lineSprites.Add(sprite);
-					lastObject = sprite;
-				}
-				spriteLines.Add(lineSprites);
-			}
-            */
-			//spritePrefab.gameObject.SetActive(false);
 		}
 
+		public void createOrbTest(Vector3 positionToAnchor)
+		{
+		    OrbGroup newTent = new OrbGroup(positionToAnchor);
+		}
 
-        public static bool killHimself_Prefix(bool pDestroy, AttackType pType, bool pCountDeath, bool pLaunchCallbacks, bool pLogFavorite, Actor __instance)
+		public static bool killHimself_Prefix(bool pDestroy, AttackType pType, bool pCountDeath, bool pLaunchCallbacks, bool pLogFavorite, Actor __instance)
         {
             if(validEnemyTargets.Contains(__instance))
             {
@@ -921,35 +1186,61 @@ namespace SimplerGUI.Menus
 
         public void DropsUpdate()
         {
-			// Update each sprite movement
-			for (int i = 0; i < activeSpriteMovements.Count; i++)
-			{
-				UpdateSpriteMovement(activeSpriteMovements[i]);
-			}
-
-			// Remove completed sprite movements
-			activeSpriteMovements.RemoveAll(spriteMovement => spriteMovement.elapsedTime >= 1f);
-
-			Vector3 player = controlledActorSc.transform.position;
-			for (int i = 0; i < drops.Count; i++)
-			{
-				if (Toolbox.DistVec3(player, drops[i].transform.position) < 2f)
+            if(controlledActorSc != null && controlledActorSc.isAlive())
+            {
+				// Update each sprite movement
+				for (int i = 0; i < activeSpriteMovements.Count; i++)
 				{
-					drops[i].gameObject.SetActive(false);
-					//do drop logic like add xp, change inventory
-					Debug.Log("drop was picked up");
+					UpdateSpriteMovement(activeSpriteMovements[i]);
+				}
 
-					//move object to pool for reuse later
-					recycler.Add(drops[i]);
-					drops.Remove(drops[i]);
-					//Debug.Log("counts: r:" + recycler.Count + "; d:" + drops.Count);
+				// Remove completed sprite movements
+				activeSpriteMovements.RemoveAll(spriteMovement => spriteMovement.elapsedTime >= 1f);
+
+				Vector3 player = controlledActorSc.transform.position;
+				for (int i = 0; i < drops.Count; i++)
+				{
+					if (Toolbox.DistVec3(player, drops[i].transform.position) < 2f)
+					{
+						drops[i].gameObject.SetActive(false);
+						//do drop logic like add xp, change inventory
+						Debug.Log("drop was picked up");
+
+						//move object to pool for reuse later
+						recycler.Add(drops[i]);
+						drops.Remove(drops[i]);
+						//Debug.Log("counts: r:" + recycler.Count + "; d:" + drops.Count);
+					}
 				}
 			}
+            else
+            {
+                //actor is dead
+                if(drops.Count > 0)
+                {
+					//clear drops
+					for (int i = 0; i < drops.Count; i++)
+                    {
+						GameObject drop = drops[i];
+						//move object to pool for reuse later
+						recycler.Add(drops[i]);
+						drops.Remove(drops[i]);
+					}
+                }
+            }
+			
 		}
 
         public void SurvivorUpdate()
         {
-            if (survivorActive)
+			if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.RightAlt))
+			{
+				createOrbTest(controlledActorSc.transform.position);
+				//SpawnDrop(validEnemyTargets.GetRandom());
+			}
+			OrbUpdate();
+
+			if (survivorActive)
             {
                 if(global::Config.paused == false)
                 {
@@ -957,23 +1248,59 @@ namespace SimplerGUI.Menus
                     timeSurvivedSoFar += Time.deltaTime;
 				}
                 TentacleUpdate();
-                DropsUpdate();
+
+				DropsUpdate();
 
 				if (controlledActorSc == null || controlledActorSc.data.alive == false)
                 {
-                    //controlled actor has died, mode should finish
-                    float lastTime = timeSurvivedSoFar;
+					Debug.Log("Reset");
+					//controlled actor has died, mode should finish
+					float lastTime = timeSurvivedSoFar;
                     WorldTip.showNow("You died. Kills: " + enemyKills.ToString(), false, "center", 10f);
-                    //maybe save highest stats for record
-                    survivorActive = false;
+					//maybe save highest stats for record
+					Debug.Log("Resetting generic stuff");
+					survivorActive = false;
                     timeSurviveStarted = 0f;
 					spentUpgrades = 0;
 					enemyKills = 0;
 					timeSurvivedSoFar = 0f;
 					GuiMain.Other.disableLevelCap = wasLevelCapDisabled;
                     wasLevelCapDisabled = false;
+                    Debug.Log("Resetting upgrades");
+					upgrades = new Dictionary<UpgradeType, int>() {
+			{ UpgradeType.DeathArrow, 0 },
+			{ UpgradeType.DeathBomb, 0 },
+			{ UpgradeType.FreezeStrike, 0 }, //capped at 10, 10% chance each
+	        { UpgradeType.BurnStrike, 0 }, //capped at 10
+	        { UpgradeType.WeakenStrike, 0 },
+			{ UpgradeType.MultiStrike, 0 },
+			{ UpgradeType.TentacleTower, 0 }
+		};
+					Debug.Log("Resetting enemies (nevermind)");
+                    /* cant seem to kill this whole list in any easy way.. maybe reset map? or just let them live?
+					for (int i = validEnemyTargets.Count; i > 0; i--)
+                    {
+						Actor actor = validEnemyTargets[i];
+						actor.killHimself();
+                    }
+                    */
+					Debug.Log("Resetting tentacles");
+					for (int g = 0; g < activeTentacles.Count; g++)
+                    {
+						Tentacle tent = activeTentacles[g];
+						tent.parentObject.GetComponent<SpriteRenderer>().enabled = false;
+						for (int p = 0; p < tent.objectList.Count; p++)
+                        {
+							GameObject obj = tent.objectList[p];
+							obj.GetComponent<SpriteRenderer>().enabled = false;
 
-                    for (int x = 0; x < AssetManager.traits.list.Count; x++)
+							obj.SetActive(false);
+                            Destroy(obj);
+                        }
+                        activeTentacles.Clear();
+					}
+					Debug.Log("Resetting stat traits");
+					for (int x = 0; x < AssetManager.traits.list.Count; x++)
                     {
                         ActorTrait trait = AssetManager.traits.list[x];
                         if (trait.id.Contains("customT"))

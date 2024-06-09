@@ -1,26 +1,36 @@
 {
   "Version": 1,
-  "WorkspaceRootPath": "C:\\WorldBox\\SimpleGUI\\",
+  "WorkspaceRootPath": "C:\\git\\WorldBox\\SimpleGUI\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:1:0:{C0D3A912-6D2A-4415-8206-42A71454A567}|SimplerGUI.csproj|c:\\worldbox\\simplegui\\submods\\assetmodenabler\\assetmodenabler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:2:0:{C0D3A912-6D2A-4415-8206-42A71454A567}|SimplerGUI.csproj|c:\\git\\worldbox\\simplegui\\menus\\actorcontrol.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:2:0:{C0D3A912-6D2A-4415-8206-42A71454A567}|SimplerGUI.csproj|solutionrelative:menus\\actorcontrol.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{C44AB6F9-E405-4B54-ACF5-35AD1A5E9874}|..\\MapSizesStandalone\\MapSizesStandalone.csproj|c:\\git\\worldbox\\mapsizesstandalone\\class1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{00000000-0000-0000-0000-000000000000}|\u003CSolution\u003E|MapSizesStandalone||{04B8AB82-A572-4FEF-95CE-5222444B6B64}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{C0D3A912-6D2A-4415-8206-42A71454A567}|SimplerGUI.csproj|C:\\git\\WorldBox\\SimpleGUI\\submods\\mapsizes\\mapsizes.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{C0D3A912-6D2A-4415-8206-42A71454A567}|SimplerGUI.csproj|solutionrelative:submods\\mapsizes\\mapsizes.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:1:0:{C0D3A912-6D2A-4415-8206-42A71454A567}|SimplerGUI.csproj|c:\\git\\worldbox\\simplegui\\menus\\actorcontrol.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:1:0:{C0D3A912-6D2A-4415-8206-42A71454A567}|SimplerGUI.csproj|solutionrelative:menus\\actorcontrol.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:1:0:{C0D3A912-6D2A-4415-8206-42A71454A567}|SimplerGUI.csproj|C:\\git\\WorldBox\\SimpleGUI\\submods\\assetmodenabler\\assetmodenabler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:1:0:{C0D3A912-6D2A-4415-8206-42A71454A567}|SimplerGUI.csproj|solutionrelative:submods\\assetmodenabler\\assetmodenabler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{C0D3A912-6D2A-4415-8206-42A71454A567}|SimplerGUI.csproj|c:\\worldbox\\simplegui\\menus\\actorcontrol.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{C0D3A912-6D2A-4415-8206-42A71454A567}|SimplerGUI.csproj|solutionrelative:menus\\actorcontrol.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:2:0:{C0D3A912-6D2A-4415-8206-42A71454A567}|SimplerGUI.csproj|C:\\WorldBox\\SimpleGUI\\submods\\assetmodenabler\\assetmodenabler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:2:0:{C0D3A912-6D2A-4415-8206-42A71454A567}|SimplerGUI.csproj|C:\\git\\WorldBox\\SimpleGUI\\submods\\assetmodenabler\\assetmodenabler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:2:0:{C0D3A912-6D2A-4415-8206-42A71454A567}|SimplerGUI.csproj|solutionrelative:submods\\assetmodenabler\\assetmodenabler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{C0D3A912-6D2A-4415-8206-42A71454A567}|SimplerGUI.csproj|C:\\WorldBox\\SimpleGUI\\main.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{C0D3A912-6D2A-4415-8206-42A71454A567}|SimplerGUI.csproj|solutionrelative:main.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{C0D3A912-6D2A-4415-8206-42A71454A567}|SimplerGUI.csproj|C:\\WorldBox\\SimpleGUI\\submods\\simplemessages\\simplecultists.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{C0D3A912-6D2A-4415-8206-42A71454A567}|SimplerGUI.csproj|solutionrelative:submods\\simplemessages\\simplecultists.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:3:0:{C0D3A912-6D2A-4415-8206-42A71454A567}|SimplerGUI.csproj|C:\\git\\WorldBox\\SimpleGUI\\submods\\assetmodenabler\\assetmodenabler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:3:0:{C0D3A912-6D2A-4415-8206-42A71454A567}|SimplerGUI.csproj|solutionrelative:submods\\assetmodenabler\\assetmodenabler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -29,76 +39,111 @@
       "VerticalTabListWidth": 256,
       "DocumentGroups": [
         {
-          "DockedWidth": 146,
-          "SelectedChildIndex": 1,
-          "Children": [
-            {
-              "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "Main.cs",
-              "DocumentMoniker": "C:\\WorldBox\\SimpleGUI\\Main.cs",
-              "RelativeDocumentMoniker": "Main.cs",
-              "ToolTip": "C:\\WorldBox\\SimpleGUI\\Main.cs",
-              "RelativeToolTip": "Main.cs",
-              "ViewState": "AQIAAHYDAAAAAAAAAAAvwIYDAAAbAAAA",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-05-23T19:07:07.258Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "AssetModEnabler.cs",
-              "DocumentMoniker": "C:\\WorldBox\\SimpleGUI\\Submods\\AssetModEnabler\\AssetModEnabler.cs",
-              "RelativeDocumentMoniker": "Submods\\AssetModEnabler\\AssetModEnabler.cs",
-              "ToolTip": "C:\\WorldBox\\SimpleGUI\\Submods\\AssetModEnabler\\AssetModEnabler.cs",
-              "RelativeToolTip": "Submods\\AssetModEnabler\\AssetModEnabler.cs",
-              "ViewState": "AQIAAMMAAAAAAAAAAAAAAMsAAAAiAAAA",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-04-22T00:06:53.32Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 4,
-              "Title": "SimpleCultists.cs",
-              "DocumentMoniker": "C:\\WorldBox\\SimpleGUI\\Submods\\SimpleMessages\\SimpleCultists.cs",
-              "RelativeDocumentMoniker": "Submods\\SimpleMessages\\SimpleCultists.cs",
-              "ToolTip": "C:\\WorldBox\\SimpleGUI\\Submods\\SimpleMessages\\SimpleCultists.cs",
-              "RelativeToolTip": "Submods\\SimpleMessages\\SimpleCultists.cs",
-              "ViewState": "AQIAAEkAAAAAAAAAAAAwwFEAAAAfAAAA",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-05-20T18:47:10.116Z"
-            }
-          ]
-        },
-        {
-          "DockedWidth": 254,
-          "SelectedChildIndex": 1,
+          "DockedWidth": 293,
+          "SelectedChildIndex": 3,
           "Children": [
             {
               "$type": "Document",
               "DocumentIndex": 2,
+              "Title": "MapSizesStandalone",
+              "DocumentMoniker": "C:\\git\\WorldBox\\MapSizesStandalone\\MapSizesStandalone.csproj",
+              "RelativeDocumentMoniker": "..\\MapSizesStandalone\\MapSizesStandalone.csproj",
+              "ToolTip": "C:\\git\\WorldBox\\MapSizesStandalone\\MapSizesStandalone.csproj",
+              "RelativeToolTip": "..\\MapSizesStandalone\\MapSizesStandalone.csproj",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2024-06-07T23:53:08.904Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "Class1.cs",
+              "DocumentMoniker": "C:\\git\\WorldBox\\MapSizesStandalone\\Class1.cs",
+              "RelativeDocumentMoniker": "..\\MapSizesStandalone\\Class1.cs",
+              "ToolTip": "C:\\git\\WorldBox\\MapSizesStandalone\\Class1.cs",
+              "RelativeToolTip": "..\\MapSizesStandalone\\Class1.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAUAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-06-07T23:33:37.461Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "MapSizes.cs",
+              "DocumentMoniker": "C:\\git\\WorldBox\\SimpleGUI\\Submods\\MapSizes\\MapSizes.cs",
+              "RelativeDocumentMoniker": "Submods\\MapSizes\\MapSizes.cs",
+              "ToolTip": "C:\\git\\WorldBox\\SimpleGUI\\Submods\\MapSizes\\MapSizes.cs",
+              "RelativeToolTip": "Submods\\MapSizes\\MapSizes.cs",
+              "ViewState": "AQIAAIECAAAAAAAAAAAkwLUCAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-06-07T23:32:24.947Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "ActorControl.cs",
+              "DocumentMoniker": "C:\\git\\WorldBox\\SimpleGUI\\Menus\\ActorControl.cs",
+              "RelativeDocumentMoniker": "Menus\\ActorControl.cs",
+              "ToolTip": "C:\\git\\WorldBox\\SimpleGUI\\Menus\\ActorControl.cs",
+              "RelativeToolTip": "Menus\\ActorControl.cs",
+              "ViewState": "AQIAAGgDAAAAAAAAAAAswH8DAAA8AAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-06-07T06:03:39.491Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
               "Title": "AssetModEnabler.cs",
-              "DocumentMoniker": "C:\\WorldBox\\SimpleGUI\\Submods\\AssetModEnabler\\AssetModEnabler.cs",
+              "DocumentMoniker": "C:\\git\\WorldBox\\SimpleGUI\\Submods\\AssetModEnabler\\AssetModEnabler.cs",
               "RelativeDocumentMoniker": "Submods\\AssetModEnabler\\AssetModEnabler.cs",
-              "ToolTip": "C:\\WorldBox\\SimpleGUI\\Submods\\AssetModEnabler\\AssetModEnabler.cs",
+              "ToolTip": "C:\\git\\WorldBox\\SimpleGUI\\Submods\\AssetModEnabler\\AssetModEnabler.cs",
               "RelativeToolTip": "Submods\\AssetModEnabler\\AssetModEnabler.cs",
-              "ViewState": "AQIAAMICAAAAAAAAAAAAAN8CAAAGAAAA",
+              "ViewState": "AQIAAKECAAAAAAAAAAAYwL4CAAAzAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-04-22T00:06:53.32Z"
+            }
+          ]
+        },
+        {
+          "DockedWidth": 107,
+          "SelectedChildIndex": 0,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "ActorControl.cs",
+              "DocumentMoniker": "C:\\git\\WorldBox\\SimpleGUI\\Menus\\ActorControl.cs",
+              "RelativeDocumentMoniker": "Menus\\ActorControl.cs",
+              "ToolTip": "C:\\git\\WorldBox\\SimpleGUI\\Menus\\ActorControl.cs",
+              "RelativeToolTip": "Menus\\ActorControl.cs",
+              "ViewState": "AQIAAPoCAAAAAAAAAAAswBEDAAAjAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-04-19T09:46:45.046Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "AssetModEnabler.cs",
+              "DocumentMoniker": "C:\\git\\WorldBox\\SimpleGUI\\Submods\\AssetModEnabler\\AssetModEnabler.cs",
+              "RelativeDocumentMoniker": "Submods\\AssetModEnabler\\AssetModEnabler.cs",
+              "ToolTip": "C:\\git\\WorldBox\\SimpleGUI\\Submods\\AssetModEnabler\\AssetModEnabler.cs",
+              "RelativeToolTip": "Submods\\AssetModEnabler\\AssetModEnabler.cs",
+              "ViewState": "AQIAAKAAAAAAAAAAAAASwMYAAAARAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-05-22T02:19:04.814Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "ActorControl.cs",
-              "DocumentMoniker": "C:\\WorldBox\\SimpleGUI\\Menus\\ActorControl.cs",
-              "RelativeDocumentMoniker": "Menus\\ActorControl.cs",
-              "ToolTip": "C:\\WorldBox\\SimpleGUI\\Menus\\ActorControl.cs",
-              "RelativeToolTip": "Menus\\ActorControl.cs",
-              "ViewState": "AQIAABAGAAAAAAAAAAAAAJgGAAAMAAAA",
+              "DocumentIndex": 7,
+              "Title": "AssetModEnabler.cs",
+              "DocumentMoniker": "C:\\git\\WorldBox\\SimpleGUI\\Submods\\AssetModEnabler\\AssetModEnabler.cs",
+              "RelativeDocumentMoniker": "Submods\\AssetModEnabler\\AssetModEnabler.cs",
+              "ToolTip": "C:\\git\\WorldBox\\SimpleGUI\\Submods\\AssetModEnabler\\AssetModEnabler.cs",
+              "RelativeToolTip": "Submods\\AssetModEnabler\\AssetModEnabler.cs",
+              "ViewState": "AQIAACwBAAAAAAAAAAAmwEQBAABFAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-04-19T09:46:45.046Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-05-31T21:34:38.539Z"
             }
           ]
         }

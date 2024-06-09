@@ -7,6 +7,7 @@ using System.Reflection;
 using Amazon.Runtime.Internal.Transform;
 using BepInEx;
 using DG.Tweening.Plugins.Core.PathCore;
+using GoogleMobileAds.Api;
 using HarmonyLib;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -160,6 +161,49 @@ namespace SimplerGUI.Submods.AssetModEnabler
 		public static Rect CloudAssetWindowRect = new Rect(0f, 1f, 1f, 1f);
 		public static Rect CloudAssetEditWindowRect = new Rect(0f, 1f, 1f, 1f);
 
+		ColorSetAsset selectedColorSetAsset;
+		public Vector2 scrollPositionColorSetAssetSelect;
+		public Vector2 scrollPositionColorSetAssetEdit;
+		public static bool showHideColorSetAssetWindow;
+		public static Rect ColorSetAssetWindowRect = new Rect(0f, 1f, 1f, 1f);
+		public static Rect ColorSetAssetEditWindowRect = new Rect(0f, 1f, 1f, 1f);
+
+		BaseStatAsset selectedBaseStatAsset;
+		public Vector2 scrollPositionBaseStatAssetSelect;
+		public Vector2 scrollPositionBaseStatAssetEdit;
+		public static bool showHideBaseStatAssetWindow;
+		public static Rect BaseStatAssetWindowRect = new Rect(0f, 1f, 1f, 1f);
+		public static Rect BaseStatAssetEditWindowRect = new Rect(0f, 1f, 1f, 1f);
+
+		TileType selectedTileType;
+		public Vector2 scrollPositionTileTypeSelect;
+		public Vector2 scrollPositionTileTypeEdit;
+		public static bool showHideTileTypeWindow2;
+		public static Rect TileTypeWindowRect = new Rect(0f, 1f, 1f, 1f);
+		public static Rect TileTypeEditWindowRect = new Rect(0f, 1f, 1f, 1f);
+
+		TopTileType selectedTopTileType;
+		public Vector2 scrollPositionTopTileTypeSelect;
+		public Vector2 scrollPositionTopTileTypeEdit;
+		public static bool showHideTopTileTypeWindow2;
+		public static Rect TopTileTypeWindowRect = new Rect(0f, 1f, 1f, 1f);
+		public static Rect TopTileTypeEditWindowRect = new Rect(0f, 1f, 1f, 1f);
+
+		BuildingAsset selectedBuildingAsset;
+		public Vector2 scrollPositionBuildingAssetSelect;
+		public Vector2 scrollPositionBuildingAssetEdit;
+		public static bool showHideBuildingAssetWindow;
+		public static Rect BuildingAssetWindowRect = new Rect(0f, 1f, 1f, 1f);
+		public static Rect BuildingAssetEditWindowRect = new Rect(0f, 1f, 1f, 1f);
+
+		ProjectileAsset selectedProjectileAsset;
+		public Vector2 scrollPositionProjectileAssetSelect;
+		public Vector2 scrollPositionProjectileAssetEdit;
+		public static bool showHideProjectileAssetWindow;
+		public static Rect ProjectileAssetWindowRect = new Rect(0f, 1f, 1f, 1f);
+		public static Rect ProjectileAssetEditWindowRect = new Rect(0f, 1f, 1f, 1f);
+
+
 
 		public bool showSubMod = true;
 
@@ -306,14 +350,136 @@ namespace SimplerGUI.Submods.AssetModEnabler
 					CloudAssetEditWindowRect = GUILayout.Window(410427, CloudAssetEditWindowRect, (id) => AssetEditWindow(410427, ref scrollPositionCloudAssetEdit, ref selectedCloudAsset), "CloudAsset Edit", GUILayout.MinWidth(200f));
 					CloudAssetEditWindowRect.position = new Vector2(CloudAssetWindowRect.x + CloudAssetWindowRect.width, CloudAssetWindowRect.y);
 				}
+
+				if (showHideColorSetAssetWindow)
+				{
+					ColorSetAssetWindowRect = GUILayout.Window(410428, ColorSetAssetWindowRect, (id) => AssetSelectionWindow(410428,
+						ref scrollPositionColorSetAssetSelect, // scroll position for selection window
+						ref selectedColorSetAsset, // selection reference, for assigning to
+						AssetManager.skin_color_set_library.list, // list used in the action for displaying all assets
+						AssetManager.skin_color_set_library.dict,
+						(ColorSetAsset selected) => AssetManager.skin_color_set_library.clone(selected.id + "_clone", selected.id)), //action to add asset to library, refreshing
+						"ColorSetAsset Selection", // title of window
+						GUILayout.MaxWidth(300f), GUILayout.MinWidth(200f)); //guilayout options
+
+					ColorSetAssetEditWindowRect = GUILayout.Window(410429, ColorSetAssetEditWindowRect, (id) => AssetEditWindow(410429, ref scrollPositionColorSetAssetEdit, ref selectedColorSetAsset), "ColorSetAsset Edit", GUILayout.MinWidth(200f));
+					ColorSetAssetEditWindowRect.position = new Vector2(ColorSetAssetWindowRect.x + ColorSetAssetWindowRect.width, ColorSetAssetWindowRect.y);
+				}
+
+				if (showHideBaseStatAssetWindow)
+				{
+					BaseStatAssetWindowRect = GUILayout.Window(410430, BaseStatAssetWindowRect, (id) => AssetSelectionWindow(410430,
+						ref scrollPositionBaseStatAssetSelect, // scroll position for selection window
+						ref selectedBaseStatAsset, // selection reference, for assigning to
+						AssetManager.base_stats_library.list, // list used in the action for displaying all assets
+						AssetManager.base_stats_library.dict,
+						(BaseStatAsset selected) => AssetManager.base_stats_library.clone(selected.id + "_clone", selected.id)), //action to add asset to library, refreshing
+						"BaseStatAsset Selection", // title of window
+						GUILayout.MaxWidth(300f), GUILayout.MinWidth(200f)); //guilayout options
+
+					BaseStatAssetEditWindowRect = GUILayout.Window(410431, BaseStatAssetEditWindowRect, (id) => AssetEditWindow(410431, ref scrollPositionBaseStatAssetEdit, ref selectedBaseStatAsset), "BaseStatAsset Edit", GUILayout.MinWidth(200f));
+					BaseStatAssetEditWindowRect.position = new Vector2(BaseStatAssetWindowRect.x + BaseStatAssetWindowRect.width, BaseStatAssetWindowRect.y);
+				}
+
+				if (showHideTileTypeWindow2)
+				{
+					TileTypeWindowRect = GUILayout.Window(410433, TileTypeWindowRect, (id) => AssetSelectionWindow(410433,
+						ref scrollPositionTileTypeSelect, // scroll position for selection window
+						ref selectedTileType, // selection reference, for assigning to
+						AssetManager.tiles.list, // list used in the action for displaying all assets
+						AssetManager.tiles.dict,
+						(TileType selected) => AssetManager.tiles.clone(selected.id + "_clone", selected.id)), //action to add asset to library, refreshing
+						"TileType Selection", // title of window
+						GUILayout.MaxWidth(300f), GUILayout.MinWidth(200f)); //guilayout options
+
+					TileTypeEditWindowRect = GUILayout.Window(410434, TileTypeEditWindowRect, (id) => AssetEditWindow(410434, ref scrollPositionTileTypeEdit, ref selectedTileType), "TileType Edit", GUILayout.MinWidth(200f));
+					TileTypeEditWindowRect.position = new Vector2(TileTypeWindowRect.x + TileTypeWindowRect.width, TileTypeWindowRect.y);
+				}
+
+				if (showHideTopTileTypeWindow2)
+				{
+					TopTileTypeWindowRect = GUILayout.Window(410435, TopTileTypeWindowRect, (id) => AssetSelectionWindow(410435,
+						ref scrollPositionTopTileTypeSelect, // scroll position for selection window
+						ref selectedTopTileType, // selection reference, for assigning to
+						AssetManager.topTiles.list, // list used in the action for displaying all assets
+						AssetManager.topTiles.dict,
+						(TopTileType selected) => AssetManager.topTiles.clone(selected.id + "_clone", selected.id)), //action to add asset to library, refreshing
+						"TopTileType Selection", // title of window
+						GUILayout.MaxWidth(300f), GUILayout.MinWidth(200f)); //guilayout options
+
+					TopTileTypeEditWindowRect = GUILayout.Window(410436, TopTileTypeEditWindowRect, (id) => AssetEditWindow(410436, ref scrollPositionTopTileTypeEdit, ref selectedTopTileType), "TopTileType Edit", GUILayout.MinWidth(200f));
+					TopTileTypeEditWindowRect.position = new Vector2(TopTileTypeWindowRect.x + TopTileTypeWindowRect.width, TopTileTypeWindowRect.y);
+				}
+
+				if (showHideBuildingAssetWindow)
+				{
+					BuildingAssetWindowRect = GUILayout.Window(410437, BuildingAssetWindowRect, (id) => AssetSelectionWindow(410437,
+						ref scrollPositionBuildingAssetSelect, // scroll position for selection window
+						ref selectedBuildingAsset, // selection reference, for assigning to
+						AssetManager.buildings.list, // list used in the action for displaying all assets
+						AssetManager.buildings.dict,
+						(BuildingAsset selected) => AssetManager.buildings.clone(selected.id + "_clone", selected.id)), //action to add asset to library, refreshing
+						"BuildingAsset Selection", // title of window
+						GUILayout.MaxWidth(300f), GUILayout.MinWidth(200f)); //guilayout options
+
+					BuildingAssetEditWindowRect = GUILayout.Window(410438, BuildingAssetEditWindowRect, (id) => AssetEditWindow(410438, ref scrollPositionBuildingAssetEdit, ref selectedBuildingAsset), "BuildingAsset Edit", GUILayout.MinWidth(200f));
+					BuildingAssetEditWindowRect.position = new Vector2(BuildingAssetWindowRect.x + BuildingAssetWindowRect.width, BuildingAssetWindowRect.y);
+				}
+
+				if (showHideProjectileAssetWindow)
+				{
+					ProjectileAssetWindowRect = GUILayout.Window(410439, ProjectileAssetWindowRect, (id) => AssetSelectionWindow(410439,
+						ref scrollPositionProjectileAssetSelect, // scroll position for selection window
+						ref selectedProjectileAsset, // selection reference, for assigning to
+						AssetManager.projectiles.list, // list used in the action for displaying all assets
+						AssetManager.projectiles.dict,
+						(ProjectileAsset selected) => AssetManager.buildings.clone(selected.id + "_clone", selected.id)), //action to add asset to library, refreshing
+						"ProjectileAsset Selection", // title of window
+						GUILayout.MaxWidth(300f), GUILayout.MinWidth(200f)); //guilayout options
+
+					ProjectileAssetEditWindowRect = GUILayout.Window(410440, ProjectileAssetEditWindowRect, (id) => AssetEditWindow(410440, ref scrollPositionProjectileAssetEdit, ref selectedProjectileAsset), "ProjectileAsset Edit", GUILayout.MinWidth(200f));
+					ProjectileAssetEditWindowRect.position = new Vector2(ProjectileAssetWindowRect.x + ProjectileAssetWindowRect.width, ProjectileAssetWindowRect.y);
+				}
+
 			}
-        }
+		}
 
 		public string filePathToImport;
 
 		public void AssetSelectionWindow<T>(int windowID, ref Vector2 scrollPosition, ref T selectedAsset, List<T> assetList, Dictionary<string, T> assetDict, Action<T> actionOnAsset)
 		{
 			GuiMain.SetWindowInUse(windowID);
+			if (GUILayout.Button("Apply edit") && selectedAsset != null)
+			{
+				//assetList.Add(selectedAsset);
+               
+				var idField = selectedAsset.GetType().GetField("id", BindingFlags.Public | BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy);
+				object idValue = idField.GetValue(selectedAsset);
+				for (int i = 0; i < assetList.Count; i++)
+				{
+					T asset = assetList[i];
+					string id = (string)idValue;
+					var idField2 = asset.GetType().GetField("id", BindingFlags.Public | BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy);
+					object idValue2 = idField2.GetValue(asset);
+					if (id == (string)idValue2)
+                    {
+						//same asset, remove and replace it
+						assetList.Add(selectedAsset);
+						assetList.RemoveAt(i);
+                        break; // only expect one asset of same name
+                        //asset = selectedAsset;
+                    }
+				}
+				if (assetDict.ContainsKey((string)idValue))
+				{
+                    assetDict[(string)idValue] = selectedAsset;
+				}
+				else
+				{
+					//assetDict.Add((string)idValue, selectedAsset);
+				}
+				//actionOnAsset.Invoke(selectedAsset);
+			}
 			if (GUILayout.Button("Clone") && selectedAsset != null)
 			{
 				actionOnAsset.Invoke(selectedAsset);
@@ -358,10 +524,165 @@ namespace SimplerGUI.Submods.AssetModEnabler
 			GUI.DragWindow();
 		}
 
+		// Custom color picker method for Color type
+		private Color MyCustomColorPicker(Color currentValue)
+		{
+			GUILayout.BeginVertical();
+			GUILayout.Label(ColorUtility.ToHtmlStringRGBA(currentValue));
+			GUILayout.Label(ApproximateColorName(currentValue));
+			// Red
+			GUILayout.BeginHorizontal();
+			GUILayout.Label("R:");
+			GUILayout.EndHorizontal();
+			GUILayout.BeginHorizontal();
+			currentValue.r = GUILayout.HorizontalSlider(currentValue.r, 0, 1);
+			GUILayout.EndHorizontal();
+
+			// Green
+			GUILayout.BeginHorizontal();
+			GUILayout.Label("G:");
+			GUILayout.EndHorizontal();
+			GUILayout.BeginHorizontal();
+			currentValue.g = GUILayout.HorizontalSlider(currentValue.g, 0, 1);
+			GUILayout.EndHorizontal();
+
+			// Blue
+			GUILayout.BeginHorizontal();
+			GUILayout.Label("B:");
+			GUILayout.EndHorizontal();
+			GUILayout.BeginHorizontal();
+			currentValue.b = GUILayout.HorizontalSlider(currentValue.b, 0, 1);
+			GUILayout.EndHorizontal();
+
+			// Alpha
+			GUILayout.BeginHorizontal();
+			GUILayout.Label("A:");
+			GUILayout.EndHorizontal();
+			GUILayout.BeginHorizontal();
+			currentValue.a = GUILayout.HorizontalSlider(currentValue.a, 0, 1);
+			GUILayout.EndHorizontal();
+
+			// Additional empty row
+			GUILayout.BeginHorizontal();
+			colorInput = GUILayout.TextField(colorInput, 6); // Limit input to 6 characters (hex code length)
+			if (GUILayout.Button("Set"))
+			{
+				Color newColor;
+				if (ColorUtility.TryParseHtmlString("#" + colorInput, out newColor))
+				{
+					// If valid, apply the new color
+					currentValue = newColor;
+				}
+			}
+			GUILayout.EndHorizontal();
+          
+			GUILayout.EndVertical();
+
+			return currentValue;
+		}
+
+		private string ApproximateColorName(Color color)
+		{
+			// Define a set of known colors and their RGB values
+			Dictionary<string, Color> knownColors = new Dictionary<string, Color>
+	{
+		{"black", Color.black},
+		{"white", Color.white},
+		{"red", Color.red},
+		{"green", Color.green},
+		{"blue", Color.blue},
+		{"cyan", Color.cyan},
+		{"magenta", Color.magenta},
+		{"yellow", Color.yellow},
+		{"gray", Color.gray},
+		{"darkblue", new Color(0, 0, 0.5f)},
+		{"darkgreen", new Color(0, 0.5f, 0)},
+		{"darkred", new Color(0.5f, 0, 0)},
+		{"lightblue", new Color(0.5f, 0.5f, 1)},
+		{"lightgreen", new Color(0.5f, 1, 0.5f)},
+		{"lightred", new Color(1, 0.5f, 0.5f)},
+        // Add more known colors as needed
+    };
+
+			// Find the closest match by calculating the Euclidean distance between the color and each known color
+			string closestColorName = "";
+			float minDistance = Mathf.Infinity;
+			foreach (var knownColor in knownColors)
+			{
+				float distance = Vector3.Distance(new Vector3(color.r, color.g, color.b), new Vector3(knownColor.Value.r, knownColor.Value.g, knownColor.Value.b));
+				if (distance < minDistance)
+				{
+					minDistance = distance;
+					closestColorName = knownColor.Key;
+				}
+			}
+
+			return closestColorName;
+		}       
+        
+        // Custom color picker method for Color32 type
+		private Color32 MyCustomColor32Picker(Color32 currentValue)
+		{
+			GUILayout.BeginVertical();
+			GUILayout.Label(ColorUtility.ToHtmlStringRGBA(currentValue));
+			GUILayout.Label(ApproximateColorName(currentValue));
+
+			// Red
+			GUILayout.BeginHorizontal();
+			GUILayout.Label("R:");
+			GUILayout.EndHorizontal();
+			GUILayout.BeginHorizontal();
+			currentValue.r = (byte)GUILayout.HorizontalSlider(currentValue.r, 0, 255);
+			GUILayout.EndHorizontal();
+
+			// Green
+			GUILayout.BeginHorizontal();
+			GUILayout.Label("G:");
+			GUILayout.EndHorizontal();
+			GUILayout.BeginHorizontal();
+			currentValue.g = (byte)GUILayout.HorizontalSlider(currentValue.g, 0, 255);
+			GUILayout.EndHorizontal();
+
+			// Blue
+			GUILayout.BeginHorizontal();
+			GUILayout.Label("B:");
+			GUILayout.EndHorizontal();
+			GUILayout.BeginHorizontal();
+			currentValue.b = (byte)GUILayout.HorizontalSlider(currentValue.b, 0, 255);
+			GUILayout.EndHorizontal();
+
+			// Alpha
+			GUILayout.BeginHorizontal();
+			GUILayout.Label("A:");
+			GUILayout.EndHorizontal();
+			GUILayout.BeginHorizontal();
+			currentValue.a = (byte)GUILayout.HorizontalSlider(currentValue.a, 0, 255);
+			GUILayout.EndHorizontal();
+
+			// Additional empty row
+			GUILayout.BeginHorizontal();
+			color32Input = GUILayout.TextField(color32Input, 6); // Limit input to 6 characters (hex code length)
+			if (GUILayout.Button("Hex"))
+            {
+				Color newColor;
+				if (ColorUtility.TryParseHtmlString("#" + color32Input, out newColor))
+				{
+					// If valid, apply the new color
+					currentValue = newColor;
+				}
+			}
+			GUILayout.EndHorizontal();
+
+			GUILayout.EndVertical();
+
+			return currentValue;
+		}
+        string color32Input = "";
+        string colorInput = "";
 		public void DrawAndEditFieldsOf<T>(T typeToEdit)
 		{
 			// Get all fields of the type T
-			FieldInfo[] fields = typeof(T).GetFields();
+			FieldInfo[] fields = typeof(T).GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
 
 			// Iterate through each field
 			foreach (FieldInfo field in fields)
@@ -397,7 +718,14 @@ namespace SimplerGUI.Submods.AssetModEnabler
 						GUILayout.BeginHorizontal();
 						string fieldValue = (string)fieldValueObject;
 						GUILayout.Button(fieldValue);
-						fieldValue = GUILayout.TextField(fieldValue);
+						if (field.Name == "id")
+						{
+							GUILayout.TextField(fieldValue);
+						}
+						else
+						{
+							fieldValue = GUILayout.TextField(fieldValue);
+						}
 						GUILayout.EndHorizontal();
 						field.SetValue(typeToEdit, fieldValue); // Update the field value
 					}
@@ -409,7 +737,103 @@ namespace SimplerGUI.Submods.AssetModEnabler
 						GUILayout.Button(fieldValue.ToString());
 						fieldValue = GUILayout.Toggle(fieldValue, "");
 						GUILayout.EndHorizontal();
+
 						field.SetValue(typeToEdit, fieldValue); // Update the field value
+
+						if (field.Name == "useSkinColors" && fieldValue)
+						{
+							// Check for "color_sets" field
+							FieldInfo colorSetsField = typeof(T).GetField("color_sets", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+							if (colorSetsField != null)
+							{
+								object colorSetsValueObject = colorSetsField.GetValue(typeToEdit);
+								if (colorSetsValueObject == null)
+								{
+									colorSetsField.SetValue(typeToEdit, new List<string>());
+								}
+							}
+						}
+					}
+					else if (field.FieldType == typeof(Color))
+					{
+						GUILayout.Button(field.Name);
+						GUILayout.BeginHorizontal();
+						Color fieldValue = (Color)fieldValueObject;
+						GUILayout.Label(fieldValue.ToString());
+						// Implement your own color picker here
+						fieldValue = MyCustomColorPicker(fieldValue);
+						GUILayout.EndHorizontal();
+						field.SetValue(typeToEdit, fieldValue); // Update the field value
+					}
+					else if (field.FieldType == typeof(Color32))
+					{
+						GUILayout.Button(field.Name);
+						GUILayout.BeginHorizontal();
+						Color32 fieldValue = (Color32)fieldValueObject;
+						GUILayout.Label(fieldValue.ToString());
+						// Implement your own color picker here
+						fieldValue = MyCustomColor32Picker(fieldValue);
+						GUILayout.EndHorizontal();
+						field.SetValue(typeToEdit, fieldValue); // Update the field value
+					}
+					else if (field.FieldType.IsGenericType && field.FieldType.GetGenericTypeDefinition() == typeof(List<>))
+					{
+						Type typeOfList = fieldValueObject.GetType().GetGenericArguments()[0];
+						IList fieldValue = (IList)fieldValueObject;
+						GUILayout.BeginHorizontal();
+						GUILayout.Button(field.Name);
+						if (GUILayout.Button("+"))
+						{
+							// Check if the element type is Color or Color32
+							if (typeOfList == typeof(Color))
+							{
+								fieldValue.Add(Color.white); // Add default color
+							}
+							else if (typeOfList == typeof(Color32))
+							{
+								fieldValue.Add(new Color32(255, 255, 255, 255)); // Add default color32
+							}
+						}
+						GUILayout.EndHorizontal();
+						GUILayout.BeginHorizontal();
+
+						int c = 1;
+						List<object> elementsToRemove = new List<object>();
+						// Iterate through each element of the list
+						for (int j = 0; j < fieldValue.Count; j++)
+						{
+							object element = fieldValue[j];
+
+							if (element != null && element.GetType() == typeOfList)
+							{
+								if (typeOfList == typeof(Color))
+								{
+									Color elementValue = (Color)element;
+									// Implement your own color picker here for the list element
+									elementValue = MyCustomColorPicker(elementValue);
+									fieldValue[j] = elementValue;
+								}
+								else if (typeOfList == typeof(Color32))
+								{
+									Color32 elementValue = (Color32)element;
+									// Implement your own color picker here for the list element
+									elementValue = MyCustomColor32Picker(elementValue);
+									fieldValue[j] = elementValue;
+								}
+								// Add other type checks as needed
+							}
+						}
+
+						// Remove marked elements
+						foreach (var elementToRemove in elementsToRemove)
+						{
+							fieldValue.Remove(elementToRemove);
+						}
+
+						GUILayout.EndHorizontal();
+
+						field.SetValue(typeToEdit, fieldValue);
+						// Update the field value
 					}
 					else if (field.FieldType.IsGenericType && field.FieldType.GetGenericTypeDefinition() == typeof(List<>))
 					{
@@ -643,7 +1067,7 @@ namespace SimplerGUI.Submods.AssetModEnabler
 							GUILayout.Button(key);
 							float value = (float)baseStats[key];
 							GUILayout.Button(value.ToString());
-							value = GUILayout.HorizontalSlider(value, 0, 1000);
+							value = GUILayout.HorizontalSlider(value, 1, 100);
 							baseStats[key] = value;
 
 							GUILayout.EndHorizontal();
@@ -722,7 +1146,7 @@ namespace SimplerGUI.Submods.AssetModEnabler
 			}
 		}
 
-        public void ExportIndividualAsset<T>(T assetToExport)
+		public void ExportIndividualAsset<T>(T assetToExport)
         {
             var tempAsset = assetToExport;
             if (tempAsset != null)
@@ -763,84 +1187,74 @@ namespace SimplerGUI.Submods.AssetModEnabler
                 Debug.Log("tempAsset was null");
             }
         }
-        public void ImportIndividualAsset<T>(ref T selectedAsset, List<T> assetList, Dictionary<string, T> assetDict, string folderName, string fileName, bool isForFolderImport = false)
-        {
-            string typeToCheck = selectedAsset.GetType().ToString();
-            string pathToCheck = System.IO.Path.Combine(Application.streamingAssetsPath, "mods", "Import");
 
-            if (!Directory.Exists(pathToCheck))
-            {
-                Directory.CreateDirectory(pathToCheck);
-                Debug.Log("Created import folder");
-                return;
-            }
+		public void ImportIndividualAsset<T>(ref T selectedAsset, List<T> assetList, Dictionary<string, T> assetDict, string folderName, string fileName, bool isForFolderImport = false)
+		{
+			string typeToCheck = selectedAsset.GetType().ToString();
+			string pathToCheck = System.IO.Path.Combine(Application.streamingAssetsPath, "mods", "Import");
 
-            string filePath;
-            if (isForFolderImport)
-            {
-                filePath = System.IO.Path.Combine(pathToCheck, folderName, fileName + ".json");
-            }
-            else
-            {
-                filePath = System.IO.Path.Combine(pathToCheck, typeToCheck, System.IO.Path.GetFileNameWithoutExtension(fileName) + ".json");
-            }
+			if (!Directory.Exists(pathToCheck))
+			{
+				Directory.CreateDirectory(pathToCheck);
+				Debug.Log("Created import folder");
+				return;
+			}
 
-            if (File.Exists(filePath))
-            {
-                string readData = File.ReadAllText(filePath);
-                // Get the type of the selectedAsset
-                Type type = selectedAsset.GetType();
-                // Deserialize the JSON data into the dynamically determined type
-                var deserializedData = JsonConvert.DeserializeObject<JObject>(readData);
-                // Exclude color properties from the deserialized JSON object
-                ExcludeColorProperties(deserializedData);
-                // Convert the modified JSON object back to the original asset type
-                selectedAsset = deserializedData.ToObject<T>();
-                // Use the deserialized data (now stored in selectedAsset)
-                if (selectedAsset.GetType() == type)
-                {
-                    var idField1 = selectedAsset.GetType().GetField("id", BindingFlags.Public | BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy);
-                    object idValue1 = idField1.GetValue(selectedAsset);
-                    for (int i = 0; i < assetList.Count; i++)
-                    {
-                        T asset = assetList[i];
-                        var idField2 = asset.GetType().GetField("id", BindingFlags.Public | BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy);
-                        object idValue2 = idField2.GetValue(asset);
+			string filePath;
+			if (isForFolderImport)
+			{
+				filePath = System.IO.Path.Combine(pathToCheck, folderName, fileName + ".json");
+			}
+			else
+			{
+				filePath = System.IO.Path.Combine(pathToCheck, typeToCheck, System.IO.Path.GetFileNameWithoutExtension(fileName) + ".json");
+			}
 
-                        if ((string)idValue1 == (string)idValue2)
-                        {
-                            assetList.Remove(asset);
-                            assetDict[(string)idValue1] = selectedAsset;
-                            Debug.Log("attempted to remove/overwrite existing asset with same id: " + (string)idValue1);
-                        }
-                    }
-                    assetList.Add(selectedAsset);
-                    if (assetDict.ContainsKey((string)idValue1)){
-                    }
-                    else
-                    {
-                        assetDict.Add((string)idValue1, selectedAsset);
-                    }
-                }
-            }
-            else
-            {
-                Debug.Log("File did not exist: " + filePath);
-            }
-        }
+			if (File.Exists(filePath))
+			{
+				string readData = File.ReadAllText(filePath);
 
-        // Method to exclude color properties from a JObject
-        private void ExcludeColorProperties(JObject jsonObject)
-        {
-            var colorProperties = jsonObject.DescendantsAndSelf()
-                .OfType<JProperty>()
-                .Where(p => p.Value.Type == JTokenType.Object && p.Value["linear"] != null);
+				// Create JsonSerializerSettings and register the NonSerializedPropertyConverter
+				var settings = new JsonSerializerSettings
+				{
+					ContractResolver = new IncludeNonSerializedContractResolver(),
+					ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+					//Converters = { new NonSerializedFieldConverter() } 
+				};
 
-            foreach (var colorProperty in colorProperties.ToList())
-            {
-                colorProperty.Value["linear"].Parent.Remove();
-            }
-        }
+				// Deserialize the JSON data into the dynamically determined type using the settings
+				selectedAsset = JsonConvert.DeserializeObject<T>(readData, settings);
+
+				// Use the deserialized data (now stored in selectedAsset)
+				var type = selectedAsset.GetType();
+				var idField1 = type.GetField("id", BindingFlags.Public | BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy);
+				object idValue1 = idField1.GetValue(selectedAsset);
+				foreach (var asset in assetList)
+				{
+					var idField2 = asset.GetType().GetField("id", BindingFlags.Public | BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy);
+					object idValue2 = idField2.GetValue(asset);
+
+					if ((string)idValue1 == (string)idValue2)
+					{
+						assetList.Remove(asset);
+						assetDict[(string)idValue1] = selectedAsset;
+						Debug.Log("attempted to remove/overwrite existing asset with same id: " + (string)idValue1);
+						break; // Exit the loop after removing the asset
+					}
+				}
+
+				assetList.Add(selectedAsset);
+				if (!assetDict.ContainsKey((string)idValue1))
+				{
+					assetDict[(string)idValue1] = selectedAsset;
+				}
+			}
+			else
+			{
+				Debug.Log("File did not exist: " + filePath);
+			}
+		}       // Method to exclude color properties from a JObject
+        
         public void ImportAssetsFromFolder(string folderName)
         {
             string importFolderPath = System.IO.Path.Combine(Application.streamingAssetsPath, "mods", "Import", folderName);
@@ -898,6 +1312,30 @@ namespace SimplerGUI.Submods.AssetModEnabler
 								CloudAsset instanceAsCloud = (CloudAsset)instance;
 								ImportIndividualAsset<CloudAsset>(ref instanceAsCloud, AssetManager.clouds.list, AssetManager.clouds.dict, folderName, fileName, true);
 								break;
+							case "ColorSetAsset":
+								ColorSetAsset instanceAsColorSet = (ColorSetAsset)instance;
+								ImportIndividualAsset<ColorSetAsset>(ref instanceAsColorSet, AssetManager.skin_color_set_library.list, AssetManager.skin_color_set_library.dict, folderName, fileName, true);
+								break;
+							case "BaseStatAsset":
+								BaseStatAsset instanceAsBaseStat = (BaseStatAsset)instance;
+								ImportIndividualAsset<BaseStatAsset>(ref instanceAsBaseStat, AssetManager.base_stats_library.list, AssetManager.base_stats_library.dict, folderName, fileName, true);
+								break;
+							case "TileType":
+								TileType instanceAsTileType = (TileType)instance;
+								ImportIndividualAsset<TileType>(ref instanceAsTileType, AssetManager.tiles.list, AssetManager.tiles.dict, folderName, fileName, true);
+								break;
+							case "TopTileType":
+								TopTileType instanceAsTopTileType = (TopTileType)instance;
+								ImportIndividualAsset<TopTileType>(ref instanceAsTopTileType, AssetManager.topTiles.list, AssetManager.topTiles.dict, folderName, fileName, true);
+								break;
+							case "BuildingAsset":
+								BuildingAsset instanceAsBuildingAsset = (BuildingAsset)instance;
+								ImportIndividualAsset<BuildingAsset>(ref instanceAsBuildingAsset, AssetManager.buildings.list, AssetManager.buildings.dict, folderName, fileName, true);
+								break;
+							case "ProjectileAsset":
+								ProjectileAsset instanceAsProjectileAsset = (ProjectileAsset)instance;
+								ImportIndividualAsset<ProjectileAsset>(ref instanceAsProjectileAsset, AssetManager.projectiles.list, AssetManager.projectiles.dict, folderName, fileName, true);
+								break;
 							default:
                                 Debug.LogWarning("Type not handled: " + typeName);
                                 break;
@@ -915,40 +1353,85 @@ namespace SimplerGUI.Submods.AssetModEnabler
                 Debug.Log("Folder does not exist: " + importFolderPath);
             }
         }
-        public class IncludeNonSerializedContractResolver : DefaultContractResolver
-        {
-            protected override IList<JsonProperty> CreateProperties(Type type, MemberSerialization memberSerialization)
-            {
-                var properties = base.CreateProperties(type, memberSerialization);
 
-                foreach (var property in properties)
-                {
-                    var field = type.GetField(property.UnderlyingName, BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
-                    if (field != null)
-                    {
-                        if (Attribute.IsDefined(field, typeof(NonSerializedAttribute)))
-                        {
-                            Debug.Log($"Processing field: {field.Name} marked with NonSerialized attribute");
-                            property.Ignored = false; // DONT Ignore fields marked with NonSerialized attribute
-                        }
-                        if (field.FieldType == typeof(Color) || field.FieldType == typeof(Color32))
-                        {
-                            Debug.Log($"Processing field: {field.Name} of type Color or Color32");
-                            property.Ignored = true; // Ignore fields of type Color or Color32
-                        }
-                        if (IsDelegateType(field.FieldType))
-                        {
-                            Debug.Log($"Processing field: {field.Name} of custom delegate type");
-                            property.Ignored = true; // Ignore fields of custom delegate type
-                        }
-                    }
-                }
+		public class NonSerializedFieldConverter : JsonConverter
+		{
+			public override bool CanConvert(Type objectType)
+			{
+				return true;
+			}
 
-                return properties;
-            }
-        }
+			public override object ReadJson(JsonReader reader, Type objectType, object existingValue, JsonSerializer serializer)
+			{
+				JObject jsonObject = JObject.Load(reader);
 
-        public static bool IsDelegateType(Type fieldType)
+				// Get the list of properties to deserialize
+				var properties = jsonObject.Properties().ToList();
+
+				// Get the fields marked with [NonSerialized]
+				var nonSerializedFields = objectType.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static)
+					.Where(field => field.GetCustomAttribute<NonSerializedAttribute>() != null)
+					.ToList();
+
+				// Deserialize each property
+				foreach (var property in properties)
+				{
+					// Check if the property corresponds to a non-serialized field
+					var correspondingField = nonSerializedFields.FirstOrDefault(field => field.Name == property.Name);
+					if (correspondingField != null)
+					{
+						// Deserialize the property value into the corresponding field
+						var value = property.Value.ToObject(correspondingField.FieldType, serializer);
+						correspondingField.SetValue(existingValue, value);
+					}
+				}
+
+				// Create an instance of the object type and set its properties
+				var result = existingValue ?? Activator.CreateInstance(objectType);
+				serializer.Populate(jsonObject.CreateReader(), result);
+
+				return result;
+			}
+
+			public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+			{
+				throw new NotImplementedException();
+			}
+		}
+		public class IncludeNonSerializedContractResolver : DefaultContractResolver
+		{
+			protected override JsonProperty CreateProperty(MemberInfo member, MemberSerialization memberSerialization)
+			{
+				JsonProperty property = base.CreateProperty(member, memberSerialization);
+
+				// Skip color properties and custom delegates
+				if (property.PropertyType == typeof(Color) || property.PropertyType == typeof(Color32) ||
+					typeof(Delegate).IsAssignableFrom(property.PropertyType))
+				{
+					Debug.Log("Skipping property during deserialization: " + member.Name);
+					property.Ignored = true; // Skip serialization and deserialization
+				}
+				// Skip custom delegates
+				if (typeof(Delegate).IsAssignableFrom(property.PropertyType))
+				{
+					Debug.Log("Skipping delegate property: " + member.Name);
+					property.Ignored = true; // Skip serialization and deserialization
+				}
+				// Check if the property has the NonSerialized attribute
+				var nonSerializedAttribute = member.GetCustomAttribute<NonSerializedAttribute>();
+				if (nonSerializedAttribute != null)
+				{
+					property.Ignored = false;
+					Debug.Log("Found property with [NonSerialized] attribute: " + member.Name);
+					//property.ShouldDeserialize = instance => true; // Include properties with [NonSerialized] attribute during deserialization
+				}
+
+				return property;
+			}
+
+		}
+
+		public static bool IsDelegateType(Type fieldType)
         {
             return fieldType.IsSubclassOf(typeof(Delegate)) || fieldType == typeof(Delegate);
         }
@@ -1622,6 +2105,30 @@ namespace SimplerGUI.Submods.AssetModEnabler
 			if (GUILayout.Button("clouds window"))
 			{
 				showHideCloudAssetWindow = !showHideCloudAssetWindow;
+			}
+			if (GUILayout.Button("skin color sets window"))
+			{
+				showHideColorSetAssetWindow = !showHideColorSetAssetWindow;
+			}
+			if (GUILayout.Button("basestats window"))
+			{
+				showHideBaseStatAssetWindow = !showHideBaseStatAssetWindow;
+			}
+			if (GUILayout.Button("tiletype window"))
+			{
+				showHideTileTypeWindow2 = !showHideTileTypeWindow2;
+			}
+			if (GUILayout.Button("toptiletype window"))
+			{
+				showHideTopTileTypeWindow2 = !showHideTopTileTypeWindow2;
+			}
+			if (GUILayout.Button("building window"))
+			{
+				showHideBuildingAssetWindow = !showHideBuildingAssetWindow;
+			}
+			if (GUILayout.Button("projectile window"))
+			{
+				showHideProjectileAssetWindow = !showHideProjectileAssetWindow;
 			}
 			GUI.DragWindow();
         }
