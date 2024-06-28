@@ -1,9 +1,14 @@
-﻿using UnityEngine;
+﻿using System.Linq;
+using UnityEngine;
 
 namespace SimplerGUI.Menus
 {
     class GUIConstruction
     {
+
+        //preview building sprite instead of/along with highlighted tiles
+        public GameObject previewObject;
+
         public string buildingAssetName()
         {
             if(selectedBuildingAsset == null)
@@ -119,6 +124,7 @@ namespace SimplerGUI.Menus
 
                 if (selectedBuildingAsset != null && MapBox.instance.getMouseTilePos() != null)
                 {
+                    previewObject.transform.position = MapBox.instance.getMouseTilePos().posV3;
                     // Building construction
                     BuildingAsset constructionTemplate = selectedBuildingAsset;
                     int num = MapBox.instance.getMouseTilePos().x - constructionTemplate.fundament.left;
@@ -126,7 +132,7 @@ namespace SimplerGUI.Menus
                     int num3 = constructionTemplate.fundament.right + constructionTemplate.fundament.left + 1;
                     int num4 = constructionTemplate.fundament.top + constructionTemplate.fundament.bottom + 1;
                     PixelFlashEffects flashEffects = MapBox.instance.flashEffects; //Reflection.GetField(MapBox.instance.GetType(), MapBox.instance, "flashEffects") as PixelFlashEffects;
-
+                    //highlight all tiles in fundament
                     for(int j = 0; j < num3; j++)
                     {
                         for (int k = 0; k < num4; k++)
@@ -186,6 +192,7 @@ namespace SimplerGUI.Menus
         */
 
         public Vector2 scrollPosition;
+        public bool showPreview;
 
         public void constructionWindow(int windowID)
         {
@@ -209,7 +216,15 @@ namespace SimplerGUI.Menus
                 GUI.backgroundColor = defaultColor;
                 filterString = GUILayout.TextField(filterString);
                 GUILayout.EndHorizontal();
-                if(placingToggleEnabled)
+				if (showPreview)
+				{
+					GUI.backgroundColor = Color.green;
+				}
+				if (GUILayout.Button("Show Preview"))
+				{
+					showPreview = !showPreview;
+				}
+				if (placingToggleEnabled)
                 {
                     GUI.backgroundColor = Color.green;
                 }
@@ -218,7 +233,14 @@ namespace SimplerGUI.Menus
                     placingToggleEnabled = !placingToggleEnabled;
                     //prevent random input from fucking stuff up
                     Config.lockGameControls = placingToggleEnabled;
-                }
+                    if(placingToggleEnabled == false)
+                    {
+						if (previewObject != null)
+						{
+							previewObject.SetActive(false);
+						}
+					}
+				}
                 scrollPosition = GUILayout.BeginScrollView(
           scrollPosition, GUILayout.Width(225), GUILayout.Height(275));
                 GUI.backgroundColor = defaultColor;
@@ -229,6 +251,7 @@ namespace SimplerGUI.Menus
                 {
                     selectedBuildingAsset = null;
                     placingRoad = false;
+                    previewObject.SetActive(false);
                 }
                 Position++;
                 if (GUILayout.Button("road"))
@@ -236,14 +259,16 @@ namespace SimplerGUI.Menus
                     selectedBuildingAsset = null;
                     placingRoad = true;
                     placingField = false;
-                }
-                if (GUILayout.Button("field"))
+					previewObject.SetActive(false);
+				}
+				if (GUILayout.Button("field"))
                 {
                     selectedBuildingAsset = null;
                     placingRoad = false;
                     placingField = true;
-                }
-                Position++;
+					previewObject.SetActive(false);
+				}
+				Position++;
                 foreach (BuildingAsset buildingType in AssetManager.buildings.list)
                 {
                     if (!buildingType.id.Contains("!") && (!filterEnabled || (filterEnabled && buildingType.id.Contains(filterString))))
@@ -253,7 +278,35 @@ namespace SimplerGUI.Menus
                             selectedBuildingAsset = buildingType;
                             placingRoad = false;
                             placingField = false;
+                            if (showPreview)
+                            {
+								if (previewObject == null)
+								{
+									//create preview object and assign first sprite
+									previewObject = new GameObject("ConstructPreview");
+									previewObject.transform.localScale = new Vector3(0.2f, 0.2f, 0.2f);
+									SpriteRenderer spr = previewObject.AddComponent<SpriteRenderer>();
+									previewObject.GetComponent<SpriteRenderer>().sortingLayerID = MapBox.instance.buildings.GetRandom().spriteRenderer.sortingLayerID;
 
+
+									if (buildingType.sprites.animationData.Count > 0 && buildingType.sprites.animationData[0].list_main != null && buildingType.sprites.animationData[0].list_main.Count > 0)
+									{
+										Sprite sprite = buildingType.sprites.animationData[0].list_main.First();
+										spr.sprite = sprite;
+									}
+								}
+								else
+								{
+									previewObject.SetActive(true);
+									SpriteRenderer spr = previewObject.GetComponent<SpriteRenderer>();
+									if (buildingType.sprites.animationData.Count > 0 && buildingType.sprites.animationData[0].list_main != null && buildingType.sprites.animationData[0].list_main.Count > 0)
+									{
+										Sprite sprite = buildingType.sprites.animationData[0].list_main.First();
+										spr.sprite = sprite;
+									}
+								}
+							}
+                           
                         }
                         if (Position % 10 == 0)
                         {

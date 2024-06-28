@@ -12,7 +12,7 @@ namespace SimplerGUI.Submods.UnitClipboard {
         public const string pluginGuid = "cody.worldbox.unit.clipboard";
         public const string pluginName = "Unit Clipboard";
         public const string pluginVersion = "0.0.0.3";
-
+        public bool t;
         public void Awake()
         {
             HarmonyPatchSetup();
@@ -21,10 +21,10 @@ namespace SimplerGUI.Submods.UnitClipboard {
         public void Update()
         {
             if(Input.GetKey(KeyCode.LeftControl) && (Input.GetKeyDown(KeyCode.C))) {
-                CopyUnit(ClosestActorToTile(MapBox.instance.getMouseTilePos(), 3f));
+                //CopyUnit(ClosestActorToTile(MapBox.instance.getMouseTilePos(), 3f));
             }
             if(Input.GetKey(KeyCode.LeftControl) && (Input.GetKeyDown(KeyCode.V))) {
-                PasteUnit(MapBox.instance.getMouseTilePos(), selectedUnitToPaste);
+                //PasteUnit(MapBox.instance.getMouseTilePos(), selectedUnitToPaste);
             }
             if(Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.T)) {
                 showHideMainWindow = !showHideMainWindow;

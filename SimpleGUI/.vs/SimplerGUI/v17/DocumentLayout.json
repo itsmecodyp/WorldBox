@@ -3,22 +3,40 @@
   "WorkspaceRootPath": "C:\\git\\WorldBox\\SimpleGUI\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{C0D3A912-6D2A-4415-8206-42A71454A567}|SimplerGUI.csproj|C:\\git\\WorldBox\\SimpleGUI\\submods\\simplepowers\\powermain.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{C0D3A912-6D2A-4415-8206-42A71454A567}|SimplerGUI.csproj|solutionrelative:submods\\simplepowers\\powermain.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:2:0:{C0D3A912-6D2A-4415-8206-42A71454A567}|SimplerGUI.csproj|c:\\git\\worldbox\\simplegui\\menus\\actorcontrol.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:2:0:{C0D3A912-6D2A-4415-8206-42A71454A567}|SimplerGUI.csproj|solutionrelative:menus\\actorcontrol.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{C44AB6F9-E405-4B54-ACF5-35AD1A5E9874}|..\\MapSizesStandalone\\MapSizesStandalone.csproj|c:\\git\\worldbox\\mapsizesstandalone\\class1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{00000000-0000-0000-0000-000000000000}|\u003CSolution\u003E|MapSizesStandalone||{04B8AB82-A572-4FEF-95CE-5222444B6B64}|"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{C0D3A912-6D2A-4415-8206-42A71454A567}|SimplerGUI.csproj|C:\\git\\WorldBox\\SimpleGUI\\submods\\mapsizes\\mapsizes.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{C0D3A912-6D2A-4415-8206-42A71454A567}|SimplerGUI.csproj|solutionrelative:submods\\mapsizes\\mapsizes.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{C0D3A912-6D2A-4415-8206-42A71454A567}|SimplerGUI.csproj|C:\\git\\WorldBox\\SimpleGUI\\menus\\construction.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{C0D3A912-6D2A-4415-8206-42A71454A567}|SimplerGUI.csproj|solutionrelative:menus\\construction.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:1:0:{C0D3A912-6D2A-4415-8206-42A71454A567}|SimplerGUI.csproj|c:\\git\\worldbox\\simplegui\\menus\\actorcontrol.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:1:0:{C0D3A912-6D2A-4415-8206-42A71454A567}|SimplerGUI.csproj|solutionrelative:menus\\actorcontrol.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{C0D3A912-6D2A-4415-8206-42A71454A567}|SimplerGUI.csproj|C:\\git\\WorldBox\\SimpleGUI\\main.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{C0D3A912-6D2A-4415-8206-42A71454A567}|SimplerGUI.csproj|solutionrelative:main.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{C0D3A912-6D2A-4415-8206-42A71454A567}|SimplerGUI.csproj|C:\\git\\WorldBox\\SimpleGUI\\submods\\unitclipboard\\unitclipboard.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{C0D3A912-6D2A-4415-8206-42A71454A567}|SimplerGUI.csproj|solutionrelative:submods\\unitclipboard\\unitclipboard.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{C0D3A912-6D2A-4415-8206-42A71454A567}|SimplerGUI.csproj|C:\\git\\WorldBox\\SimpleGUI\\menus\\other.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{C0D3A912-6D2A-4415-8206-42A71454A567}|SimplerGUI.csproj|solutionrelative:menus\\other.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:3:0:{C0D3A912-6D2A-4415-8206-42A71454A567}|SimplerGUI.csproj|C:\\git\\WorldBox\\SimpleGUI\\submods\\assetmodenabler\\assetmodenabler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:3:0:{C0D3A912-6D2A-4415-8206-42A71454A567}|SimplerGUI.csproj|solutionrelative:submods\\assetmodenabler\\assetmodenabler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{C0D3A912-6D2A-4415-8206-42A71454A567}|SimplerGUI.csproj|C:\\git\\WorldBox\\SimpleGUI\\menus\\world.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{C0D3A912-6D2A-4415-8206-42A71454A567}|SimplerGUI.csproj|solutionrelative:menus\\world.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:1:0:{C0D3A912-6D2A-4415-8206-42A71454A567}|SimplerGUI.csproj|C:\\git\\WorldBox\\SimpleGUI\\submods\\assetmodenabler\\assetmodenabler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
@@ -27,10 +45,6 @@
     {
       "AbsoluteMoniker": "D:2:0:{C0D3A912-6D2A-4415-8206-42A71454A567}|SimplerGUI.csproj|C:\\git\\WorldBox\\SimpleGUI\\submods\\assetmodenabler\\assetmodenabler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:2:0:{C0D3A912-6D2A-4415-8206-42A71454A567}|SimplerGUI.csproj|solutionrelative:submods\\assetmodenabler\\assetmodenabler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:3:0:{C0D3A912-6D2A-4415-8206-42A71454A567}|SimplerGUI.csproj|C:\\git\\WorldBox\\SimpleGUI\\submods\\assetmodenabler\\assetmodenabler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:3:0:{C0D3A912-6D2A-4415-8206-42A71454A567}|SimplerGUI.csproj|solutionrelative:submods\\assetmodenabler\\assetmodenabler.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -39,91 +53,117 @@
       "VerticalTabListWidth": 256,
       "DocumentGroups": [
         {
-          "DockedWidth": 293,
+          "DockedWidth": 203,
           "SelectedChildIndex": 3,
           "Children": [
             {
               "$type": "Document",
               "DocumentIndex": 2,
-              "Title": "MapSizesStandalone",
-              "DocumentMoniker": "C:\\git\\WorldBox\\MapSizesStandalone\\MapSizesStandalone.csproj",
-              "RelativeDocumentMoniker": "..\\MapSizesStandalone\\MapSizesStandalone.csproj",
-              "ToolTip": "C:\\git\\WorldBox\\MapSizesStandalone\\MapSizesStandalone.csproj",
-              "RelativeToolTip": "..\\MapSizesStandalone\\MapSizesStandalone.csproj",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
-              "WhenOpened": "2024-06-07T23:53:08.904Z"
+              "Title": "Construction.cs",
+              "DocumentMoniker": "C:\\git\\WorldBox\\SimpleGUI\\Menus\\Construction.cs",
+              "RelativeDocumentMoniker": "Menus\\Construction.cs",
+              "ToolTip": "C:\\git\\WorldBox\\SimpleGUI\\Menus\\Construction.cs",
+              "RelativeToolTip": "Menus\\Construction.cs",
+              "ViewState": "AQIAABIBAAAAAAAAAAAawDUBAAAZAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-06-24T05:36:02.442Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "Class1.cs",
-              "DocumentMoniker": "C:\\git\\WorldBox\\MapSizesStandalone\\Class1.cs",
-              "RelativeDocumentMoniker": "..\\MapSizesStandalone\\Class1.cs",
-              "ToolTip": "C:\\git\\WorldBox\\MapSizesStandalone\\Class1.cs",
-              "RelativeToolTip": "..\\MapSizesStandalone\\Class1.cs",
-              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAUAAAAAAAAA",
+              "DocumentIndex": 5,
+              "Title": "UnitClipboard.cs",
+              "DocumentMoniker": "C:\\git\\WorldBox\\SimpleGUI\\Submods\\UnitClipboard\\UnitClipboard.cs",
+              "RelativeDocumentMoniker": "Submods\\UnitClipboard\\UnitClipboard.cs",
+              "ToolTip": "C:\\git\\WorldBox\\SimpleGUI\\Submods\\UnitClipboard\\UnitClipboard.cs",
+              "RelativeToolTip": "Submods\\UnitClipboard\\UnitClipboard.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAA4AAAAWAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-06-07T23:33:37.461Z"
+              "WhenOpened": "2024-06-20T05:44:27.616Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "MapSizes.cs",
-              "DocumentMoniker": "C:\\git\\WorldBox\\SimpleGUI\\Submods\\MapSizes\\MapSizes.cs",
-              "RelativeDocumentMoniker": "Submods\\MapSizes\\MapSizes.cs",
-              "ToolTip": "C:\\git\\WorldBox\\SimpleGUI\\Submods\\MapSizes\\MapSizes.cs",
-              "RelativeToolTip": "Submods\\MapSizes\\MapSizes.cs",
-              "ViewState": "AQIAAIECAAAAAAAAAAAkwLUCAAAAAAAA",
+              "DocumentIndex": 6,
+              "Title": "Other.cs",
+              "DocumentMoniker": "C:\\git\\WorldBox\\SimpleGUI\\Menus\\Other.cs",
+              "RelativeDocumentMoniker": "Menus\\Other.cs",
+              "ToolTip": "C:\\git\\WorldBox\\SimpleGUI\\Menus\\Other.cs",
+              "RelativeToolTip": "Menus\\Other.cs",
+              "ViewState": "AQIAAB4BAAAAAAAAAAAawD8BAAAkAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-06-07T23:32:24.947Z"
+              "WhenOpened": "2024-06-19T12:47:48.147Z"
             },
             {
               "$type": "Document",
               "DocumentIndex": 0,
+              "Title": "PowerMain.cs",
+              "DocumentMoniker": "C:\\git\\WorldBox\\SimpleGUI\\Submods\\SimplePowers\\PowerMain.cs",
+              "RelativeDocumentMoniker": "Submods\\SimplePowers\\PowerMain.cs",
+              "ToolTip": "C:\\git\\WorldBox\\SimpleGUI\\Submods\\SimplePowers\\PowerMain.cs",
+              "RelativeToolTip": "Submods\\SimplePowers\\PowerMain.cs",
+              "ViewState": "AQIAADkAAAAAAAAAAAAawFoAAAAFAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-06-12T08:16:52.122Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "World.cs",
+              "DocumentMoniker": "C:\\git\\WorldBox\\SimpleGUI\\Menus\\World.cs",
+              "RelativeDocumentMoniker": "Menus\\World.cs",
+              "ToolTip": "C:\\git\\WorldBox\\SimpleGUI\\Menus\\World.cs",
+              "RelativeToolTip": "Menus\\World.cs",
+              "ViewState": "AQIAAGAAAAAAAAAAAAASwNkAAAAFAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-06-13T01:14:45.434Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
               "Title": "ActorControl.cs",
               "DocumentMoniker": "C:\\git\\WorldBox\\SimpleGUI\\Menus\\ActorControl.cs",
               "RelativeDocumentMoniker": "Menus\\ActorControl.cs",
               "ToolTip": "C:\\git\\WorldBox\\SimpleGUI\\Menus\\ActorControl.cs",
               "RelativeToolTip": "Menus\\ActorControl.cs",
-              "ViewState": "AQIAAGgDAAAAAAAAAAAswH8DAAA8AAAA",
+              "ViewState": "AQIAAGcAAAAAAAAAAAAawKIAAAAQAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-06-07T06:03:39.491Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 9,
               "Title": "AssetModEnabler.cs",
               "DocumentMoniker": "C:\\git\\WorldBox\\SimpleGUI\\Submods\\AssetModEnabler\\AssetModEnabler.cs",
               "RelativeDocumentMoniker": "Submods\\AssetModEnabler\\AssetModEnabler.cs",
               "ToolTip": "C:\\git\\WorldBox\\SimpleGUI\\Submods\\AssetModEnabler\\AssetModEnabler.cs",
               "RelativeToolTip": "Submods\\AssetModEnabler\\AssetModEnabler.cs",
-              "ViewState": "AQIAAKECAAAAAAAAAAAYwL4CAAAzAAAA",
+              "ViewState": "AQIAAGQGAAAAAAAAAIBJwGYGAAAJAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-04-22T00:06:53.32Z"
             }
           ]
         },
         {
-          "DockedWidth": 107,
+          "DockedWidth": 197,
           "SelectedChildIndex": 0,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 3,
               "Title": "ActorControl.cs",
               "DocumentMoniker": "C:\\git\\WorldBox\\SimpleGUI\\Menus\\ActorControl.cs",
               "RelativeDocumentMoniker": "Menus\\ActorControl.cs",
               "ToolTip": "C:\\git\\WorldBox\\SimpleGUI\\Menus\\ActorControl.cs",
               "RelativeToolTip": "Menus\\ActorControl.cs",
-              "ViewState": "AQIAAPoCAAAAAAAAAAAswBEDAAAjAAAA",
+              "ViewState": "AQIAAEsDAAAAAAAAAAAawIgDAAAZAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-04-19T09:46:45.046Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
+              "DocumentIndex": 10,
               "Title": "AssetModEnabler.cs",
               "DocumentMoniker": "C:\\git\\WorldBox\\SimpleGUI\\Submods\\AssetModEnabler\\AssetModEnabler.cs",
               "RelativeDocumentMoniker": "Submods\\AssetModEnabler\\AssetModEnabler.cs",
@@ -141,9 +181,21 @@
               "RelativeDocumentMoniker": "Submods\\AssetModEnabler\\AssetModEnabler.cs",
               "ToolTip": "C:\\git\\WorldBox\\SimpleGUI\\Submods\\AssetModEnabler\\AssetModEnabler.cs",
               "RelativeToolTip": "Submods\\AssetModEnabler\\AssetModEnabler.cs",
-              "ViewState": "AQIAACwBAAAAAAAAAAAmwEQBAABFAAAA",
+              "ViewState": "AQIAAMQAAAAAAAAAAAAawN8AAAARAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-05-31T21:34:38.539Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "Main.cs",
+              "DocumentMoniker": "C:\\git\\WorldBox\\SimpleGUI\\Main.cs",
+              "RelativeDocumentMoniker": "Main.cs",
+              "ToolTip": "C:\\git\\WorldBox\\SimpleGUI\\Main.cs",
+              "RelativeToolTip": "Main.cs",
+              "ViewState": "AQIAAOUBAAAAAAAAAAASwAECAABBAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-06-19T12:47:39.743Z"
             }
           ]
         }

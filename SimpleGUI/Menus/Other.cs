@@ -310,7 +310,20 @@ namespace SimplerGUI.Menus {
             }
             maxCityZones = (int)GUILayout.HorizontalSlider(maxCityZones, 0, 50);
             GUILayout.EndHorizontal();
-            GUI.backgroundColor = original;
+			if (ActorControlMain.preventClicksOpeningWindows)
+			{
+
+				GUI.backgroundColor = Color.green;
+			}
+			else
+			{
+				GUI.backgroundColor = Color.red;
+			}
+			if (GUILayout.Button("StopClicksOpeningWindows: " + ActorControlMain.preventClicksOpeningWindows))
+			{
+				ActorControlMain.preventClicksOpeningWindows = !ActorControlMain.preventClicksOpeningWindows;
+			}
+			GUI.backgroundColor = original;
             GUI.DragWindow();
         }
 

@@ -158,8 +158,27 @@ namespace SimplerGUI.Menus
                         Messages.ActorSay(actorBeingEscorted, phraseToSay, 3);
                     }
                 }
-            }
-        }
+				
+			}
+			if (powerballEnabled) { GUI.backgroundColor = Color.green; }
+			else { GUI.backgroundColor = originalColor; }
+			if (GUILayout.Button("Powerball mode"))
+			{
+				powerballEnabled = !powerballEnabled;
+				if (powerballEnabled)
+				{
+					if (mainGroup == null)
+					{
+						createOrbTest(controlledActorSc.transform.position);
+					}
+				}
+				mainGroup.setActive(powerballEnabled);
+			}
+		}
+
+        public bool powerballEnabled;
+        public OrbGroup mainGroup;
+
 
         public void actorSquadActionWindow(int windowID)
         {
@@ -751,21 +770,23 @@ namespace SimplerGUI.Menus
 
 		public static List<OrbGroup> activeOrbGroups = new List<OrbGroup>();
 
+
 		public class OrbGroup
 		{
+            public bool active;
 			public GameObject parentObject; // for using in update later
 			public int numberOfSprites = 8;
-			public List<GameObject> objectListCircle = new List<GameObject>(); // for storing the instantiated pieces
-			public List<GameObject> objectListStaff = new List<GameObject>(); // for storing the instantiated pieces
+			public List<OrbObject> objectListCircle = new List<OrbObject>(); // for storing the instantiated pieces
+			public List<OrbObject> objectListStaff = new List<OrbObject>(); // for storing the instantiated pieces
 
 			public Actor focusActor; // what actor to focus these on
 			public float rotationSpeed = 90f; // Degrees per second, adjust as needed
-            public Vector3 prevMousePosition;
-            public float dist1 = 2f;
-            public float dist2 = 1.8f;
+			public Vector3 prevMousePosition;
+			public float dist1 = 2f;
+			public float dist2 = 1.8f;
 			public OrbGroup(Vector3 pos)
 			{
-                focusActor = controlledActorSc;
+				focusActor = controlledActorSc;
 				spritePrefab = new GameObject("t");
 				//spritePrefab.transform.parent = controlledActorSc.transform;
 
@@ -778,32 +799,68 @@ namespace SimplerGUI.Menus
 				//create first object to parent the rest to
 				parentObject = Instantiate(spritePrefab, pos, Quaternion.identity);
 
-				List<GameObject> lineSprites = new List<GameObject>();
+				List<OrbObject> lineSprites = new List<OrbObject>();
 				//int third = numberOfSprites / 4;//fourth whatever 
 				for (int i = 1; i < numberOfSprites; i++)
 				{
+					OrbObject orbObject = new OrbObject();
 					GameObject sprite = Instantiate(spritePrefab, controlledActorSc.transform.position, Quaternion.identity);
 					sprite.transform.parent = parentObject.transform;
 					sprite.GetComponent<SpriteRenderer>().color = Color.black;
 
-					lineSprites.Add(sprite);
+					orbObject.mainObject = sprite;
+					orbObject.spriteRender = sprite.GetComponent<SpriteRenderer>();
+
+					lineSprites.Add(orbObject);
 				}
 				objectListCircle = lineSprites;
 
-				List<GameObject> lineSprites2 = new List<GameObject>();
-				for (int i = 1; i < numberOfSprites*3; i++)
+				List<OrbObject> lineSprites2 = new List<OrbObject>();
+				for (int i = 1; i < numberOfSprites * 3; i++)
 				{
+					OrbObject orbObject = new OrbObject();
 					GameObject sprite = Instantiate(spritePrefab, controlledActorSc.transform.position, Quaternion.identity);
-					sprite.transform.localScale = new Vector3(0.04f, 0.04f, 0.04f);
+					//sprite.transform.localScale = new Vector3(0.2f, 0.2f, 0.2f);
 
 					sprite.transform.parent = parentObject.transform;
+					//sprite.GetComponent<SpriteRenderer>().color = Color.clear;
 					sprite.GetComponent<SpriteRenderer>().color = Color.black;
-				
-					lineSprites2.Add(sprite);
+
+					orbObject.mainObject = sprite;
+					orbObject.spriteRender = sprite.GetComponent<SpriteRenderer>();
+
+					lineSprites2.Add(orbObject);
 				}
-                objectListStaff = lineSprites2;
-                activeOrbGroups.Add(this);
+				objectListStaff = lineSprites2;
+				activeOrbGroups.Add(this);
 			}
+
+            public void setActive(bool isActive)
+            {
+                active = isActive;
+                if(isActive == false)
+                {
+                    foreach(OrbObject orb in objectListCircle)
+                    {
+                        orb.mainObject.SetActive(false);
+                    }
+					foreach (OrbObject orb in objectListStaff)
+					{
+						orb.mainObject.SetActive(false);
+					}
+				}
+                else
+                {
+					foreach (OrbObject orb in objectListCircle)
+					{
+						orb.mainObject.SetActive(true);
+					}
+					foreach (OrbObject orb in objectListStaff)
+					{
+						orb.mainObject.SetActive(true);
+					}
+				}
+            }
 		}
 
 		public void OrbUpdate()
@@ -811,85 +868,130 @@ namespace SimplerGUI.Menus
 			for (int i = 0; i < activeOrbGroups.Count; i++)
 			{
 				OrbGroup orbGroup = activeOrbGroups[i];
+                if (orbGroup.active)
+                {
+					// Update tracked enemy
+					Vector3 pos = orbGroup.focusActor.transform.position;
 
-				// Update tracked enemy
-				Vector3 pos = orbGroup.focusActor.transform.position;
+					// Define parameters for circle motion
+					float radius = orbGroup.dist1; // Adjust this value as needed
+					float angleOffset = Time.time * orbGroup.rotationSpeed; // Initial angle offset
 
-				// Define parameters for circle motion
-				float radius = orbGroup.dist1; // Adjust this value as needed
-				float angleOffset = Time.time * orbGroup.rotationSpeed; // Initial angle offset
+					List<OrbObject> lineSprites = orbGroup.objectListCircle;
 
-				List<GameObject> lineSprites = orbGroup.objectListCircle;
+					float angleIncrement = 360f / lineSprites.Count; // Angle between objects
 
-				float angleIncrement = 360f / lineSprites.Count; // Angle between objects
-
-				for (int n = 0; n < lineSprites.Count; n++)
-				{
-					// Calculate angle for this object
-					float angle = angleOffset + (n * angleIncrement);
-
-					// Calculate position on circle
-					float x = pos.x + radius * Mathf.Cos(angle * Mathf.Deg2Rad);
-					float y = pos.y + radius * Mathf.Sin(angle * Mathf.Deg2Rad); // Adjusted for height
-					float z = pos.z;
-
-					// Update object position
-					lineSprites[n].transform.position = new Vector3(x, y, z);
-
-                    //forceback other units off orbs
-					Vector3 targetPosition = lineSprites[i].transform.position;
-					WorldTile targetTile = MapBox.instance.GetTile((int)targetPosition.x, (int)targetPosition.y);
-					if (targetTile != null)
+					for (int n = 0; n < lineSprites.Count; n++)
 					{
-						World.world.applyForce(targetTile, 4, 0.4f, true, true, 0, null, controlledActorSc, null);
+						// Calculate angle for this object
+						float angle = angleOffset + (n * angleIncrement);
+
+						// Calculate position on circle
+						float x = pos.x + radius * Mathf.Cos(angle * Mathf.Deg2Rad);
+						float y = pos.y + radius * Mathf.Sin(angle * Mathf.Deg2Rad); // Adjusted for height
+						float z = pos.z;
+
+						// Update object position
+						lineSprites[n].mainObject.transform.position = new Vector3(x, y, z);
+
+						//forceback other units off orbs
+						Vector3 targetPosition = lineSprites[i].mainObject.transform.position;
+						WorldTile targetTile = MapBox.instance.GetTile((int)targetPosition.x, (int)targetPosition.y);
+						if (targetTile != null)
+						{
+							World.world.applyForce(targetTile, 4, 0.4f, true, true, 0, null, controlledActorSc, null);
+						}
 					}
+					UpdateLineFromOrb();
 				}
-				UpdateLineFromOrb();
+				
 			}
 		}
 
+		public class OrbObject
+        {
+            public GameObject mainObject;
+            public SpriteRenderer spriteRender;
+			public List<Actor> actorsParented = new List<Actor>();
+		}
 
-        public float timeSinceHeldRightClick;
+		public float timeSinceHeldRightClick;
 		public void UpdateLineFromOrb()
 		{
-			OrbGroup orbGroup = activeOrbGroups[0]; // Assuming you have only one active orb group
+			OrbGroup orbGroup = activeOrbGroups[0];
 
-			List<GameObject> lineSprites = orbGroup.objectListStaff;
+			List<OrbObject> lineSprites = orbGroup.objectListStaff;
 			if (Input.GetKeyDown(KeyCode.LeftAlt))
 			{
 				for (int i = 0; i < lineSprites.Count; i++)
 				{
-					// Apply delay to follow the path
-					Vector3 targetPosition = lineSprites[i].transform.position;
+					OrbObject orbObject = lineSprites[i];
+					Vector3 targetPosition = orbObject.mainObject.transform.position;
 					WorldTile targetTile = MapBox.instance.GetTile((int)targetPosition.x, (int)targetPosition.y);
 					if (targetTile != null)
 					{
 						BaseEffect lightningEffect = EffectsLibrary.spawnAtTile("fx_lightning_small", targetTile, 0.25f);
-						targetTile.startFire();
+						SpriteRenderer spr = orbObject.spriteRender;
 
+                        //take sprite from tile and apply it onto orb object
+                        //spr.sprite = MapBox.instance.tilemap.getVariation(targetTile).sprite;
+                        //make sprite white, so its visible like normal
+						//spr.color = Color.white;
+
+                        /*
+                        //pickup and carry actors.. moved into PowerMain.TileObject
+						foreach (Actor tileActor in targetTile._units)
+						{
+							//tileActor.transform.parent = orbObject.mainObject.transform;
+							orbObject.actorsParented.Add(tileActor);
+
+							// Adjust the local position of tileActor to offset it vertically
+							float yOffset = 0.2f; // Adjust this value as needed
+							Vector3 localOffset = new Vector3(0f, yOffset, 0f);
+							tileActor.transform.localPosition += localOffset;
+						}
+                        */
+						//MapAction.decreaseTile(targetTile);
+						//MapAction.decreaseTile(targetTile);
 					}
 				}
 			}
+
+			
+
 			if (Input.GetMouseButton(0) && !Input.GetMouseButton(1))
-            {
-                timeSinceHeldRightClick = 0f;
+			{
+				timeSinceHeldRightClick = 0f;
 				//follow mouse cursor while click-dragged, with delay
 				// Get the current cursor position
 				Vector3 cursorPosition = GetCursorPosition();
 
-                // Define parameters
-                float followDelay = 0.125f; // Adjust as needed, the delay between each object following the path
+				// Define parameters
+				float followDelay = 0.125f; // Adjust as needed, the delay between each object following the path
 
-                // Store the target positions with a delay
-                for (int i = lineSprites.Count - 1; i > 0; i--)
-                {
-                    // Apply delay to follow the path
-                    Vector3 targetPosition = lineSprites[i - 1].transform.position;
-                    lineSprites[i].transform.position = Vector3.Lerp(lineSprites[i].transform.position, targetPosition, Time.deltaTime / followDelay);
-                }
+				// Store the target positions with a delay
+				for (int i = lineSprites.Count - 1; i > 0; i--)
+				{
+					// Apply delay to follow the path
+					Vector3 targetPosition = lineSprites[i - 1].mainObject.transform.position;
+					lineSprites[i].mainObject.transform.position = Vector3.Lerp(lineSprites[i].mainObject.transform.position, targetPosition, Time.deltaTime / followDelay);
+				}
+				
+				// Move the first object towards the cursor position
+				lineSprites[0].mainObject.transform.position = Vector3.Lerp(lineSprites[0].mainObject.transform.position, cursorPosition, Time.deltaTime / followDelay);
 
-                // Move the first object towards the cursor position
-                lineSprites[0].transform.position = Vector3.Lerp(lineSprites[0].transform.position, cursorPosition, Time.deltaTime / followDelay);
+				// Continuously update parented actor positions
+				foreach (OrbObject orbObject in lineSprites)
+				{
+					foreach (Actor parentedActor in orbObject.actorsParented)
+					{
+                        parentedActor.stopMovement();
+						// Update the position of parented actors relative to the orb object
+						float yOffset = 0.2f; // Adjust this value as needed
+						Vector3 localOffset = new Vector3(0f, yOffset, 1f);
+						parentedActor.transform.position = orbObject.mainObject.transform.position + localOffset;
+					}
+				}
 				if (Input.GetMouseButtonDown(1))
 				{
 					List<Actor> targetsMinusControlled = MapBox.instance.units.ToList();
@@ -901,7 +1003,7 @@ namespace SimplerGUI.Menus
 					{
 
 						// Apply delay to follow the path
-						Vector3 targetPosition = lineSprites[i].transform.position;
+						Vector3 targetPosition = lineSprites[i].mainObject.transform.position;
 						WorldTile targetTile = MapBox.instance.GetTile((int)targetPosition.x, (int)targetPosition.y);
 
 						if (targetTile != null)
@@ -909,7 +1011,7 @@ namespace SimplerGUI.Menus
 							Actor closest = Toolbox.getClosestActor(targetsMinusControlled, targetTile);
 							if (closest != null)
 							{
-								Projectile arrow = EffectsLibrary.spawnProjectile("arrow", lineSprites[i].transform.position, closest.currentPosition, closest.getZ());
+								Projectile arrow = EffectsLibrary.spawnProjectile("arrow", lineSprites[i].mainObject.transform.position, closest.currentPosition, closest.getZ());
 								arrow.byWho = controlledActorSc;
 								arrow.setStats(controlledActorSc.stats);
 							}
@@ -923,7 +1025,7 @@ namespace SimplerGUI.Menus
 			{
 				float distanceToActor = Vector3.Distance(GetCursorPosition(), orbGroup.focusActor.transform.position);
 				Debug.Log("Distance to Actor: " + distanceToActor);
-                orbGroup.dist2 = distanceToActor;
+				orbGroup.dist2 = distanceToActor;
 			} // left click up
 			else if (Input.GetMouseButton(1)) // hold right click
 			{
@@ -941,14 +1043,14 @@ namespace SimplerGUI.Menus
 					Vector3 targetPosition = pos + direction * (i * objectSpacing - lineLength);
 
 					// Move the object to the calculated position
-					lineSprites[i].transform.position = Vector3.Lerp(lineSprites[i].transform.position, targetPosition, Time.deltaTime * 5.0f); // Adjust speed as needed
+					lineSprites[i].mainObject.transform.position = Vector3.Lerp(lineSprites[i].mainObject.transform.position, targetPosition, Time.deltaTime * 5.0f); // Adjust speed as needed
 				}
-                timeSinceHeldRightClick = Time.realtimeSinceStartup;
+				timeSinceHeldRightClick = Time.realtimeSinceStartup;
 			}
 			else
 			{
-                if(timeSinceHeldRightClick == 0f || timeSinceHeldRightClick + 5f < Time.realtimeSinceStartup)
-                {
+				if (timeSinceHeldRightClick == 0f || timeSinceHeldRightClick + 5f < Time.realtimeSinceStartup)
+				{
 					// Update tracked enemy
 					Vector3 pos = orbGroup.focusActor.transform.position;
 
@@ -956,7 +1058,7 @@ namespace SimplerGUI.Menus
 					float radius = orbGroup.dist2; // Adjust this value as needed
 					float angleOffset = Time.time * orbGroup.rotationSpeed; // Initial angle offset
 
-					List<GameObject> lineSprites2 = orbGroup.objectListStaff;
+					List<OrbObject> lineSprites2 = orbGroup.objectListStaff;
 
 					float angleIncrement = 360f / lineSprites2.Count; // Angle between objects
 
@@ -971,46 +1073,58 @@ namespace SimplerGUI.Menus
 						float z = pos.z;
 
 						// Update object position
-						lineSprites2[n].transform.position = Vector3.Lerp(lineSprites2[n].transform.position, new Vector3(x, y, z), Time.deltaTime / 0.25f);
+						lineSprites2[n].mainObject.transform.position = Vector3.Lerp(lineSprites2[n].mainObject.transform.position, new Vector3(x, y, z), Time.deltaTime / 0.25f);
+						// Continuously update parented actor positions
+						foreach (OrbObject orbObject in lineSprites2)
+						{
+							foreach (Actor parentedActor in orbObject.actorsParented)
+							{
+								parentedActor.stopMovement();
+								// Update the position of parented actors relative to the orb object
+								float yOffset = 0.2f; // Adjust this value as needed
+								Vector3 localOffset = new Vector3(0f, yOffset, 1f);
+								parentedActor.transform.position = orbObject.mainObject.transform.position + localOffset;
+							}
+						}
 					}
 					//UpdateLineFromOrb();
 				}
-                else{
+				else
+				{
 					for (int i = 0; i < lineSprites.Count; i++)
-                    {
-                        if(i < 3 && Toolbox.randomChance(0.25f))
-                        {
+					{
+						if (i < 3 && Toolbox.randomChance(0.25f))
+						{
 							// Get the direction of the line
-							Vector3 lineDirection = (lineSprites[1].transform.position - lineSprites[0].transform.position).normalized;
+							Vector3 lineDirection = (lineSprites[1].mainObject.transform.position - lineSprites[0].mainObject.transform.position).normalized;
 
 							// Choose a random distance along the line direction
 							float randomDistance = -UnityEngine.Random.Range(5f, 15f); // Adjust the range as needed
 
 							// Calculate the position at the random distance along the line direction
-							Vector3 targetPosition = lineSprites[0].transform.position + lineDirection * randomDistance;
+							Vector3 targetPosition = lineSprites[0].mainObject.transform.position + lineDirection * randomDistance;
 
 							// Find the corresponding tile
 							WorldTile targetTile = MapBox.instance.GetTile((int)targetPosition.x, (int)targetPosition.y);
-                            if(targetTile != null)
-                            {
-								Projectile arrow = EffectsLibrary.spawnProjectile("fireball", lineSprites[0].transform.position, targetPosition, 0f);
+							if (targetTile != null)
+							{
+								Projectile arrow = EffectsLibrary.spawnProjectile("fireball", lineSprites[0].mainObject.transform.position, targetPosition, 0f);
 								arrow.byWho = controlledActorSc;
 								arrow.setStats(controlledActorSc.stats);
 							}
 						}
-						GameObject obj = lineSprites[i];
-						Vector3 pos = obj.transform.position;
+						OrbObject orbObject = lineSprites[i];
+						Vector3 pos = orbObject.mainObject.transform.position;
 						WorldTile tile = MapBox.instance.GetTile((int)pos.x, (int)pos.y);
-                        foreach(WorldTile neighb in tile.neighboursAll)
-                        {
+						foreach (WorldTile neighb in tile.neighboursAll)
+						{
 							PixelFlashEffects flashEffects = MapBox.instance.flashEffects;
 							flashEffects.flashPixel(neighb);
 						}
 					}
-                }
+				}
 			}
 		}
-
 		private Vector3 GetCursorPosition()
 		{
 			return MapBox.instance.getMousePos();
@@ -1161,6 +1275,7 @@ namespace SimplerGUI.Menus
 		public void createOrbTest(Vector3 positionToAnchor)
 		{
 		    OrbGroup newTent = new OrbGroup(positionToAnchor);
+            mainGroup = newTent;
 		}
 
 		public static bool killHimself_Prefix(bool pDestroy, AttackType pType, bool pCountDeath, bool pLaunchCallbacks, bool pLogFavorite, Actor __instance)
@@ -1180,7 +1295,7 @@ namespace SimplerGUI.Menus
         public static float timeSurvivedSoFar;
         public static int enemyKills;
         public float lastSpawnUpdate = 0f;
-        public static bool preventClicksOpeningWindows = true;
+        public static bool preventClicksOpeningWindows;
 
         public List<Vector3> focusPoints = new List<Vector3>() { new Vector3(), new Vector3(), new Vector3() };
 
@@ -1233,13 +1348,7 @@ namespace SimplerGUI.Menus
 
         public void SurvivorUpdate()
         {
-			if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.RightAlt))
-			{
-				createOrbTest(controlledActorSc.transform.position);
-				//SpawnDrop(validEnemyTargets.GetRandom());
-			}
-			OrbUpdate();
-
+			
 			if (survivorActive)
             {
                 if(global::Config.paused == false)
@@ -1567,26 +1676,22 @@ namespace SimplerGUI.Menus
 
         public static bool checkClickTouchInspect_Prefix()
         {
-            if(controlledActorSc != null && controlledActorSc.data.alive)
-            {
-                if (preventClicksOpeningWindows)
-                {
-                    return false;
-                }
-            }
-            return true;
+
+			if (preventClicksOpeningWindows)
+			{
+				return false;
+			}
+			return true;
         }
 
         public static bool checkEmptyClick_Prefix()
         {
-            if (controlledActorSc != null && controlledActorSc.data.alive)
-            {
-                if (preventClicksOpeningWindows)
-                {
-                    return false;
-                }
-            }
-            return true;
+
+			if (preventClicksOpeningWindows)
+			{
+				return false;
+			}
+			return true;
         }
 
         public List<CrabArm> customArms = new List<CrabArm>();
@@ -1680,7 +1785,14 @@ namespace SimplerGUI.Menus
 
         public void actorControlUpdate()
         {
-            SurvivorUpdate();
+			if (Input.GetKey(KeyCode.LeftControl) && Input.GetKeyDown(KeyCode.RightAlt))
+			{
+				createOrbTest(controlledActorSc.transform.position);
+				//SpawnDrop(validEnemyTargets.GetRandom());
+			}
+			OrbUpdate();
+
+			SurvivorUpdate();
             updateCrabArms();
             //this is ugly, cant we do it better?
             if ((Input.GetMouseButtonDown(1) || Input.GetMouseButtonDown(0)) && settingUpEscort)

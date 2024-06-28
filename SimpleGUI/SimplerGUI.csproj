@@ -87,6 +87,7 @@
     <Compile Include="Submods\SimpleGamba\Stocks.cs" />
     <Compile Include="Submods\SimpleMessages\SimpleCultists.cs" />
     <Compile Include="Submods\SimpleMessages\SimpleMessages.cs" />
+    <Compile Include="Submods\SimplePowers\PowerMain.cs" />
     <Compile Include="Submods\UnitClipboard\UnitClipboard.cs" />
     <Compile Include="Submods\WorldBox3D\WorldBox3D.cs" />
     <Compile Include="z_RectTransformExtensions.cs" />
