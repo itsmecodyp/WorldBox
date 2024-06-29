@@ -308,8 +308,8 @@ namespace SimplerGUI.Submods.MapSizes {
             GUILayout.BeginHorizontal();
             if(GUILayout.Button("-")) {
                 mapSizeX--;
-                if(mapSizeX < 0) {
-                    mapSizeX = 0;
+                if(mapSizeX < 1) {
+                    mapSizeX = 1;
                 }
             }
             if(GUILayout.Button("+")) {
@@ -317,8 +317,8 @@ namespace SimplerGUI.Submods.MapSizes {
             }
             if(GUILayout.Button("-")) {
                 mapSizeY--;
-                if(mapSizeY < 0) {
-                    mapSizeY = 0;
+                if(mapSizeY < 1) {
+                    mapSizeY = 1;
                 }
             }
             if(GUILayout.Button("+")) {
